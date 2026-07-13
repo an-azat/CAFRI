@@ -1,7 +1,7 @@
 @model CAFRI.ViewModels.Intelligence.IntelligenceDetailsViewModel
 @{
     ViewData["Title"] = Model.Title;
-    ViewData["PageTheme"] = "theme-dark";
+    ViewData["PageTheme"] = "theme-home";
     var showLockedPreview = Model.IsPremium && !Model.CanAccessFullContent;
     var loginUrl = Url.Action("Login", "Account", new { returnUrl = Context.Request.Path + Context.Request.QueryString }) ?? "/Account/Login";
     var accessCta = new CAFRI.ViewModels.Shared.ProfessionalAccessCtaViewModel

@@ -17,7 +17,7 @@
 
     <partial name="_Header" />
 
-    <div class="site-main">
+    <div class="site-main @(pageTheme == "theme-home" ? "site-main--home" : string.Empty)">
         <div class="site-container">
             <main role="main">
                 @RenderBody()

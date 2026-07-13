@@ -1,56 +1,91 @@
 @model CAFRI.ViewModels.Access.AccessRequestViewModel
+@{
+    ViewData["Title"] = "Professional Access";
+    ViewData["PageTheme"] = "theme-home";
+}
 
-<section class="page-shell">
-    <div class="content-card content-card-wide">
-        <div class="eyebrow">Professional Access</div>
-        <h1 class="page-title">Request institutional access</h1>
-        <p class="page-lead">
-            CAFRI grants professional access after editorial review. This initial workflow is approval-based and
-            is designed for institutional users who need full regulatory and financial intelligence coverage.
-        </p>
+<div class="access-request-page">
+    <section class="access-request-hero">
+        <div class="access-request-hero__copy">
+            <span class="home-v2-section__label">Professional Access</span>
+            <h1 class="page-title">Request institutional access</h1>
+            <p class="page-lead">
+                CAFRI grants professional access after editorial review. This initial workflow is approval-based
+                and designed for institutional users who need full regulatory and financial intelligence coverage.
+            </p>
+        </div>
 
-        <form asp-action="Request" method="post" class="access-form" novalidate>
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+       
+    </section>
 
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <label asp-for="FullName" class="form-label"></label>
-                    <input asp-for="FullName" class="form-control" />
-                    <span asp-validation-for="FullName" class="text-danger"></span>
-                </div>
-                <div class="col-md-6">
-                    <label asp-for="Organization" class="form-label"></label>
-                    <input asp-for="Organization" class="form-control" />
-                    <span asp-validation-for="Organization" class="text-danger"></span>
-                </div>
-                <div class="col-md-6">
-                    <label asp-for="Position" class="form-label"></label>
-                    <input asp-for="Position" class="form-control" />
-                    <span asp-validation-for="Position" class="text-danger"></span>
-                </div>
-                <div class="col-md-6">
-                    <label asp-for="BusinessEmail" class="form-label"></label>
-                    <input asp-for="BusinessEmail" class="form-control" />
-                    <span asp-validation-for="BusinessEmail" class="text-danger"></span>
-                </div>
-                <div class="col-12">
-                    <label asp-for="Country" class="form-label"></label>
-                    <input asp-for="Country" class="form-control" placeholder="Kazakhstan, Kyrgyzstan, Uzbekistan, Tajikistan, Turkmenistan, or regional remit" />
-                    <span asp-validation-for="Country" class="text-danger"></span>
-                </div>
-                <div class="col-12">
-                    <label asp-for="PurposeOfAccess" class="form-label"></label>
-                    <textarea asp-for="PurposeOfAccess" class="form-control" rows="6" placeholder="Describe your institution, your use case, and the intelligence areas you need access to."></textarea>
-                    <span asp-validation-for="PurposeOfAccess" class="text-danger"></span>
-                </div>
-            </div>
+    <section class="access-request-layout">
+        <div class="access-request-form-card">
+            <h2>Application form</h2>
+            <p>Tell us who you are, your institution, and how your team plans to use CAFRI.</p>
 
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary btn-lg">Submit access request</button>
-            </div>
-        </form>
-    </div>
-</section>
+            <form asp-action="Request" method="post" class="access-form access-form--editorial" novalidate>
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label asp-for="FullName" class="form-label"></label>
+                        <input asp-for="FullName" class="form-control" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Organization" class="form-label"></label>
+                        <input asp-for="Organization" class="form-control" />
+                        <span asp-validation-for="Organization" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Position" class="form-label"></label>
+                        <input asp-for="Position" class="form-control" />
+                        <span asp-validation-for="Position" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="BusinessEmail" class="form-label"></label>
+                        <input asp-for="BusinessEmail" class="form-control" />
+                        <span asp-validation-for="BusinessEmail" class="text-danger"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Country" class="form-label"></label>
+                        <input asp-for="Country" class="form-control" placeholder="Kazakhstan, Kyrgyzstan, Uzbekistan, Tajikistan, Turkmenistan, or regional remit" />
+                        <span asp-validation-for="Country" class="text-danger"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="PurposeOfAccess" class="form-label"></label>
+                        <textarea asp-for="PurposeOfAccess" class="form-control" rows="6" placeholder="Describe your institution, your use case, and the intelligence areas you need access to."></textarea>
+                        <span asp-validation-for="PurposeOfAccess" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="home-v2-button home-v2-button--primary">Submit access request</button>
+                </div>
+            </form>
+        </div>
+
+        <aside class="access-request-sidebar">
+            <article class="access-request-sidecard">
+                <h2>What you get</h2>
+                <ul class="access-request-list">
+                    <li>Full intelligence details and premium publication pages</li>
+                    <li>Structured country coverage for Central Asia</li>
+                    <li>Editorially reviewed regulatory and financial monitoring</li>
+                </ul>
+            </article>
+
+            <article class="access-request-sidecard">
+                <h2>Review workflow</h2>
+                <ul class="access-request-list">
+                    <li>We review institutional fit and use case</li>
+                    <li>Approved users receive an activation email</li>
+                    <li>Admins and approved users do not need to reapply</li>
+                </ul>
+            </article>
+        </aside>
+    </section>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

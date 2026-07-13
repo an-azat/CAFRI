@@ -1,7 +1,7 @@
 @model CAFRI.ViewModels.Publications.PublicationDetailsViewModel
 @{
     ViewData["Title"] = Model.Title;
-    ViewData["PageTheme"] = "theme-dark";
+    ViewData["PageTheme"] = "theme-home";
     var showLockedPreview = !Model.CanAccessFullContent;
     var publicationPreviewText = Model.ExecutiveSummaryParagraphs.FirstOrDefault() ?? Model.ShortDescription;
     var loginUrl = Url.Action("Login", "Account", new { returnUrl = Context.Request.Path + Context.Request.QueryString }) ?? "/Account/Login";

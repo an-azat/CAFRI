@@ -2,6 +2,7 @@ using System.Text.Json;
 using CAFRI.Application.Abstractions.Services;
 using CAFRI.Infrastructure.Persistence;
 using CAFRI.ViewModels.Countries;
+using CAFRI.ViewModels.Map;
 using Microsoft.EntityFrameworkCore;
 
 namespace CAFRI.Infrastructure.Content;
@@ -38,24 +39,59 @@ public sealed class DbCountryContentService : ICountryContentService
             .ThenBy(x => x.Name)
             .ToList();
 
+        var indicators = _dbContext.CountryIndicators
+            .AsNoTracking()
+            .Where(x => x.IsPublished)
+            .OrderBy(x => x.DisplayOrder)
+            .ToList();
+
+        var selectedIndicatorName = indicators
+            .Select(x => x.Name)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
+
         var countries = countryRows
-            .Select(x => new CountryOverviewCardViewModel
+            .Select(x =>
             {
-                Code = x.Code,
-                Name = x.Name,
-                Capital = x.Capital,
-                Summary = x.Summary,
-                Gdp = x.Gdp,
-                Population = x.Population,
-                BankAssets = x.BankAssets,
-                Slug = x.Slug,
-                HeroClassName = x.HeroClassName,
-                Metrics =
-                [
-                    new() { Icon = "chart", Label = "GDP (2025)", Value = x.Gdp },
-                    new() { Icon = "people", Label = "Population", Value = x.Population },
-                    new() { Icon = "bank", Label = "Bank Assets", Value = x.BankAssets }
-                ]
+                var countryIndicators = indicators
+                    .Where(item => string.Equals(item.CountryCode, x.Code, StringComparison.OrdinalIgnoreCase))
+                    .Select(item => new MapCountryIndicatorValueViewModel
+                    {
+                        Name = item.Name,
+                        Label = $"{item.Name} {item.YearLabel}".Trim(),
+                        Value = string.IsNullOrWhiteSpace(item.Unit) ? item.LatestValue : $"{item.LatestValue} {item.Unit}",
+                        Category = item.Category,
+                        Unit = item.Unit,
+                        YearLabel = item.YearLabel,
+                        SourceName = item.SourceName
+                    })
+                    .ToList();
+
+                var primaryIndicator = indicators.FirstOrDefault(item =>
+                    string.Equals(item.CountryCode, x.Code, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(item.Name, selectedIndicatorName, StringComparison.OrdinalIgnoreCase));
+
+                return new CountryOverviewCardViewModel
+                {
+                    Code = x.Code,
+                    Name = x.Name,
+                    Capital = x.Capital,
+                    Summary = x.Summary,
+                    Gdp = x.Gdp,
+                    Population = x.Population,
+                    BankAssets = x.BankAssets,
+                    Slug = x.Slug,
+                    HeroClassName = x.HeroClassName,
+                    IndicatorLabel = primaryIndicator is null ? "Indicator" : $"{primaryIndicator.Name} {primaryIndicator.YearLabel}".Trim(),
+                    IndicatorValue = primaryIndicator?.LatestValue ?? "No data",
+                    Indicators = countryIndicators,
+                    Metrics =
+                    [
+                        new() { Icon = "chart", Label = "GDP (2025)", Value = x.Gdp },
+                        new() { Icon = "people", Label = "Population", Value = x.Population },
+                        new() { Icon = "bank", Label = "Bank Assets", Value = x.BankAssets }
+                    ]
+                };
             })
             .ToList();
 

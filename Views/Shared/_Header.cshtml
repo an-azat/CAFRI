@@ -19,13 +19,19 @@
     }
 }
 
+<div class="site-topline">
+    <div class="site-container site-topline__inner">
+        <span>Central Asia Financial &amp; Regulatory Intelligence Initiative</span>
+        <span>EN / RU &middot; Institutional intelligence &middot; Orlando, Florida</span>
+    </div>
+</div>
+
 <header class="site-header">
     <div class="site-header__bar">
         <div class="site-container">
             <nav class="site-nav navbar navbar-expand-xl navbar-dark p-0">
                 <a class="site-brand" asp-area="" asp-controller="Home" asp-action="Index" aria-label="CAFRI home">
-                    <span class="site-brand__mark">CAFRI</span>
-                    <span class="site-brand__text">Central Asia Financial &amp; Regulatory Intelligence Initiative</span>
+                    <span class="site-brand__title">CAFRI</span>
                 </a>
 
                 <button class="navbar-toggler site-nav__toggle" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav"
@@ -37,18 +43,12 @@
                     <ul class="navbar-nav site-nav__links mx-auto">
                         <li class="nav-item"><a class="@navClass("Home")" asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
                         <li class="nav-item"><a class="@prefixNavClass("/intelligence")" href="/intelligence">Intelligence</a></li>
-                        <li class="nav-item"><a class="@prefixNavClass("/map")" href="/map">Map</a></li>
+                        <li class="nav-item"><a class="@prefixNavClass("/countries")" href="/countries">Countries</a></li>
                         <li class="nav-item"><a class="@prefixNavClass("/publications")" href="/publications">Publications</a></li>
                         <li class="nav-item"><a class="@prefixNavClass("/about")" href="/about">About</a></li>
                     </ul>
 
                     <div class="site-nav__actions">
-                        <div class="site-language" aria-label="Language switcher">
-                            <button class="site-language__button" type="button">EN</button>
-                            <span class="site-language__divider"></span>
-                            <button class="site-language__button site-language__button--muted" type="button">RU</button>
-                        </div>
-
                         <button class="site-search" type="button" aria-label="Search">
                             <svg viewBox="0 0 24 24" aria-hidden="true">
                                 <path d="M10.5 4a6.5 6.5 0 1 0 4.03 11.6l4.43 4.43 1.06-1.06-4.43-4.43A6.5 6.5 0 0 0 10.5 4Zm0 1.5a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z" />

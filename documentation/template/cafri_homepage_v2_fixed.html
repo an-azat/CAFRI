@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CAFRI — Homepage Demo Fixed</title>
+
+  <style>
+    :root {
+      --navy: #0b1f35;
+      --navy-2: #102c4a;
+      --blue: #2563eb;
+      --sky: #dbeafe;
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --gold: #d8a63f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: Inter, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .container {
+      width: min(1180px, 92%);
+      margin: 0 auto;
+    }
+
+    .top-line {
+      background: #07182a;
+      color: #cbd5e1;
+      font-size: 13px;
+    }
+
+    .top-line__inner {
+      height: 38px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header {
+      position: fixed;
+      left: 0;
+      right: 0;
+      top: 38px;
+      z-index: 50;
+      background: rgba(8, 27, 49, 0.72);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      color: #ffffff;
+    }
+
+    .header__inner {
+      height: 74px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 26px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .logo__mark {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #ffffff, #dbeafe);
+      color: var(--navy);
+      font-size: 14px;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 26px;
+      color: #e5e7eb;
+      font-size: 15px;
+    }
+
+    .nav a {
+      opacity: 0.9;
+      transition: 0.2s;
+    }
+
+    .nav a:hover {
+      opacity: 1;
+      color: #ffffff;
+    }
+
+    .nav__button {
+      padding: 10px 14px;
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      font-weight: 700;
+    }
+
+    .hero {
+      min-height: 760px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      color: #ffffff;
+      overflow: hidden;
+      background:
+        linear-gradient(90deg, rgba(7,24,42,0.96) 0%, rgba(7,24,42,0.82) 44%, rgba(7,24,42,0.42) 100%),
+        url("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1800&q=80") center/cover no-repeat;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 120px;
+      background: linear-gradient(180deg, transparent, var(--bg));
+      pointer-events: none;
+    }
+
+    .hero__content {
+      position: relative;
+      z-index: 2;
+      padding-top: 110px;
+      max-width: 860px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 14px;
+      margin-bottom: 26px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.11);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: #dbeafe;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 0 6px rgba(216,166,63,0.18);
+    }
+
+    .hero h1 {
+      max-width: 920px;
+      margin-bottom: 24px;
+      font-size: clamp(42px, 6vw, 76px);
+      line-height: 0.98;
+      letter-spacing: -2px;
+      font-weight: 850;
+    }
+
+    .hero p {
+      max-width: 710px;
+      margin-bottom: 34px;
+      color: #dbeafe;
+      font-size: 20px;
+      line-height: 1.65;
+    }
+
+    .hero__actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 46px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 50px;
+      padding: 14px 20px;
+      border-radius: 13px;
+      font-weight: 800;
+      transition: 0.2s ease;
+      font-size: 15px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn--primary {
+      background: #ffffff;
+      color: var(--navy);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.25);
+    }
+
+    .btn--outline {
+      color: #ffffff;
+      border: 1px solid rgba(255,255,255,0.34);
+      background: rgba(255,255,255,0.08);
+    }
+
+    .region-list {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: #dbeafe;
+      font-size: 14px;
+    }
+
+    .region-list span {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    /* FIXED: больше не наезжает на hero */
+    .intro {
+      position: relative;
+      z-index: 5;
+      padding: 34px 0 0;
+      margin-top: 0;
+    }
+
+    .intro-card {
+      display: grid;
+      grid-template-columns: 0.9fr 1.5fr;
+      gap: 28px;
+      align-items: center;
+      padding: 34px;
+      border-radius: 30px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      box-shadow: 0 16px 42px rgba(15,39,66,0.08);
+    }
+
+    .intro-card h2 {
+      color: var(--navy);
+      font-size: 32px;
+      line-height: 1.1;
+      letter-spacing: -0.8px;
+    }
+
+    .intro-card p {
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+    .section {
+      padding: 86px 0;
+    }
+
+    .section-head {
+      max-width: 780px;
+      margin-bottom: 38px;
+    }
+
+    .section-label {
+      display: inline-block;
+      margin-bottom: 13px;
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .section-head h2 {
+      margin-bottom: 14px;
+      color: var(--navy);
+      font-size: clamp(32px, 4vw, 46px);
+      line-height: 1.08;
+      letter-spacing: -1px;
+    }
+
+    .section-head p {
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+    .directions-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .direction-card {
+      min-height: 288px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 26px;
+      border-radius: 26px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      box-shadow: 0 14px 32px rgba(15,39,66,0.04);
+      transition: 0.25s ease;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .direction-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 24px 54px rgba(15,39,66,0.10);
+      border-color: #bfdbfe;
+    }
+
+    .direction-number {
+      display: inline-flex;
+      width: 46px;
+      height: 46px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      border-radius: 15px;
+      background: #eaf2ff;
+      color: var(--blue);
+      font-weight: 850;
+      font-size: 14px;
+    }
+
+    .direction-card h3 {
+      color: var(--navy);
+      font-size: 24px;
+      margin-bottom: 13px;
+      letter-spacing: -0.4px;
+    }
+
+    .direction-card p {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    .direction-link {
+      margin-top: 24px;
+      color: var(--blue);
+      font-weight: 850;
+      font-size: 14px;
+    }
+
+    .direction-card--large {
+      grid-column: span 2;
+      color: #ffffff;
+      background:
+        linear-gradient(135deg, rgba(8,27,49,0.96), rgba(37,99,235,0.70)),
+        url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=80") center/cover no-repeat;
+      border: none;
+    }
+
+    .direction-card--large h3,
+    .direction-card--large p,
+    .direction-card--large .direction-link {
+      color: #ffffff;
+    }
+
+    .direction-card--large .direction-number {
+      background: rgba(255,255,255,0.15);
+      color: #ffffff;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .countries {
+      background: #ffffff;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .countries-layout {
+      display: grid;
+      grid-template-columns: 0.9fr 1.25fr;
+      gap: 44px;
+      align-items: center;
+    }
+
+    .country-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .country-row {
+      display: grid;
+      grid-template-columns: 60px 1fr auto;
+      align-items: center;
+      gap: 18px;
+      padding: 16px;
+      border-radius: 20px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      transition: 0.2s ease;
+    }
+
+    .country-row:hover {
+      background: #ffffff;
+      transform: translateX(5px);
+      box-shadow: 0 14px 34px rgba(15,39,66,0.07);
+    }
+
+    .country-flag {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: #ffffff;
+      font-size: 26px;
+      border: 1px solid var(--border);
+    }
+
+    .country-row h3 {
+      color: var(--navy);
+      font-size: 18px;
+      margin-bottom: 3px;
+    }
+
+    .country-row p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .arrow {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #eaf2ff;
+      color: var(--blue);
+      font-weight: 900;
+    }
+
+    .visual-panel {
+      min-height: 520px;
+      border-radius: 34px;
+      overflow: hidden;
+      position: relative;
+      background:
+        linear-gradient(180deg, rgba(8,27,49,0.10), rgba(8,27,49,0.75)),
+        url("https://images.unsplash.com/photo-1449824913935-59a10b8d2000?auto=format&fit=crop&w=1400&q=80") center/cover no-repeat;
+      box-shadow: 0 22px 60px rgba(15,39,66,0.12);
+    }
+
+    .visual-panel__caption {
+      position: absolute;
+      left: 26px;
+      right: 26px;
+      bottom: 26px;
+      color: #ffffff;
+      padding: 22px;
+      border-radius: 22px;
+      background: rgba(8,27,49,0.68);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .visual-panel__caption h3 {
+      margin-bottom: 8px;
+      font-size: 22px;
+    }
+
+    .visual-panel__caption p {
+      color: #dbeafe;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .split-section {
+      padding: 86px 0;
+    }
+
+    .split-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .feature-card {
+      min-height: 360px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      border-radius: 28px;
+      overflow: hidden;
+      padding: 24px;
+      position: relative;
+      color: #ffffff;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .feature-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(8,27,49,0.08), rgba(8,27,49,0.88));
+    }
+
+    .feature-card > * {
+      position: relative;
+      z-index: 2;
+    }
+
+    .feature-card h3 {
+      font-size: 25px;
+      margin-bottom: 10px;
+    }
+
+    .feature-card p {
+      color: #dbeafe;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .feature-card--investment {
+      background-image: url("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1100&q=80");
+    }
+
+    .feature-card--regulatory {
+      background-image: url("https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1100&q=80");
+    }
+
+    .feature-card--publications {
+      background-image: url("https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1100&q=80");
+    }
+
+    .latest {
+      background: #ffffff;
+      border-top: 1px solid var(--border);
+    }
+
+    .latest-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr 1fr;
+      gap: 18px;
+    }
+
+    .article-card {
+      padding: 24px;
+      border-radius: 24px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      transition: 0.2s ease;
+    }
+
+    .article-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 18px 40px rgba(15,39,66,0.08);
+      background: #ffffff;
+    }
+
+    .article-card--main {
+      background: var(--navy);
+      color: #ffffff;
+    }
+
+    .article-card__meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .article-card--main .article-card__meta {
+      color: #cbd5e1;
+    }
+
+    .article-card h3 {
+      color: var(--navy);
+      font-size: 23px;
+      margin-bottom: 12px;
+      letter-spacing: -0.4px;
+    }
+
+    .article-card--main h3 {
+      color: #ffffff;
+      font-size: 30px;
+    }
+
+    .article-card p {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.65;
+      margin-bottom: 22px;
+    }
+
+    .article-card--main p {
+      color: #dbeafe;
+    }
+
+    .article-card a {
+      color: var(--blue);
+      font-weight: 850;
+    }
+
+    .article-card--main a {
+      color: #ffffff;
+    }
+
+    .about {
+      padding: 86px 0;
+    }
+
+    .about-box {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 34px;
+      align-items: center;
+      padding: 44px;
+      border-radius: 34px;
+      background:
+        linear-gradient(135deg, rgba(8,27,49,0.97), rgba(16,44,74,0.94)),
+        url("https://images.unsplash.com/photo-1488972685288-c3fd157d7c7a?auto=format&fit=crop&w=1500&q=80") center/cover no-repeat;
+      color: #ffffff;
+    }
+
+    .about-box h2 {
+      font-size: 42px;
+      line-height: 1.1;
+      margin-bottom: 18px;
+      letter-spacing: -0.9px;
+    }
+
+    .about-box p {
+      color: #dbeafe;
+      font-size: 17px;
+      line-height: 1.75;
+    }
+
+    .about-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .about-item {
+      padding: 18px 20px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: #ffffff;
+      font-weight: 750;
+    }
+
+    .footer {
+      padding: 46px 0;
+      background: #07182a;
+      color: #cbd5e1;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.4fr repeat(3, 1fr);
+      gap: 32px;
+    }
+
+    .footer h4 {
+      color: #ffffff;
+      margin-bottom: 14px;
+    }
+
+    .footer a,
+    .footer p {
+      display: block;
+      color: #cbd5e1;
+      font-size: 14px;
+      margin-bottom: 9px;
+    }
+
+    @media (max-width: 1024px) {
+      .directions-grid,
+      .split-grid,
+      .latest-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .direction-card--large {
+        grid-column: span 2;
+      }
+
+      .countries-layout,
+      .intro-card,
+      .about-box {
+        grid-template-columns: 1fr;
+      }
+
+      .nav {
+        display: none;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .top-line {
+        display: none;
+      }
+
+      .header {
+        top: 0;
+      }
+
+      .header__inner {
+        height: 66px;
+      }
+
+      .hero {
+        min-height: 720px;
+      }
+
+      .hero__content {
+        padding-top: 86px;
+      }
+
+      .hero p {
+        font-size: 17px;
+      }
+
+      .directions-grid,
+      .split-grid,
+      .latest-grid,
+      .footer-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .direction-card--large {
+        grid-column: span 1;
+      }
+
+      .intro {
+        padding-top: 24px;
+      }
+
+      .intro-card,
+      .about-box {
+        padding: 24px;
+        border-radius: 24px;
+      }
+
+      .intro-card h2 {
+        font-size: 28px;
+      }
+
+      .section,
+      .split-section,
+      .about {
+        padding: 62px 0;
+      }
+
+      .visual-panel {
+        min-height: 420px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="top-line">
+    <div class="container top-line__inner">
+      <span>Central Asia Financial & Regulatory Intelligence Initiative</span>
+      <span>EN / RU · Subscribe · Contact</span>
+    </div>
+  </div>
+
+  <header class="header">
+    <div class="container header__inner">
+      <a href="#" class="logo">
+        <span class="logo__mark">CA</span>
+        <span>CAFRI</span>
+      </a>
+
+      <nav class="nav">
+        <a href="#countries">Countries</a>
+        <a href="#investment">Investment Climate</a>
+        <a href="#intelligence">Intelligence</a>
+        <a href="#publications">Publications</a>
+        <a href="#map">Map</a>
+        <a href="#" class="nav__button">Search</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <div class="hero__content">
+          <div class="eyebrow">Regional intelligence platform</div>
+
+          <h1>Central Asia Financial & Regulatory Intelligence Initiative</h1>
+
+          <p>
+            Your gateway to country profiles, investment climate, regulatory updates
+            and regional intelligence across Central Asia.
+          </p>
+
+          <div class="hero__actions">
+            <a href="#countries" class="btn btn--primary">Explore Countries →</a>
+            <a href="#intelligence" class="btn btn--outline">View Intelligence</a>
+          </div>
+
+          <div class="region-list">
+            <span>Kazakhstan</span>
+            <span>Kyrgyzstan</span>
+            <span>Uzbekistan</span>
+            <span>Tajikistan</span>
+            <span>Turkmenistan</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="intro">
+      <div class="container">
+        <div class="intro-card">
+          <h2>One regional platform for Central Asia</h2>
+          <p>
+            CAFRI brings together structured country information, investment climate context,
+            regulatory intelligence, publications and an interactive regional map in one place.
+            The design is built for investors, researchers, policy analysts and institutions.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="platform">
+      <div class="container">
+        <div class="section-head">
+          <span class="section-label">Platform sections</span>
+          <h2>What you can explore</h2>
+          <p>
+            Main entry points of the platform: countries, investment environment,
+            regulatory monitoring, publications and regional map.
+          </p>
+        </div>
+
+        <div class="directions-grid">
+          <a href="#countries" class="direction-card">
+            <div>
+              <span class="direction-number">01</span>
+              <h3>Explore Countries</h3>
+              <p>
+                Access country-level profiles covering institutions, market environment,
+                regulation and development priorities.
+              </p>
+            </div>
+            <span class="direction-link">View country profiles →</span>
+          </a>
+
+          <a href="#investment" class="direction-card">
+            <div>
+              <span class="direction-number">02</span>
+              <h3>Investment Climate</h3>
+              <p>
+                Understand investment conditions, sector priorities, infrastructure
+                and regional trade corridors.
+              </p>
+            </div>
+            <span class="direction-link">Explore investment climate →</span>
+          </a>
+
+          <a href="#intelligence" class="direction-card">
+            <div>
+              <span class="direction-number">03</span>
+              <h3>Regulatory Intelligence</h3>
+              <p>
+                Track regulatory developments, policy changes and institutional updates
+                across Central Asia.
+              </p>
+            </div>
+            <span class="direction-link">View updates →</span>
+          </a>
+
+          <a href="#publications" class="direction-card">
+            <div>
+              <span class="direction-number">04</span>
+              <h3>Publications</h3>
+              <p>
+                Read research reports, policy briefs, country reviews and analytical materials.
+              </p>
+            </div>
+            <span class="direction-link">View publications →</span>
+          </a>
+
+          <a href="#map" class="direction-card direction-card--large">
+            <div>
+              <span class="direction-number">05</span>
+              <h3>Interactive Map</h3>
+              <p>
+                Navigate Central Asia through an interactive regional map and explore countries,
+                regulation, investment climate and related publications.
+              </p>
+            </div>
+            <span class="direction-link">Open regional map →</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section countries" id="countries">
+      <div class="container countries-layout">
+        <div>
+          <div class="section-head">
+            <span class="section-label">Explore countries</span>
+            <h2>Country profiles across Central Asia</h2>
+            <p>
+              Each country page can include overview, institutions, regulation,
+              investment environment, infrastructure and related publications.
+            </p>
+          </div>
+
+          <div class="country-list">
+            <a href="#" class="country-row">
+              <span class="country-flag">🇰🇿</span>
+              <div>
+                <h3>Kazakhstan</h3>
+                <p>Energy, logistics, financial sector and regional connectivity.</p>
+              </div>
+              <span class="arrow">→</span>
+            </a>
+
+            <a href="#" class="country-row">
+              <span class="country-flag">🇰🇬</span>
+              <div>
+                <h3>Kyrgyzstan</h3>
+                <p>Digital services, trade, public sector reform and connectivity.</p>
+              </div>
+              <span class="arrow">→</span>
+            </a>
+
+            <a href="#" class="country-row">
+              <span class="country-flag">🇺🇿</span>
+              <div>
+                <h3>Uzbekistan</h3>
+                <p>Reforms, investment, infrastructure and industrial development.</p>
+              </div>
+              <span class="arrow">→</span>
+            </a>
+
+            <a href="#" class="country-row">
+              <span class="country-flag">🇹🇯</span>
+              <div>
+                <h3>Tajikistan</h3>
+                <p>Hydropower, transport links and emerging market development.</p>
+              </div>
+              <span class="arrow">→</span>
+            </a>
+
+            <a href="#" class="country-row">
+              <span class="country-flag">🇹🇲</span>
+              <div>
+                <h3>Turkmenistan</h3>
+                <p>Energy, infrastructure and strategic regional routes.</p>
+              </div>
+              <span class="arrow">→</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="visual-panel" id="map">
+          <div class="visual-panel__caption">
+            <h3>Regional Intelligence Map</h3>
+            <p>
+              A visual entry point to Central Asia. Select a country to access its profile,
+              regulatory environment, investment climate and publications.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="split-section" id="investment">
+      <div class="container">
+        <div class="section-head">
+          <span class="section-label">Core themes</span>
+          <h2>Investment climate, regulation and research</h2>
+          <p>
+            Three content pillars help users understand the region without overloading
+            the interface with decorative graphics.
+          </p>
+        </div>
+
+        <div class="split-grid">
+          <a href="#" class="feature-card feature-card--investment">
+            <h3>Investment Climate</h3>
+            <p>
+              Market conditions, sectors, infrastructure, business environment and regional corridors.
+            </p>
+          </a>
+
+          <a href="#" class="feature-card feature-card--regulatory" id="intelligence">
+            <h3>Regulatory Intelligence</h3>
+            <p>
+              Policy changes, institutional updates and regulation-focused monitoring.
+            </p>
+          </a>
+
+          <a href="#" class="feature-card feature-card--publications" id="publications">
+            <h3>Publications</h3>
+            <p>
+              Reports, research notes, country reviews and analytical materials.
+            </p>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section latest">
+      <div class="container">
+        <div class="section-head">
+          <span class="section-label">Latest materials</span>
+          <h2>Latest intelligence and publications</h2>
+          <p>
+            This section can show the latest updates added by the admin panel:
+            articles, reports, briefs and regulatory notes.
+          </p>
+        </div>
+
+        <div class="latest-grid">
+          <article class="article-card article-card--main">
+            <div class="article-card__meta">
+              <span>Regional Review</span>
+              <span>July 2026</span>
+            </div>
+            <h3>Central Asia investment environment overview</h3>
+            <p>
+              A regional review of market conditions, institutional development and
+              investment priorities across Central Asian economies.
+            </p>
+            <a href="#">Read more →</a>
+          </article>
+
+          <article class="article-card">
+            <div class="article-card__meta">
+              <span>Regulatory Update</span>
+              <span>Kyrgyzstan</span>
+            </div>
+            <h3>Institutional and policy updates</h3>
+            <p>
+              Monitoring regulatory changes and institutional developments relevant
+              to financial and investment activity.
+            </p>
+            <a href="#">Read more →</a>
+          </article>
+
+          <article class="article-card">
+            <div class="article-card__meta">
+              <span>Country Profile</span>
+              <span>Uzbekistan</span>
+            </div>
+            <h3>Infrastructure and regional connectivity</h3>
+            <p>
+              A country-focused material on development priorities, routes,
+              logistics and investment environment.
+            </p>
+            <a href="#">Read more →</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="about">
+      <div class="container">
+        <div class="about-box">
+          <div>
+            <h2>About CAFRI</h2>
+            <p>
+              CAFRI is designed as a regional intelligence initiative focused on Central Asia.
+              The platform helps users explore country profiles, investment climate,
+              regulatory environment, publications and regional context through a clean,
+              structured interface.
+            </p>
+          </div>
+
+          <div class="about-list">
+            <div class="about-item">Country-level information</div>
+            <div class="about-item">Regulatory monitoring</div>
+            <div class="about-item">Investment climate context</div>
+            <div class="about-item">Research and publications</div>
+            <div class="about-item">Interactive regional map</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div>
+        <h4>CAFRI</h4>
+        <p>Central Asia Financial & Regulatory Intelligence Initiative</p>
+      </div>
+      <div>
+        <h4>Platform</h4>
+        <a href="#">Explore Countries</a>
+        <a href="#">Investment Climate</a>
+        <a href="#">Regulatory Intelligence</a>
+      </div>
+      <div>
+        <h4>Resources</h4>
+        <a href="#">Publications</a>
+        <a href="#">Interactive Map</a>
+        <a href="#">Methodology</a>
+      </div>
+      <div>
+        <h4>Countries</h4>
+        <a href="#">Kazakhstan</a>
+        <a href="#">Kyrgyzstan</a>
+        <a href="#">Uzbekistan</a>
+        <a href="#">Tajikistan</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

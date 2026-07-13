@@ -6,9 +6,9 @@
     <div class="intelligence-card__country-row">
         <span class="country-badge @Model.CountryAccentClass">@Model.CountryCode</span>
         <span class="intelligence-card__country-name">@Model.CountryName</span>
+        <span class="intelligence-card__divider">&bull;</span>
+        <span class="intelligence-card__date">@Model.PublishedLabel</span>
     </div>
-
-    <div class="intelligence-card__date">@Model.PublishedLabel</div>
 
     <h2 class="intelligence-card__title">
         <a href="@Model.Url">@Model.Title</a>

@@ -2,7 +2,7 @@
 @model CAFRI.ViewModels.Map.MapPageViewModel
 @{
     ViewData["Title"] = "Map";
-    ViewData["PageTheme"] = "theme-dark";
+    ViewData["PageTheme"] = "theme-home";
     var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     var kz = Model.CountryLookup.TryGetValue("KZ", out var kzItem) ? kzItem : null;
     var uz = Model.CountryLookup.TryGetValue("UZ", out var uzItem) ? uzItem : null;
@@ -12,8 +12,9 @@
 }
 
 <div class="page-interactive-map">
-    <section class="interactive-map-header">
+    <section class="interactive-map-header interactive-map-header--editorial">
         <div class="interactive-map-header__copy">
+            <span class="home-v2-section__label">Regional navigation</span>
             <h1 class="page-title">Interactive Map</h1>
             <p class="page-lead">@Model.Description</p>
         </div>
@@ -74,7 +75,7 @@
         <section class="interactive-map-stage">
             <div class="interactive-map-canvas" data-interactive-map>
                 <svg viewBox="0 0 720 480" role="img" aria-label="Interactive Central Asia map">
-                    <rect x="0" y="0" width="720" height="480" rx="24" fill="#061426" />
+                    <rect x="0" y="0" width="720" height="480" rx="24" fill="#edf4ff" />
                     
          
 

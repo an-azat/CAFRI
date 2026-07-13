@@ -1,42 +1,27 @@
 @model CAFRI.ViewModels.About.AboutPageViewModel
 @{
     ViewData["Title"] = "About";
-    ViewData["PageTheme"] = "theme-dark";
+    ViewData["PageTheme"] = "theme-home";
 }
 
 <div class="page-about">
-    <section class="about-hero">
+    <section class="about-hero about-hero--editorial">
         <div class="about-hero-content">
+            <span class="home-v2-section__label">About the initiative</span>
             <h1 class="page-title">About CAFRI</h1>
             <p class="page-lead">@Model.Description</p>
             <p class="page-lead">@Model.DescriptionSecondary</p>
             <div class="hero-actions">
                 @if (User.Identity?.IsAuthenticated != true)
                 {
-                    <a class="btn btn-primary btn-lg" href="/access/request">Request Professional Access</a>
+                    <a class="home-v2-button home-v2-button--primary" href="/access/request">Request Professional Access</a>
                 }
-                <a class="btn btn-outline-light btn-lg" href="mailto:contact@cafri.org">Contact Us</a>
+                <a class="home-v2-button home-v2-button--ghost" href="mailto:contact@cafri.org">Contact Us</a>
             </div>
         </div>
 
-        <div class="about-hero-map">
-            <svg viewBox="0 0 720 480" role="img" aria-label="Central Asia decorative map">
-                <rect x="0" y="0" width="720" height="480" rx="24" fill="#061426" />
-                <path d="M34 82c98-38 204-54 320-46 106 8 205 34 302 92" fill="none" stroke="rgba(55,130,210,0.16)" stroke-width="1.5" />
-                <path d="M58 278c74 24 160 22 240-2 68-20 116-40 194-44 68-4 126 8 170 24" fill="none" stroke="rgba(55,130,210,0.12)" stroke-width="1.2" />
-                <text class="about-hero-map__label" x="333.4" y="189.0">KAZAKHSTAN</text>
-                <text class="about-hero-map__label" x="352.5" y="306.4">UZBEKISTAN</text>
-                <text class="about-hero-map__label" x="455.8" y="305.1">KYRGYZSTAN</text>
-                <text class="about-hero-map__label" x="421.4" y="336.9">TAJIKISTAN</text>
-                <text class="about-hero-map__label" x="222.4" y="328.0">TURKMENISTAN</text>
-                <circle cx="430" cy="140" r="5"></circle>
-                <circle cx="385" cy="286" r="5"></circle>
-                <circle cx="470" cy="304" r="5"></circle>
-                <circle cx="421" cy="344" r="5"></circle>
-                <circle cx="200" cy="334" r="5"></circle>
-                <path d="M430 140 385 286 470 304" stroke="rgba(79,140,255,0.26)" stroke-width="1.2" fill="none" />
-                <path d="M385 286 421 344 200 334" stroke="rgba(79,140,255,0.18)" stroke-width="1.2" fill="none" />
-            </svg>
+        <div class="about-hero-media" aria-label="About CAFRI hero image">
+            <img src="~/uploads/img/HeroImgAbout.png" alt="CAFRI about hero" />
         </div>
     </section>
 

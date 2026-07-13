@@ -1,3 +1,5 @@
+using CAFRI.ViewModels.Map;
+
 namespace CAFRI.ViewModels.Countries;
 
 public sealed class CountryOverviewCardViewModel
@@ -20,7 +22,13 @@ public sealed class CountryOverviewCardViewModel
 
     public required string HeroClassName { get; init; }
 
+    public string IndicatorLabel { get; init; } = "Indicator";
+
+    public string IndicatorValue { get; init; } = "No data";
+
     public IReadOnlyList<CountryMetricViewModel> Metrics { get; init; } = [];
+
+    public IReadOnlyList<MapCountryIndicatorValueViewModel> Indicators { get; init; } = [];
 
     public string AccentClass => Code switch
     {
