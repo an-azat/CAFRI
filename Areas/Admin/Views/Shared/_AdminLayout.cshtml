@@ -1,0 +1,87 @@
+@{
+    var pageTitle = ViewData["Title"] as string ?? "CAFRI Admin";
+    var activeNav = (ViewData["AdminNav"] as string ?? string.Empty).ToLowerInvariant();
+    var userName = User.Identity?.Name ?? "Admin User";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@pageTitle - CAFRI Admin</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/CAFRI.styles.css" asp-append-version="true" />
+</head>
+<body class="app-body theme-dark admin-body">
+    <div class="admin-shell">
+        <aside class="admin-sidebar" data-admin-sidebar>
+            <div class="admin-sidebar__brand">
+                <a href="@Url.Action("Index", "Home", new { area = "" })" class="admin-brand">
+                    <span class="admin-brand__mark">CAFRI</span>
+                    <span class="admin-brand__text">Central Asia Financial &amp; Regulatory Intelligence Initiative</span>
+                </a>
+            </div>
+
+            <nav class="admin-sidebar__nav">
+                <div class="admin-sidebar__section">Content</div>
+                <a href="@Url.Action("Index", "Dashboard", new { area = "Admin" })" class="admin-nav-link @(activeNav == "dashboard" ? "is-active" : null)">Dashboard</a>
+                <a href="@Url.Action("Index", "Publications", new { area = "Admin" })" class="admin-nav-link @(activeNav == "publications" ? "is-active" : null)">Publications</a>
+                <a href="@Url.Action("Index", "Intelligence", new { area = "Admin" })" class="admin-nav-link @(activeNav == "intelligence" ? "is-active" : null)">Intelligence</a>
+                <a href="@Url.Action("Index", "Countries", new { area = "Admin" })" class="admin-nav-link @(activeNav == "countries" ? "is-active" : null)">Countries</a>
+                <a href="@Url.Action("Index", "Sources", new { area = "Admin" })" class="admin-nav-link @(activeNav == "sources" ? "is-active" : null)">Sources</a>
+                <a href="@Url.Action("Index", "Indicators", new { area = "Admin" })" class="admin-nav-link @(activeNav == "indicators" ? "is-active" : null)">Indicators</a>
+                <a href="@Url.Action("Index", "Categories", new { area = "Admin" })" class="admin-nav-link @(activeNav == "categories" ? "is-active" : null)">Categories</a>
+
+                <div class="admin-sidebar__section">Users</div>
+                <span class="admin-nav-link is-disabled">Users</span>
+                <span class="admin-nav-link is-disabled">Roles &amp; Permissions</span>
+                <a href="@Url.Action("Index", "AccessRequests", new { area = "Admin" })" class="admin-nav-link @(activeNav == "access" ? "is-active" : null)">Professional Access</a>
+
+                <div class="admin-sidebar__section">System</div>
+                <a href="@Url.Action("Index", "Media", new { area = "Admin" })" class="admin-nav-link @(activeNav == "media" ? "is-active" : null)">Media Library</a>
+                <span class="admin-nav-link is-disabled">Settings</span>
+                <span class="admin-nav-link is-disabled">Audit Logs</span>
+            </nav>
+        </aside>
+
+        <div class="admin-main">
+            <header class="admin-topbar">
+                <button type="button" class="admin-topbar__toggle" data-admin-sidebar-toggle aria-label="Toggle sidebar">
+                    <span></span><span></span><span></span>
+                </button>
+
+                <form class="admin-search" role="search">
+                    <span class="admin-search__icon">Search</span>
+                    <input type="search" value="" placeholder="Search admin content..." aria-label="Search admin content" />
+                </form>
+
+                <div class="admin-topbar__actions">
+                    <a href="@Url.Action("Index", "Home", new { area = "" })" class="admin-chip">View Website</a>
+                    <span class="admin-chip">Notifications</span>
+                    <span class="admin-chip admin-chip--user">@userName</span>
+                    <details class="admin-new-content">
+                        <summary class="admin-primary-button">New Content</summary>
+                        <div class="admin-new-content__menu">
+                            <a href="@Url.Action("Create", "Publications", new { area = "Admin" })">New Publication</a>
+                            <a href="@Url.Action("Create", "Intelligence", new { area = "Admin" })">New Intelligence</a>
+                            <a href="@Url.Action("Create", "Countries", new { area = "Admin" })">New Country Profile</a>
+                            <a href="@Url.Action("Create", "Sources", new { area = "Admin" })">New Source</a>
+                        </div>
+                    </details>
+                </div>
+            </header>
+
+            <main class="admin-content">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/admin.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

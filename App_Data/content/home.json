@@ -1,0 +1,82 @@
+{
+  "page": {
+    "latestIntelligence": [
+      {
+        "category": "BANKING",
+        "countryCode": "UZ",
+        "publishedLabel": "Jun 25, 2026",
+        "title": "Central Bank of Uzbekistan raises key policy rate to 14%",
+        "summary": "The Central Bank increased the policy rate by 50 bps to address inflationary pressures and support financial stability.",
+        "source": "Central Bank of Uzbekistan",
+        "url": "/intelligence/central-bank-of-uzbekistan-raises-key-policy-rate-to-14"
+      },
+      {
+        "category": "FINANCIAL REGULATION",
+        "countryCode": "KZ",
+        "publishedLabel": "Jun 24, 2026",
+        "title": "Kazakhstan updates AML/CFT regulations",
+        "summary": "New amendments strengthen customer due diligence, beneficial ownership transparency, and reporting obligations.",
+        "source": "Agency for Financial Monitoring",
+        "url": "/intelligence/kazakhstan-updates-list-of-sanctioned-entities"
+      },
+      {
+        "category": "TRADE & LOGISTICS",
+        "countryCode": "KG",
+        "publishedLabel": "Jun 24, 2026",
+        "title": "Kyrgyzstan implements new customs procedures for EAEU trade",
+        "summary": "Updated procedures streamline documentation and enhance risk management for cross-border trade.",
+        "source": "State Customs Service",
+        "url": "/intelligence/kyrgyzstan-implements-new-customs-procedures-for-eaeu-trade"
+      },
+      {
+        "category": "SANCTIONS",
+        "countryCode": "KZ",
+        "publishedLabel": "Jun 23, 2026",
+        "title": "Kazakhstan updates list of sanctioned entities",
+        "summary": "The Agency for Financial Monitoring publishes the latest list of entities subject to domestic sanctions.",
+        "source": "Agency for Financial Monitoring",
+        "url": "/intelligence/kazakhstan-updates-list-of-sanctioned-entities"
+      },
+      {
+        "category": "MACROECONOMICS",
+        "countryCode": "UZ",
+        "publishedLabel": "Jun 23, 2026",
+        "title": "Uzbekistan GDP growth reaches 6.8% in Q1 2026",
+        "summary": "Official statistics confirm continued economic expansion driven by services, industry, and investment.",
+        "source": "State Statistics Committee",
+        "url": "/intelligence/uzbekistan-gdp-growth-reaches-6-8-in-q1-2026"
+      },
+      {
+        "category": "BANKING",
+        "countryCode": "TJ",
+        "publishedLabel": "Jun 20, 2026",
+        "title": "National Bank of Tajikistan issues new banking license regulations",
+        "summary": "New rules raise minimum capital requirements and strengthen corporate governance standards.",
+        "source": "National Bank of Tajikistan",
+        "url": "/intelligence/national-bank-of-tajikistan-issues-new-banking-license-regulations"
+      }
+    ],
+    "featuredPublication": {
+      "eyebrow": "Featured Publication",
+      "title": "Central Asia Banking Sector Outlook 2026",
+      "subtitle": "H1 2026 Comprehensive Review",
+      "description": "A comprehensive analysis of capital adequacy trends, asset quality, profitability, liquidity, and regulatory developments across the banking sectors of Kazakhstan, Kyrgyzstan, Uzbekistan, Tajikistan, and Turkmenistan.",
+      "readOnlineUrl": "/publications/tajikistan-banking-sector-outlook",
+      "downloadUrl": "#",
+      "metaItems": [
+        { "icon": "document", "label": "Banking Review" },
+        { "icon": "calendar", "label": "June 2026" },
+        { "icon": "clock", "label": "18 min read" },
+        { "icon": "user", "label": "CAFRI Analytical Team" }
+      ]
+    },
+    "coverageAreas": [
+      { "icon": "institution", "title": "Financial Regulation", "description": "Monitoring regulatory developments from central banks, financial supervisors, and government institutions." },
+      { "icon": "institution", "title": "Banking Intelligence", "description": "Analysis of monetary policy, banking sector performance, licensing, and supervisory actions." },
+      { "icon": "shield", "title": "Sanctions & Compliance", "description": "Tracking domestic and international sanctions, AML/CFT frameworks, and compliance requirements." },
+      { "icon": "truck", "title": "Trade & Logistics", "description": "Monitoring trade corridors, customs, infrastructure, and cross-border logistics developments." },
+      { "icon": "chart", "title": "Macroeconomics", "description": "Key economic indicators, forecasts, fiscal policy, and structural economic trends." },
+      { "icon": "globe", "title": "Geopolitical Risk", "description": "Analysis of political risk, regional dynamics, and their impact on financial and trade stability." }
+    ]
+  }
+}

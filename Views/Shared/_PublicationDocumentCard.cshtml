@@ -1,0 +1,11 @@
+@model CAFRI.ViewModels.Publications.PublicationDocumentCardViewModel
+
+<article class="document-card">
+    <div class="document-card__icon">PDF</div>
+    <div class="document-card__content">
+        <h3>@Model.Title</h3>
+        <p>@Model.Type</p>
+        <span>@Model.Meta</span>
+    </div>
+    <a class="document-card__link" href="@Model.DownloadUrl">Download <span>&rarr;</span></a>
+</article>

@@ -1,0 +1,125 @@
+@model CAFRI.Areas.Admin.ViewModels.Content.AdminMediaLibraryViewModel
+
+<section class="admin-page">
+    <div class="admin-page__hero">
+        <div class="admin-eyebrow">Media Library</div>
+        <h1 class="admin-page__title">Uploaded Content Media</h1>
+        <p class="admin-page__lead">
+            Manage hero photos and gallery images used across countries, publications and intelligence pages.
+        </p>
+    </div>
+
+    <section class="admin-summary-grid">
+        @foreach (var card in Model.SummaryCards)
+        {
+            <article class="admin-summary-card">
+                <div class="admin-summary-card__label">@card.Label</div>
+                <div class="admin-summary-card__value">@card.Value</div>
+                <div class="admin-summary-card__caption">@card.Caption</div>
+            </article>
+        }
+    </section>
+
+    <section class="admin-panel mt-4">
+        <div class="admin-listing__header">
+            <div>
+                <div class="admin-panel__eyebrow">Assets</div>
+                <h2 class="admin-panel__title">File Inventory</h2>
+            </div>
+        </div>
+
+        @if (TempData["AdminError"] is string errorMessage)
+        {
+            <div class="alert alert-danger">@errorMessage</div>
+        }
+
+        @if (TempData["AdminSuccess"] is string successMessage)
+        {
+            <div class="alert alert-success">@successMessage</div>
+        }
+
+        <form method="get" class="admin-filters">
+            <div>
+                <label class="admin-filter-label" for="search">Search</label>
+                <input id="search" name="search" class="form-control admin-filter-control" value="@Model.Search" placeholder="File name or URL" />
+            </div>
+            <div>
+                <label class="admin-filter-label" for="section">Section</label>
+                <select id="section" name="section" class="form-select admin-filter-control">
+                    <option value="">All Sections</option>
+                    @foreach (var item in Model.AvailableSections)
+                    {
+                        <option value="@item" selected="@(string.Equals(item, Model.Section, StringComparison.OrdinalIgnoreCase) ? "selected" : null)">@item</option>
+                    }
+                </select>
+            </div>
+            <div class="d-flex align-items-end gap-2">
+                <button type="submit" class="admin-primary-button">Apply</button>
+                <a asp-area="Admin" asp-controller="Media" asp-action="Index" class="admin-chip">Reset</a>
+            </div>
+        </form>
+
+        <div class="admin-media-library">
+            @if (Model.Items.Count == 0)
+            {
+                <div class="admin-empty-state">No media files matched the current filters.</div>
+            }
+            else
+            {
+                @foreach (var item in Model.Items)
+                {
+                    <article class="admin-media-library__card">
+                        <div class="admin-media-library__preview">
+                            <img src="@item.Url" alt="@item.FileName" />
+                        </div>
+                        <div class="admin-media-library__body">
+                            <div class="admin-media-library__top">
+                                <div>
+                                    <h3>@item.FileName</h3>
+                                    <p>@item.Url</p>
+                                </div>
+                                <span class="admin-status-pill @(item.IsUsed ? "is-live" : "is-draft")">
+                                    @(item.IsUsed ? $"Used ({item.UsageCount})" : "Unused")
+                                </span>
+                            </div>
+                            <dl class="admin-media-library__meta">
+                                <div><dt>Section</dt><dd>@item.Section</dd></div>
+                                <div><dt>Size</dt><dd>@item.SizeLabel</dd></div>
+                                <div><dt>Updated</dt><dd>@item.UpdatedLabel</dd></div>
+                            </dl>
+                            <div class="admin-media-library__actions">
+                                <button type="button" class="admin-chip" data-copy-media-url="@item.Url">Copy URL</button>
+                                <a href="@item.Url" target="_blank" rel="noreferrer" class="admin-chip">Open</a>
+                                <form method="post" asp-area="Admin" asp-controller="Media" asp-action="Delete">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="url" value="@item.Url" />
+                                    <button type="submit" class="admin-chip" @(item.IsUsed ? "disabled" : null)>Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </article>
+                }
+            }
+        </div>
+    </section>
+</section>
+
+@section Scripts {
+    <script>
+        (() => {
+            document.querySelectorAll("[data-copy-media-url]").forEach((button) => {
+                button.addEventListener("click", async () => {
+                    const url = button.getAttribute("data-copy-media-url") || "";
+                    if (!url || !navigator.clipboard) {
+                        return;
+                    }
+
+                    await navigator.clipboard.writeText(url);
+                    const original = button.textContent;
+                    button.textContent = "Copied";
+                    setTimeout(() => button.textContent = original, 1200);
+                });
+            });
+        })();
+    </script>
+}

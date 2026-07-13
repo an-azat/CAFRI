@@ -1,0 +1,33 @@
+@model IReadOnlyList<CAFRI.ViewModels.Publications.PublicationTabViewModel>
+@{
+    var activeTab = Model.FirstOrDefault(x => x.IsActive)?.Label switch
+    {
+        "Most Read" => "most-read",
+        "By Country" => "by-country",
+        "By Topic" => "by-topic",
+        _ => "latest"
+    };
+    var query = Context.Request.Query["query"].ToString();
+    var type = Context.Request.Query["type"].ToString();
+    var country = Context.Request.Query["country"].ToString();
+    var topic = Context.Request.Query["topic"].ToString();
+
+    string BuildTabUrl(string tabKey)
+    {
+        var values = new List<string> { $"tab={Uri.EscapeDataString(tabKey)}" };
+
+        if (!string.IsNullOrWhiteSpace(query)) values.Add($"query={Uri.EscapeDataString(query)}");
+        if (!string.IsNullOrWhiteSpace(type) && !string.Equals(type, "All Types", StringComparison.OrdinalIgnoreCase)) values.Add($"type={Uri.EscapeDataString(type)}");
+        if (!string.IsNullOrWhiteSpace(country) && !string.Equals(country, "All Countries", StringComparison.OrdinalIgnoreCase)) values.Add($"country={Uri.EscapeDataString(country)}");
+        if (!string.IsNullOrWhiteSpace(topic) && !string.Equals(topic, "All Topics", StringComparison.OrdinalIgnoreCase)) values.Add($"topic={Uri.EscapeDataString(topic)}");
+
+        return "/publications?" + string.Join("&", values);
+    }
+}
+
+<nav class="publications-tabs" aria-label="Publication tabs">
+    <a class="publications-tabs__button @(activeTab == "latest" ? "is-active" : null)" href="@BuildTabUrl("latest")">Latest Publications</a>
+    <a class="publications-tabs__button @(activeTab == "most-read" ? "is-active" : null)" href="@BuildTabUrl("most-read")">Most Read</a>
+    <a class="publications-tabs__button @(activeTab == "by-country" ? "is-active" : null)" href="@BuildTabUrl("by-country")">By Country</a>
+    <a class="publications-tabs__button @(activeTab == "by-topic" ? "is-active" : null)" href="@BuildTabUrl("by-topic")">By Topic</a>
+</nav>

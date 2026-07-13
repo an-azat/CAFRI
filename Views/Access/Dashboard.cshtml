@@ -1,0 +1,39 @@
+@model CAFRI.ViewModels.Access.ProfessionalDashboardViewModel
+
+<section class="page-shell">
+    <div class="content-card content-card-wide">
+        <div class="eyebrow">Account Area</div>
+        <h1 class="page-title">Welcome, @Model.FullName</h1>
+        <p class="page-lead">
+            This dashboard confirms that the account is signed in and can access protected CAFRI intelligence,
+            publications, and country content. Administrative tools remain available only to users with the Admin role.
+        </p>
+
+        <div class="detail-grid">
+            <div class="detail-card">
+                <h2>Account</h2>
+                <dl class="detail-list">
+                    <dt>Email</dt>
+                    <dd>@Model.Email</dd>
+                    <dt>Organization</dt>
+                    <dd>@(Model.Organization ?? "Not specified")</dd>
+                    <dt>Position</dt>
+                    <dd>@(Model.Position ?? "Not specified")</dd>
+                    <dt>Professional flag</dt>
+                    <dd>@(Model.IsProfessional ? "Enabled" : "Disabled")</dd>
+                </dl>
+            </div>
+            <div class="detail-card">
+                <h2>Access status</h2>
+                <dl class="detail-list">
+                    <dt>Content access</dt>
+                    <dd>Enabled</dd>
+                    <dt>Admin panel</dt>
+                    <dd>@(User.IsInRole("Admin") ? "Available" : "Not available")</dd>
+                    <dt>Account role</dt>
+                    <dd>@(User.IsInRole("Admin") ? "Administrator" : "Authenticated user")</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</section>

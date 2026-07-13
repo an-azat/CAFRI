@@ -1,0 +1,206 @@
+@model CAFRI.ViewModels.Publications.PublicationDetailsViewModel
+@{
+    ViewData["Title"] = Model.Title;
+    ViewData["PageTheme"] = "theme-dark";
+    var showLockedPreview = !Model.CanAccessFullContent;
+    var publicationPreviewText = Model.ExecutiveSummaryParagraphs.FirstOrDefault() ?? Model.ShortDescription;
+    var loginUrl = Url.Action("Login", "Account", new { returnUrl = Context.Request.Path + Context.Request.QueryString }) ?? "/Account/Login";
+    var accessCta = new CAFRI.ViewModels.Shared.ProfessionalAccessCtaViewModel
+    {
+        Title = "Full publication is available after sign in",
+        Description = "Guests can review only the short preview. Sign in to access the full report, findings, charts, documents, and related analytical materials.",
+        ButtonText = "Sign In to Continue",
+        ButtonUrl = loginUrl,
+        Benefits =
+        [
+            "Full reports, country profiles, and analytical briefs",
+            "Structured findings, documents, and premium research context",
+            "Cross-linked publications and intelligence across the region"
+        ]
+    };
+}
+
+<div class="page-publication-details">
+    <nav class="publication-breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span>/</span>
+        <a href="/publications">Publications</a>
+        <span>/</span>
+        <a href="/publications">@Model.PublicationType</a>
+        <span>/</span>
+        <span class="is-active">@Model.Title</span>
+    </nav>
+
+    <partial name="_PublicationHero" model="Model" />
+
+    @if (showLockedPreview)
+    {
+        <section class="article-premium-banner article-premium-banner--detail">
+            <div class="article-premium-banner__preview">
+                <span class="article-premium-banner__eyebrow">Preview Available</span>
+                <h2>Full publication is currently locked</h2>
+                <p>@publicationPreviewText</p>
+            </div>
+
+            <partial name="_ProfessionalAccessCta" model="accessCta" />
+        </section>
+    }
+    else
+    {
+        <partial name="_PublicationDetailTabs" model="Model.Tabs" />
+
+        <div class="publication-layout">
+            <main class="publication-main">
+                <section class="kpi-grid">
+                    @foreach (var item in Model.Kpis)
+                    {
+                        <partial name="_PublicationKpiCard" model="item" />
+                    }
+                </section>
+
+                <section class="article-section" id="overview" data-section>
+                    <h2>Executive Summary</h2>
+                    @foreach (var paragraph in Model.ExecutiveSummaryParagraphs)
+                    {
+                        <p>@paragraph</p>
+                    }
+
+                    <ul class="publication-highlight-list">
+                        @foreach (var item in Model.ExecutiveHighlights)
+                        {
+                            <li>@item</li>
+                        }
+                    </ul>
+                </section>
+
+                <section class="article-section" id="key-findings" data-section>
+                    <h2>Key Findings</h2>
+                    <div class="publication-findings-grid">
+                        @foreach (var item in Model.KeyFindings)
+                        {
+                            <article class="publication-finding-card">
+                                <span class="publication-finding-card__icon">@item.Icon</span>
+                                <h3>@item.Title</h3>
+                                <p>@item.Description</p>
+                            </article>
+                        }
+                    </div>
+                </section>
+
+                @foreach (var contentSection in Model.Sections)
+                {
+                    <section class="article-section" id="@contentSection.Id" data-section>
+                        <h2>@contentSection.Heading</h2>
+
+                        @foreach (var paragraph in contentSection.Paragraphs)
+                        {
+                            <p>@paragraph</p>
+                        }
+
+                        @if (contentSection.BulletPoints.Count > 0)
+                        {
+                            <ul class="publication-bullet-list">
+                                @foreach (var item in contentSection.BulletPoints)
+                                {
+                                    <li>@item</li>
+                                }
+                            </ul>
+                        }
+
+                        @if (contentSection.Callout is not null)
+                        {
+                            <aside class="article-callout article-callout--@contentSection.Callout.Tone">
+                                <span class="article-callout__label">@contentSection.Callout.Label</span>
+                                <h3>@contentSection.Callout.Title</h3>
+                                <p>@contentSection.Callout.Description</p>
+                            </aside>
+                        }
+                    </section>
+                }
+
+                <section class="article-section" id="data-charts" data-section>
+                    <h2>Data &amp; Charts</h2>
+                    <div class="chart-grid">
+                        @foreach (var chart in Model.Charts)
+                        {
+                            <partial name="_PublicationChartCard" model="chart" />
+                        }
+                    </div>
+                </section>
+
+                <section class="article-section" id="transit-table" data-section>
+                    <h2>Transit Data &amp; Performance</h2>
+                    <div class="data-table-wrapper">
+                        <table class="publication-data-table">
+                            <thead>
+                                <tr>
+                                    <th>Corridor</th>
+                                    <th>Countries Covered</th>
+                                    <th>Main Route</th>
+                                    <th>2025 Volume</th>
+                                    <th>YoY Growth</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var row in Model.TableRows)
+                                {
+                                    <tr>
+                                        <td>@row.Corridor</td>
+                                        <td>@row.CountriesCovered</td>
+                                        <td>@row.MainRoute</td>
+                                        <td>@row.Volume</td>
+                                        <td>@row.Growth</td>
+                                        <td>@row.Status</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                @if (Model.GalleryItems.Count > 0)
+                {
+                    <section class="article-section" id="photo-gallery" data-section>
+                        <h2>Photo Gallery</h2>
+                        <partial name="_PublicationPhotoGallery" model="Model.GalleryItems" />
+                    </section>
+                }
+
+                <section class="article-section" id="related-documents" data-section>
+                    <h2>Related Documents</h2>
+                    <div class="document-list">
+                        @foreach (var item in Model.Documents)
+                        {
+                            <partial name="_PublicationDocumentCard" model="item" />
+                        }
+                    </div>
+                </section>
+            </main>
+
+            <partial name="_PublicationDetailSidebar" model="Model" />
+        </div>
+
+        <section class="related-publications" id="related-publications" data-section>
+            <div class="related-publications__header">
+                <h2>Related Publications</h2>
+                <p>Continue exploring reports, briefs and country profiles connected to this topic.</p>
+            </div>
+
+            <div class="related-publications__grid">
+                @foreach (var item in Model.RelatedPublications)
+                {
+                    <partial name="_RelatedPublicationCard" model="item" />
+                }
+            </div>
+        </section>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="~/js/publication-charts.js" asp-append-version="true"></script>
+    <script src="~/js/publication-gallery.js" asp-append-version="true"></script>
+    <script src="~/js/publication-toc.js" asp-append-version="true"></script>
+    <script src="~/js/publication-cards.js" asp-append-version="true"></script>
+}

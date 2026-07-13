@@ -1,0 +1,35 @@
+@model HomePageViewModel
+@{
+    ViewData["Title"] = "Home";
+    ViewData["PageTheme"] = "theme-home";
+}
+
+<section class="home-section home-section--intelligence">
+    <div class="home-section__header">
+        <h1 class="home-section__title">Latest Intelligence</h1>
+        <a class="home-section__link" href="/intelligence">View all intelligence <span>&rarr;</span></a>
+    </div>
+
+    <div class="home-intelligence-grid">
+        @foreach (var item in Model.LatestIntelligence)
+        {
+            <partial name="_IntelligenceCard" model="item" />
+        }
+    </div>
+</section>
+
+<partial name="_FeaturedPublication" model="Model.FeaturedPublication" />
+
+<section class="home-section home-section--coverage">
+    <div class="home-section__header">
+        <h2 class="home-section__title">Coverage Areas</h2>
+        <a class="home-section__link" href="/about">View full coverage <span>&rarr;</span></a>
+    </div>
+
+    <div class="coverage-grid">
+        @foreach (var area in Model.CoverageAreas)
+        {
+            <partial name="_CoverageAreaItem" model="area" />
+        }
+    </div>
+</section>

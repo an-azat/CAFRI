@@ -1,0 +1,921 @@
+@model CAFRI.Areas.Admin.ViewModels.Content.IntelligenceContentEditViewModel
+
+<section class="admin-page">
+    <div class="admin-page__hero">
+        <div class="admin-eyebrow">Intelligence Editor</div>
+        <h1 class="admin-page__title">@((Model.Id is null) ? "Create Intelligence Item" : "Edit Intelligence Item")</h1>
+        <p class="admin-page__lead">
+            Control the metadata, summary text and structured detail blocks used by the public intelligence catalog and detail page.
+        </p>
+    </div>
+
+    <div class="admin-editor admin-editor--single">
+        <section class="admin-editor-card">
+            @if (Model.Id is not null && !string.IsNullOrWhiteSpace(Model.Slug))
+            {
+                <div class="admin-editor-actions mb-4">
+                    <a class="admin-primary-button" href="/intelligence/@Model.Slug" target="_blank" rel="noreferrer">Open Intelligence Page</a>
+                </div>
+            }
+
+            <form method="post" enctype="multipart/form-data" data-live-preview-form>
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(false, "", new { @class = "validation-summary-errors" })
+
+                @if (TempData["AdminSuccess"] is string successMessage)
+                {
+                    <div class="alert alert-success mb-4">@successMessage</div>
+                }
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label asp-for="Slug" class="form-label"></label>
+                        <input asp-for="Slug" class="form-control" data-preview-target="Slug" data-preview-key="slug" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Category" class="form-label"></label>
+                        <input asp-for="Category" class="form-control" data-preview-target="Category" data-preview-key="category" />
+                    </div>
+                    <div class="col-md-2">
+                        <label asp-for="CountryCode" class="form-label"></label>
+                        <input asp-for="CountryCode" class="form-control" data-preview-target="CountryCode" data-preview-key="countryCode" />
+                    </div>
+                    <div class="col-md-2">
+                        <label asp-for="DisplayOrder" class="form-label"></label>
+                        <input asp-for="DisplayOrder" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="CountryName" class="form-label"></label>
+                        <input asp-for="CountryName" class="form-control" data-preview-target="CountryName" data-preview-key="countryName" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="PublishedLabel" class="form-label"></label>
+                        <input asp-for="PublishedLabel" class="form-control" data-preview-target="PublishedLabel" data-preview-key="publishedLabel" />
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Title" class="form-label"></label>
+                        <input asp-for="Title" class="form-control" data-preview-target="Title" data-preview-key="title" />
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Description" class="form-label"></label>
+                        <textarea asp-for="Description" class="form-control" rows="4" data-preview-target="Description" data-preview-key="description"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Source" class="form-label"></label>
+                        <input asp-for="Source" class="form-control" data-preview-target="Source" data-preview-key="source" />
+                    </div>
+                    <div class="col-12">
+                        <div class="admin-media-hero-editor" data-media-hero-editor>
+                            <div class="admin-media-hero-editor__preview">
+                                <img data-media-hero-preview-image alt="Intelligence hero image" hidden />
+                                <div class="admin-media-hero-editor__placeholder" data-media-hero-preview-placeholder>No hero image</div>
+                                <div class="admin-media-hero-editor__label" data-media-hero-preview-label>No hero image uploaded yet</div>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="HeroImageUrl" class="form-label"></label>
+                                    <input asp-for="HeroImageUrl" class="form-control" readonly data-media-hero-url />
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="HeroImageFile" class="form-label">Hero Photo Upload</label>
+                                    <input asp-for="HeroImageFile" type="file" class="form-control" accept="image/*" data-media-hero-file />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(Model.HeroImageUrl))
+                    {
+                        <div class="col-12">
+                            <section class="admin-saved-media">
+                                <div class="admin-panel__eyebrow">Currently Saved Media</div>
+                                <div class="admin-saved-media__grid">
+                                    <div class="admin-saved-media__section">
+                                        <h3>Saved Hero Image</h3>
+                                        <div class="admin-saved-media__hero">
+                                            <img src="@Model.HeroImageUrl" alt="Saved intelligence hero image" />
+                                            <div class="admin-saved-media__url">@Model.HeroImageUrl</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    }
+                    <div class="col-md-3 d-flex align-items-end">
+                        <div class="form-check">
+                            <input asp-for="IsPublished" class="form-check-input" />
+                            <label asp-for="IsPublished" class="form-check-label"></label>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="row g-3">
+                    <div class="col-12">
+                        <h2 class="h5 mb-1">Structured Detail Content</h2>
+                        <p class="text-secondary mb-0">These fields now feed the normalized detail-page tables for Intelligence.</p>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="OverviewLead" class="form-label"></label>
+                        <textarea asp-for="OverviewLead" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="OverviewBody" class="form-label"></label>
+                        <textarea asp-for="OverviewBody" class="form-control" rows="4"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="EffectiveDate" class="form-label"></label>
+                        <input asp-for="EffectiveDate" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="AppliesTo" class="form-label"></label>
+                        <input asp-for="AppliesTo" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="DocumentTitle" class="form-label"></label>
+                        <input asp-for="DocumentTitle" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="DocumentSubtitle" class="form-label"></label>
+                        <input asp-for="DocumentSubtitle" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="DocumentMeta" class="form-label"></label>
+                        <input asp-for="DocumentMeta" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="DocumentDownloadUrl" class="form-label"></label>
+                        <input asp-for="DocumentDownloadUrl" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="KeyChangesText" class="form-label"></label>
+                        <textarea asp-for="KeyChangesText" class="form-control font-monospace d-none" rows="6" data-intelligence-keychanges-raw></textarea>
+                        <div class="intelligence-keychanges-editor" data-intelligence-keychanges-editor>
+                            <div class="intelligence-keychanges-editor__list" data-intelligence-keychanges-list></div>
+                            <button type="button" class="admin-chip intelligence-keychanges-editor__add" data-intelligence-keychanges-add>Add Key Change</button>
+                        </div>
+                        <div class="form-text">Manage key changes as structured cards. They will be saved into the compatible `Number | Title | Description` format automatically.</div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="ImpactAnalysisText" class="form-label"></label>
+                        <textarea asp-for="ImpactAnalysisText" class="form-control font-monospace d-none" rows="5" data-intelligence-impact-raw></textarea>
+                        <div class="intelligence-impact-editor" data-intelligence-impact-editor>
+                            <div class="intelligence-impact-editor__list" data-intelligence-impact-list></div>
+                            <button type="button" class="admin-chip intelligence-impact-editor__add" data-intelligence-impact-add>Add Impact Card</button>
+                        </div>
+                        <div class="form-text">Manage impact analysis as structured cards. They will be saved into the compatible `Title | Description | Impact Label | Impact Tone` format automatically.</div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="TimelineText" class="form-label"></label>
+                        <textarea asp-for="TimelineText" class="form-control font-monospace d-none" rows="5" data-intelligence-timeline-raw></textarea>
+                        <div class="intelligence-timeline-editor" data-intelligence-timeline-editor>
+                            <div class="intelligence-timeline-editor__list" data-intelligence-timeline-list></div>
+                            <button type="button" class="admin-chip intelligence-timeline-editor__add" data-intelligence-timeline-add>Add Timeline Item</button>
+                        </div>
+                        <div class="form-text">Manage timeline entries as structured rows. They will be saved into the compatible `Date | Description | Stage` format automatically.</div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="DocumentInformationText" class="form-label"></label>
+                        <textarea asp-for="DocumentInformationText" class="form-control font-monospace d-none" rows="5" data-intelligence-docinfo-raw></textarea>
+                        <div class="intelligence-docinfo-editor" data-intelligence-docinfo-editor>
+                            <div class="intelligence-docinfo-editor__list" data-intelligence-docinfo-list></div>
+                            <button type="button" class="admin-chip intelligence-docinfo-editor__add" data-intelligence-docinfo-add>Add Info Row</button>
+                        </div>
+                        <div class="form-text">Manage document information as structured label/value rows. They will be saved into the compatible `Label | Value` format automatically.</div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="KeyHighlightsText" class="form-label"></label>
+                        <textarea asp-for="KeyHighlightsText" class="form-control" rows="4"></textarea>
+                        <div class="form-text">One highlight per line.</div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="RelatedOfficialSourcesText" class="form-label"></label>
+                        <textarea asp-for="RelatedOfficialSourcesText" class="form-control font-monospace d-none" rows="4" data-intelligence-official-raw></textarea>
+                        <div class="intelligence-official-editor" data-intelligence-official-editor>
+                            <div class="intelligence-official-editor__list" data-intelligence-official-list></div>
+                            <button type="button" class="admin-chip intelligence-official-editor__add" data-intelligence-official-add>Add Official Source</button>
+                        </div>
+                        <div class="form-text">Manage official sources as structured link rows. They will be saved into the compatible `Title | Subtitle | Url` format automatically.</div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="RelatedIntelligenceText" class="form-label"></label>
+                        <textarea asp-for="RelatedIntelligenceText" class="form-control font-monospace d-none" rows="4" data-intelligence-related-raw></textarea>
+                        <div class="intelligence-related-editor" data-intelligence-related-editor>
+                            <div class="intelligence-related-editor__list" data-intelligence-related-list></div>
+                            <button type="button" class="admin-chip intelligence-related-editor__add" data-intelligence-related-add>Add Related Intelligence</button>
+                        </div>
+                        <div class="form-text">Manage related intelligence links as structured rows. They will be saved into the compatible `Title | Subtitle | Url` format automatically.</div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="MonitoringStatusText" class="form-label"></label>
+                        <textarea asp-for="MonitoringStatusText" class="form-control font-monospace d-none" rows="4" data-intelligence-status-raw></textarea>
+                        <div class="intelligence-status-editor" data-intelligence-status-editor>
+                            <div class="intelligence-status-editor__list" data-intelligence-status-list></div>
+                            <button type="button" class="admin-chip intelligence-status-editor__add" data-intelligence-status-add>Add Status Row</button>
+                        </div>
+                        <div class="form-text">Manage monitoring status as structured rows. They will be saved into the compatible `Label | Value | true/false` format automatically.</div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="DetailsJson" class="form-label"></label>
+                        <textarea asp-for="DetailsJson" class="form-control font-monospace" rows="8"></textarea>
+                        <div class="form-text">Legacy fallback only. Structured fields above are now the primary editing surface.</div>
+                    </div>
+                </div>
+
+                <div class="admin-editor-actions">
+                    <button type="submit" class="admin-primary-button">Save Intelligence</button>
+                    <a asp-area="Admin" asp-controller="Intelligence" asp-action="Index" class="admin-chip">Back to List</a>
+                </div>
+            </form>
+        </section>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/admin-media-editors.js" asp-append-version="true"></script>
+    <script>
+        (() => {
+            const raw = document.querySelector("[data-intelligence-keychanges-raw]");
+            const list = document.querySelector("[data-intelligence-keychanges-list]");
+            const addButton = document.querySelector("[data-intelligence-keychanges-add]");
+            const impactRaw = document.querySelector("[data-intelligence-impact-raw]");
+            const impactList = document.querySelector("[data-intelligence-impact-list]");
+            const impactAddButton = document.querySelector("[data-intelligence-impact-add]");
+            const timelineRaw = document.querySelector("[data-intelligence-timeline-raw]");
+            const timelineList = document.querySelector("[data-intelligence-timeline-list]");
+            const timelineAddButton = document.querySelector("[data-intelligence-timeline-add]");
+            const officialRaw = document.querySelector("[data-intelligence-official-raw]");
+            const officialList = document.querySelector("[data-intelligence-official-list]");
+            const officialAddButton = document.querySelector("[data-intelligence-official-add]");
+            const relatedRaw = document.querySelector("[data-intelligence-related-raw]");
+            const relatedList = document.querySelector("[data-intelligence-related-list]");
+            const relatedAddButton = document.querySelector("[data-intelligence-related-add]");
+            const docInfoRaw = document.querySelector("[data-intelligence-docinfo-raw]");
+            const docInfoList = document.querySelector("[data-intelligence-docinfo-list]");
+            const docInfoAddButton = document.querySelector("[data-intelligence-docinfo-add]");
+            const statusRaw = document.querySelector("[data-intelligence-status-raw]");
+            const statusList = document.querySelector("[data-intelligence-status-list]");
+            const statusAddButton = document.querySelector("[data-intelligence-status-add]");
+            if (!raw || !list || !addButton) {
+                return;
+            }
+
+            const escapeValue = (value) =>
+                String(value ?? "")
+                    .replace(/&/g, "&amp;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;");
+
+            const parseRows = (value) => {
+                if (!value || !value.trim()) {
+                    return [];
+                }
+
+                return value
+                    .split(/\r?\n/)
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .map((line, index) => {
+                        const parts = line.split("|").map((part) => part.trim());
+                        return {
+                            number: parts[0] || String(index + 1),
+                            title: parts[1] || "",
+                            description: parts.slice(2).join(" | ") || ""
+                        };
+                    });
+            };
+
+            const serializeRows = () => {
+                const rows = Array.from(list.querySelectorAll("[data-keychange-row]"))
+                    .map((row, index) => {
+                        const number = row.querySelector("[data-keychange-field='number']")?.value?.trim() || String(index + 1);
+                        const title = row.querySelector("[data-keychange-field='title']")?.value?.trim() || "";
+                        const description = row.querySelector("[data-keychange-field='description']")?.value?.trim() || "";
+                        if (!number && !title && !description) {
+                            return null;
+                        }
+
+                        return `${number} | ${title} | ${description}`;
+                    })
+                    .filter(Boolean);
+
+                raw.value = rows.join("\n");
+            };
+
+            const buildRow = (item = {}) => {
+                const row = document.createElement("div");
+                row.className = "intelligence-keychange-row";
+                row.setAttribute("data-keychange-row", "");
+                row.innerHTML = `
+                    <div class="intelligence-keychange-row__grid">
+                        <div>
+                            <label class="form-label">Number</label>
+                            <input type="text" class="form-control" data-keychange-field="number" value="${escapeValue(item.number)}">
+                        </div>
+                        <div>
+                            <label class="form-label">Title</label>
+                            <input type="text" class="form-control" data-keychange-field="title" value="${escapeValue(item.title)}">
+                        </div>
+                        <div class="intelligence-keychange-row__description">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" rows="3" data-keychange-field="description">${escapeValue(item.description)}</textarea>
+                        </div>
+                    </div>
+                    <div class="intelligence-keychange-row__actions">
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-keychange-remove>Remove</button>
+                    </div>
+                `;
+
+                row.querySelectorAll("input, textarea").forEach((input) => {
+                    input.addEventListener("input", serializeRows);
+                });
+
+                row.querySelector("[data-keychange-remove]")?.addEventListener("click", () => {
+                    row.remove();
+                    serializeRows();
+                });
+
+                return row;
+            };
+
+            const initialRows = parseRows(raw.value);
+            if (initialRows.length === 0) {
+                list.appendChild(buildRow({ number: "1" }));
+            } else {
+                initialRows.forEach((item) => list.appendChild(buildRow(item)));
+            }
+
+            addButton.addEventListener("click", () => {
+                list.appendChild(buildRow({ number: String(list.querySelectorAll("[data-keychange-row]").length + 1) }));
+                serializeRows();
+            });
+
+            raw.form?.addEventListener("submit", serializeRows);
+            serializeRows();
+
+            const parseImpactRows = (value) => {
+                if (!value || !value.trim()) {
+                    return [];
+                }
+
+                return value
+                    .split(/\r?\n/)
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .map((line) => {
+                        const parts = line.split("|").map((part) => part.trim());
+                        return {
+                            title: parts[0] || "",
+                            description: parts[1] || "",
+                            impactLabel: parts[2] || "",
+                            impactTone: parts[3] || ""
+                        };
+                    });
+            };
+
+            const serializeImpactRows = () => {
+                if (!impactRaw || !impactList) {
+                    return;
+                }
+
+                const rows = Array.from(impactList.querySelectorAll("[data-impact-row]"))
+                    .map((row) => {
+                        const title = row.querySelector("[data-impact-field='title']")?.value?.trim() || "";
+                        const description = row.querySelector("[data-impact-field='description']")?.value?.trim() || "";
+                        const impactLabel = row.querySelector("[data-impact-field='impactLabel']")?.value?.trim() || "";
+                        const impactTone = row.querySelector("[data-impact-field='impactTone']")?.value?.trim() || "";
+                        if (!title && !description && !impactLabel && !impactTone) {
+                            return null;
+                        }
+
+                        return `${title} | ${description} | ${impactLabel} | ${impactTone}`;
+                    })
+                    .filter(Boolean);
+
+                impactRaw.value = rows.join("\n");
+            };
+
+            const buildImpactRow = (item = {}) => {
+                const row = document.createElement("div");
+                row.className = "intelligence-impact-row";
+                row.setAttribute("data-impact-row", "");
+                row.innerHTML = `
+                    <div class="intelligence-impact-row__grid">
+                        <div>
+                            <label class="form-label">Title</label>
+                            <input type="text" class="form-control" data-impact-field="title" value="${escapeValue(item.title)}">
+                        </div>
+                        <div>
+                            <label class="form-label">Impact Label</label>
+                            <input type="text" class="form-control" data-impact-field="impactLabel" value="${escapeValue(item.impactLabel)}">
+                        </div>
+                        <div>
+                            <label class="form-label">Impact Tone</label>
+                            <input type="text" class="form-control" data-impact-field="impactTone" value="${escapeValue(item.impactTone)}">
+                        </div>
+                        <div class="intelligence-impact-row__description">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" rows="3" data-impact-field="description">${escapeValue(item.description)}</textarea>
+                        </div>
+                    </div>
+                    <div class="intelligence-impact-row__actions">
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-impact-remove>Remove</button>
+                    </div>
+                `;
+
+                row.querySelectorAll("input, textarea").forEach((input) => {
+                    input.addEventListener("input", serializeImpactRows);
+                });
+
+                row.querySelector("[data-impact-remove]")?.addEventListener("click", () => {
+                    row.remove();
+                    serializeImpactRows();
+                });
+
+                return row;
+            };
+
+            if (impactRaw && impactList && impactAddButton) {
+                const initialImpactRows = parseImpactRows(impactRaw.value);
+                if (initialImpactRows.length === 0) {
+                    impactList.appendChild(buildImpactRow({}));
+                } else {
+                    initialImpactRows.forEach((item) => impactList.appendChild(buildImpactRow(item)));
+                }
+
+                impactAddButton.addEventListener("click", () => {
+                    impactList.appendChild(buildImpactRow({}));
+                    serializeImpactRows();
+                });
+
+                impactRaw.form?.addEventListener("submit", serializeImpactRows);
+                serializeImpactRows();
+            }
+
+            const parseTimelineRows = (value) => {
+                if (!value || !value.trim()) {
+                    return [];
+                }
+
+                return value
+                    .split(/\r?\n/)
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .map((line) => {
+                        const parts = line.split("|").map((part) => part.trim());
+                        return {
+                            date: parts[0] || "",
+                            description: parts[1] || "",
+                            stage: parts[2] || ""
+                        };
+                    });
+            };
+
+            const serializeTimelineRows = () => {
+                if (!timelineRaw || !timelineList) {
+                    return;
+                }
+
+                const rows = Array.from(timelineList.querySelectorAll("[data-timeline-row]"))
+                    .map((row) => {
+                        const date = row.querySelector("[data-timeline-field='date']")?.value?.trim() || "";
+                        const description = row.querySelector("[data-timeline-field='description']")?.value?.trim() || "";
+                        const stage = row.querySelector("[data-timeline-field='stage']")?.value?.trim() || "";
+                        if (!date && !description && !stage) {
+                            return null;
+                        }
+
+                        return `${date} | ${description} | ${stage}`;
+                    })
+                    .filter(Boolean);
+
+                timelineRaw.value = rows.join("\n");
+            };
+
+            const buildTimelineRow = (item = {}) => {
+                const row = document.createElement("div");
+                row.className = "intelligence-timeline-row";
+                row.setAttribute("data-timeline-row", "");
+                row.innerHTML = `
+                    <div class="intelligence-timeline-row__grid">
+                        <div>
+                            <label class="form-label">Date</label>
+                            <input type="text" class="form-control" data-timeline-field="date" value="${escapeValue(item.date)}">
+                        </div>
+                        <div>
+                            <label class="form-label">Stage</label>
+                            <input type="text" class="form-control" data-timeline-field="stage" value="${escapeValue(item.stage)}">
+                        </div>
+                        <div class="intelligence-timeline-row__description">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" rows="3" data-timeline-field="description">${escapeValue(item.description)}</textarea>
+                        </div>
+                    </div>
+                    <div class="intelligence-timeline-row__actions">
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-timeline-remove>Remove</button>
+                    </div>
+                `;
+
+                row.querySelectorAll("input, textarea").forEach((input) => {
+                    input.addEventListener("input", serializeTimelineRows);
+                });
+
+                row.querySelector("[data-timeline-remove]")?.addEventListener("click", () => {
+                    row.remove();
+                    serializeTimelineRows();
+                });
+
+                return row;
+            };
+
+            if (timelineRaw && timelineList && timelineAddButton) {
+                const initialTimelineRows = parseTimelineRows(timelineRaw.value);
+                if (initialTimelineRows.length === 0) {
+                    timelineList.appendChild(buildTimelineRow({}));
+                } else {
+                    initialTimelineRows.forEach((item) => timelineList.appendChild(buildTimelineRow(item)));
+                }
+
+                timelineAddButton.addEventListener("click", () => {
+                    timelineList.appendChild(buildTimelineRow({}));
+                    serializeTimelineRows();
+                });
+
+                timelineRaw.form?.addEventListener("submit", serializeTimelineRows);
+                serializeTimelineRows();
+            }
+
+            const parseOfficialRows = (value) => {
+                if (!value || !value.trim()) {
+                    return [];
+                }
+
+                return value
+                    .split(/\r?\n/)
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .map((line) => {
+                        const parts = line.split("|").map((part) => part.trim());
+                        return {
+                            title: parts[0] || "",
+                            subtitle: parts[1] || "",
+                            url: parts.slice(2).join(" | ") || ""
+                        };
+                    });
+            };
+
+            const serializeOfficialRows = () => {
+                if (!officialRaw || !officialList) {
+                    return;
+                }
+
+                const rows = Array.from(officialList.querySelectorAll("[data-official-row]"))
+                    .map((row) => {
+                        const title = row.querySelector("[data-official-field='title']")?.value?.trim() || "";
+                        const subtitle = row.querySelector("[data-official-field='subtitle']")?.value?.trim() || "";
+                        const url = row.querySelector("[data-official-field='url']")?.value?.trim() || "";
+                        if (!title && !subtitle && !url) {
+                            return null;
+                        }
+
+                        return `${title} | ${subtitle} | ${url}`;
+                    })
+                    .filter(Boolean);
+
+                officialRaw.value = rows.join("\n");
+            };
+
+            const buildOfficialRow = (item = {}) => {
+                const row = document.createElement("div");
+                row.className = "intelligence-official-row";
+                row.setAttribute("data-official-row", "");
+                row.innerHTML = `
+                    <div class="intelligence-official-row__grid">
+                        <div>
+                            <label class="form-label">Title</label>
+                            <input type="text" class="form-control" data-official-field="title" value="${escapeValue(item.title)}">
+                        </div>
+                        <div>
+                            <label class="form-label">Subtitle</label>
+                            <input type="text" class="form-control" data-official-field="subtitle" value="${escapeValue(item.subtitle)}">
+                        </div>
+                        <div class="intelligence-official-row__url">
+                            <label class="form-label">URL</label>
+                            <input type="text" class="form-control" data-official-field="url" value="${escapeValue(item.url)}">
+                        </div>
+                    </div>
+                    <div class="intelligence-official-row__actions">
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-official-remove>Remove</button>
+                    </div>
+                `;
+
+                row.querySelectorAll("input").forEach((input) => {
+                    input.addEventListener("input", serializeOfficialRows);
+                });
+
+                row.querySelector("[data-official-remove]")?.addEventListener("click", () => {
+                    row.remove();
+                    serializeOfficialRows();
+                });
+
+                return row;
+            };
+
+            if (officialRaw && officialList && officialAddButton) {
+                const initialOfficialRows = parseOfficialRows(officialRaw.value);
+                if (initialOfficialRows.length === 0) {
+                    officialList.appendChild(buildOfficialRow({}));
+                } else {
+                    initialOfficialRows.forEach((item) => officialList.appendChild(buildOfficialRow(item)));
+                }
+
+                officialAddButton.addEventListener("click", () => {
+                    officialList.appendChild(buildOfficialRow({}));
+                    serializeOfficialRows();
+                });
+
+                officialRaw.form?.addEventListener("submit", serializeOfficialRows);
+                serializeOfficialRows();
+            }
+
+            const parseRelatedRows = (value) => {
+                if (!value || !value.trim()) {
+                    return [];
+                }
+
+                return value
+                    .split(/\r?\n/)
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .map((line) => {
+                        const parts = line.split("|").map((part) => part.trim());
+                        return {
+                            title: parts[0] || "",
+                            subtitle: parts[1] || "",
+                            url: parts.slice(2).join(" | ") || ""
+                        };
+                    });
+            };
+
+            const serializeRelatedRows = () => {
+                if (!relatedRaw || !relatedList) {
+                    return;
+                }
+
+                const rows = Array.from(relatedList.querySelectorAll("[data-related-intelligence-row]"))
+                    .map((row) => {
+                        const title = row.querySelector("[data-related-intelligence-field='title']")?.value?.trim() || "";
+                        const subtitle = row.querySelector("[data-related-intelligence-field='subtitle']")?.value?.trim() || "";
+                        const url = row.querySelector("[data-related-intelligence-field='url']")?.value?.trim() || "";
+                        if (!title && !subtitle && !url) {
+                            return null;
+                        }
+
+                        return `${title} | ${subtitle} | ${url}`;
+                    })
+                    .filter(Boolean);
+
+                relatedRaw.value = rows.join("\n");
+            };
+
+            const buildRelatedRow = (item = {}) => {
+                const row = document.createElement("div");
+                row.className = "intelligence-related-row";
+                row.setAttribute("data-related-intelligence-row", "");
+                row.innerHTML = `
+                    <div class="intelligence-related-row__grid">
+                        <div>
+                            <label class="form-label">Title</label>
+                            <input type="text" class="form-control" data-related-intelligence-field="title" value="${escapeValue(item.title)}">
+                        </div>
+                        <div>
+                            <label class="form-label">Subtitle</label>
+                            <input type="text" class="form-control" data-related-intelligence-field="subtitle" value="${escapeValue(item.subtitle)}">
+                        </div>
+                        <div class="intelligence-related-row__url">
+                            <label class="form-label">URL</label>
+                            <input type="text" class="form-control" data-related-intelligence-field="url" value="${escapeValue(item.url)}">
+                        </div>
+                    </div>
+                    <div class="intelligence-related-row__actions">
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-related-intelligence-remove>Remove</button>
+                    </div>
+                `;
+
+                row.querySelectorAll("input").forEach((input) => {
+                    input.addEventListener("input", serializeRelatedRows);
+                });
+
+                row.querySelector("[data-related-intelligence-remove]")?.addEventListener("click", () => {
+                    row.remove();
+                    serializeRelatedRows();
+                });
+
+                return row;
+            };
+
+            if (relatedRaw && relatedList && relatedAddButton) {
+                const initialRelatedRows = parseRelatedRows(relatedRaw.value);
+                if (initialRelatedRows.length === 0) {
+                    relatedList.appendChild(buildRelatedRow({}));
+                } else {
+                    initialRelatedRows.forEach((item) => relatedList.appendChild(buildRelatedRow(item)));
+                }
+
+                relatedAddButton.addEventListener("click", () => {
+                    relatedList.appendChild(buildRelatedRow({}));
+                    serializeRelatedRows();
+                });
+
+                relatedRaw.form?.addEventListener("submit", serializeRelatedRows);
+                serializeRelatedRows();
+            }
+
+            const parseDocInfoRows = (value) => {
+                if (!value || !value.trim()) {
+                    return [];
+                }
+
+                return value
+                    .split(/\r?\n/)
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .map((line) => {
+                        const parts = line.split("|").map((part) => part.trim());
+                        return {
+                            label: parts[0] || "",
+                            value: parts.slice(1).join(" | ") || ""
+                        };
+                    });
+            };
+
+            const serializeDocInfoRows = () => {
+                if (!docInfoRaw || !docInfoList) {
+                    return;
+                }
+
+                const rows = Array.from(docInfoList.querySelectorAll("[data-docinfo-row]"))
+                    .map((row) => {
+                        const label = row.querySelector("[data-docinfo-field='label']")?.value?.trim() || "";
+                        const value = row.querySelector("[data-docinfo-field='value']")?.value?.trim() || "";
+                        if (!label && !value) {
+                            return null;
+                        }
+
+                        return `${label} | ${value}`;
+                    })
+                    .filter(Boolean);
+
+                docInfoRaw.value = rows.join("\n");
+            };
+
+            const buildDocInfoRow = (item = {}) => {
+                const row = document.createElement("div");
+                row.className = "intelligence-docinfo-row";
+                row.setAttribute("data-docinfo-row", "");
+                row.innerHTML = `
+                    <div class="intelligence-docinfo-row__grid">
+                        <div>
+                            <label class="form-label">Label</label>
+                            <input type="text" class="form-control" data-docinfo-field="label" value="${escapeValue(item.label)}">
+                        </div>
+                        <div>
+                            <label class="form-label">Value</label>
+                            <input type="text" class="form-control" data-docinfo-field="value" value="${escapeValue(item.value)}">
+                        </div>
+                    </div>
+                    <div class="intelligence-docinfo-row__actions">
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-docinfo-remove>Remove</button>
+                    </div>
+                `;
+
+                row.querySelectorAll("input").forEach((input) => {
+                    input.addEventListener("input", serializeDocInfoRows);
+                });
+
+                row.querySelector("[data-docinfo-remove]")?.addEventListener("click", () => {
+                    row.remove();
+                    serializeDocInfoRows();
+                });
+
+                return row;
+            };
+
+            if (docInfoRaw && docInfoList && docInfoAddButton) {
+                const initialDocInfoRows = parseDocInfoRows(docInfoRaw.value);
+                if (initialDocInfoRows.length === 0) {
+                    docInfoList.appendChild(buildDocInfoRow({}));
+                } else {
+                    initialDocInfoRows.forEach((item) => docInfoList.appendChild(buildDocInfoRow(item)));
+                }
+
+                docInfoAddButton.addEventListener("click", () => {
+                    docInfoList.appendChild(buildDocInfoRow({}));
+                    serializeDocInfoRows();
+                });
+
+                docInfoRaw.form?.addEventListener("submit", serializeDocInfoRows);
+                serializeDocInfoRows();
+            }
+
+            const parseStatusRows = (value) => {
+                if (!value || !value.trim()) {
+                    return [];
+                }
+
+                return value
+                    .split(/\r?\n/)
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .map((line) => {
+                        const parts = line.split("|").map((part) => part.trim());
+                        return {
+                            label: parts[0] || "",
+                            value: parts[1] || "",
+                            isStatus: (parts[2] || "").toLowerCase() === "true"
+                        };
+                    });
+            };
+
+            const serializeStatusRows = () => {
+                if (!statusRaw || !statusList) {
+                    return;
+                }
+
+                const rows = Array.from(statusList.querySelectorAll("[data-status-row]"))
+                    .map((row) => {
+                        const label = row.querySelector("[data-status-field='label']")?.value?.trim() || "";
+                        const value = row.querySelector("[data-status-field='value']")?.value?.trim() || "";
+                        const isStatus = row.querySelector("[data-status-field='isStatus']")?.checked ? "true" : "false";
+                        if (!label && !value) {
+                            return null;
+                        }
+
+                        return `${label} | ${value} | ${isStatus}`;
+                    })
+                    .filter(Boolean);
+
+                statusRaw.value = rows.join("\n");
+            };
+
+            const buildStatusRow = (item = {}) => {
+                const row = document.createElement("div");
+                row.className = "intelligence-status-row";
+                row.setAttribute("data-status-row", "");
+                row.innerHTML = `
+                    <div class="intelligence-status-row__grid">
+                        <div>
+                            <label class="form-label">Label</label>
+                            <input type="text" class="form-control" data-status-field="label" value="${escapeValue(item.label)}">
+                        </div>
+                        <div>
+                            <label class="form-label">Value</label>
+                            <input type="text" class="form-control" data-status-field="value" value="${escapeValue(item.value)}">
+                        </div>
+                        <div class="intelligence-status-row__toggle">
+                            <label class="form-label d-block">Status Dot</label>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" data-status-field="isStatus" ${item.isStatus ? "checked" : ""}>
+                                <label class="form-check-label">Mark as status indicator</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="intelligence-status-row__actions">
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-status-remove>Remove</button>
+                    </div>
+                `;
+
+                row.querySelectorAll("input").forEach((input) => {
+                    const eventName = input.type === "checkbox" ? "change" : "input";
+                    input.addEventListener(eventName, serializeStatusRows);
+                });
+
+                row.querySelector("[data-status-remove]")?.addEventListener("click", () => {
+                    row.remove();
+                    serializeStatusRows();
+                });
+
+                return row;
+            };
+
+            if (statusRaw && statusList && statusAddButton) {
+                const initialStatusRows = parseStatusRows(statusRaw.value);
+                if (initialStatusRows.length === 0) {
+                    statusList.appendChild(buildStatusRow({ isStatus: false }));
+                } else {
+                    initialStatusRows.forEach((item) => statusList.appendChild(buildStatusRow(item)));
+                }
+
+                statusAddButton.addEventListener("click", () => {
+                    statusList.appendChild(buildStatusRow({ isStatus: false }));
+                    serializeStatusRows();
+                });
+
+                statusRaw.form?.addEventListener("submit", serializeStatusRows);
+                serializeStatusRows();
+            }
+        })();
+    </script>
+}

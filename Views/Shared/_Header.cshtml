@@ -1,0 +1,96 @@
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
+    var requestPath = Context.Request.Path.Value ?? string.Empty;
+
+    string navClass(string controller, string action = "Index")
+    {
+        return string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase)
+            ? "nav-link is-active"
+            : "nav-link";
+    }
+
+    string prefixNavClass(string pathPrefix)
+    {
+        return requestPath.StartsWith(pathPrefix, StringComparison.OrdinalIgnoreCase)
+            ? "nav-link is-active"
+            : "nav-link";
+    }
+}
+
+<header class="site-header">
+    <div class="site-header__bar">
+        <div class="site-container">
+            <nav class="site-nav navbar navbar-expand-xl navbar-dark p-0">
+                <a class="site-brand" asp-area="" asp-controller="Home" asp-action="Index" aria-label="CAFRI home">
+                    <span class="site-brand__mark">CAFRI</span>
+                    <span class="site-brand__text">Central Asia Financial &amp; Regulatory Intelligence Initiative</span>
+                </a>
+
+                <button class="navbar-toggler site-nav__toggle" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <ul class="navbar-nav site-nav__links mx-auto">
+                        <li class="nav-item"><a class="@navClass("Home")" asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
+                        <li class="nav-item"><a class="@prefixNavClass("/intelligence")" href="/intelligence">Intelligence</a></li>
+                        <li class="nav-item"><a class="@prefixNavClass("/map")" href="/map">Map</a></li>
+                        <li class="nav-item"><a class="@prefixNavClass("/publications")" href="/publications">Publications</a></li>
+                        <li class="nav-item"><a class="@prefixNavClass("/about")" href="/about">About</a></li>
+                    </ul>
+
+                    <div class="site-nav__actions">
+                        <div class="site-language" aria-label="Language switcher">
+                            <button class="site-language__button" type="button">EN</button>
+                            <span class="site-language__divider"></span>
+                            <button class="site-language__button site-language__button--muted" type="button">RU</button>
+                        </div>
+
+                        <button class="site-search" type="button" aria-label="Search">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M10.5 4a6.5 6.5 0 1 0 4.03 11.6l4.43 4.43 1.06-1.06-4.43-4.43A6.5 6.5 0 0 0 10.5 4Zm0 1.5a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z" />
+                            </svg>
+                        </button>
+
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <a class="site-nav__dashboard" asp-area="" asp-controller="Access" asp-action="Dashboard">Dashboard</a>
+                        }
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a class="site-nav__dashboard" asp-area="Admin" asp-controller="AccessRequests" asp-action="Index">Admin</a>
+                        }
+
+                        @if (User.Identity?.IsAuthenticated != true)
+                        {
+                            <a class="site-primary-cta" asp-area="" asp-controller="Access" asp-action="Request">
+                                <span class="site-primary-cta__icon">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M17 9h-1V7a4 4 0 1 0-8 0v2H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2Zm-7-2a2 2 0 1 1 4 0v2h-4V7Zm7 12H7v-8h10v8Z" />
+                                    </svg>
+                                </span>
+                                <span>Professional Access</span>
+                            </a>
+                        }
+
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="site-nav__logout">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="site-ghost-button">Logout</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <a class="site-ghost-button" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
+                        }
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </div>
+</header>

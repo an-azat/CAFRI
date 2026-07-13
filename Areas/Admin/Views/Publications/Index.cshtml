@@ -1,0 +1,123 @@
+@model CAFRI.Areas.Admin.ViewModels.Content.PublicationIndexViewModel
+
+<section class="admin-listing">
+    <div class="admin-page__hero">
+        <div class="admin-listing__header">
+            <div>
+                <div class="admin-eyebrow">Content Management</div>
+                <h1 class="admin-page__title">Publications</h1>
+                <p class="admin-page__lead">
+                    Create, edit and publish reports, banking reviews, country profiles, analytical briefs and research publications backed by PostgreSQL content records.
+                </p>
+            </div>
+            <a asp-area="Admin" asp-controller="Publications" asp-action="Create" class="admin-primary-button">Create Publication</a>
+        </div>
+    </div>
+
+    <div class="admin-summary-grid">
+        @foreach (var card in Model.SummaryCards)
+        {
+            <article class="admin-summary-card">
+                <div class="admin-summary-card__label">@card.Label</div>
+                <div class="admin-summary-card__value">@card.Value</div>
+                <div class="admin-summary-card__caption">@card.Caption</div>
+            </article>
+        }
+    </div>
+
+    <section class="admin-panel mt-3">
+        <form method="get" class="admin-filters">
+            <input type="search" name="search" value="@Model.Search" class="admin-filter-control" placeholder="Search publications..." />
+
+            <select name="type" class="form-select admin-filter-control">
+                <option value="">All Types</option>
+                @foreach (var type in Model.AvailableTypes)
+                {
+                    <option value="@type" selected="@(type == Model.Type ? "selected" : null)">@type</option>
+                }
+            </select>
+
+            <select name="country" class="form-select admin-filter-control">
+                <option value="">All Countries</option>
+                @foreach (var country in Model.AvailableCountries)
+                {
+                    <option value="@country" selected="@(country == Model.Country ? "selected" : null)">@country</option>
+                }
+            </select>
+
+            <select name="topic" class="form-select admin-filter-control">
+                <option value="">All Topics</option>
+                @foreach (var topic in Model.AvailableTopics)
+                {
+                    <option value="@topic" selected="@(topic == Model.Topic ? "selected" : null)">@topic</option>
+                }
+            </select>
+
+            <select name="status" class="form-select admin-filter-control">
+                <option value="">All Statuses</option>
+                <option value="published" selected="@(Model.Status == "published" ? "selected" : null)">Published</option>
+                <option value="draft" selected="@(Model.Status == "draft" ? "selected" : null)">Draft</option>
+            </select>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="admin-primary-button">Apply</button>
+                <a asp-area="Admin" asp-controller="Publications" asp-action="Index" class="admin-chip">Reset</a>
+            </div>
+        </form>
+
+        @if (Model.Items.Count == 0)
+        {
+            <div class="admin-empty-state">
+                No publications found. Try adjusting your search or filters.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table admin-data-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Topic</th>
+                            <th>Coverage</th>
+                            <th>Status</th>
+                            <th>Updated</th>
+                            <th>Order</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@item.Title</div>
+                                <div class="text-secondary">@item.Meta</div>
+                            </td>
+                            <td>@item.Type</td>
+                            <td>@item.Topic</td>
+                            <td>@item.CountryLabel</td>
+                            <td>
+                                <span class="admin-status-pill @(item.IsPublished ? "is-live" : "is-draft")">
+                                    @(item.IsPublished ? "Published" : "Draft")
+                                </span>
+                            </td>
+                            <td>@item.UpdatedAtUtc.UtcDateTime.ToString("dd MMM yyyy")</td>
+                            <td>@item.DisplayOrder</td>
+                            <td class="text-end">
+                                <a asp-area="Admin" asp-controller="Publications" asp-action="Edit" asp-route-id="@item.Id" class="admin-inline-link">Edit</a>
+                                <a asp-area="" asp-controller="Publications" asp-action="Details" asp-route-slug="@item.Slug" class="admin-inline-link" target="_blank" rel="noreferrer">Preview</a>
+                                <form asp-area="Admin" asp-controller="Publications" asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger ms-2">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+</section>

@@ -1,0 +1,37 @@
+@model CAFRI.ViewModels.Publications.PublicationDetailsViewModel
+
+<section class="publication-hero">
+    <div class="publication-hero-content">
+        <div class="publication-badges">
+            <span class="publication-badge">@Model.PublicationType</span>
+            <span class="publication-badge publication-badge--topic">@Model.Topic</span>
+            <span class="publication-badge publication-badge--coverage">@Model.CoverageLabel</span>
+        </div>
+
+        <h1 class="publication-hero__title">@Model.Title</h1>
+        <p class="publication-hero__lead">@Model.ShortDescription</p>
+
+        <div class="publication-meta publication-meta--hero">
+            <span>@Model.PublishedDate</span>
+            <span>@Model.ReadingTime</span>
+            <span>@Model.AuthorLabel</span>
+            <span>@Model.DocumentLabel</span>
+        </div>
+
+        <div class="publication-actions">
+            @for (var index = 0; index < Model.Actions.Count; index++)
+            {
+                var action = Model.Actions[index];
+                <button class="@(index == 0 ? "is-primary" : index == 1 ? "is-secondary" : null)" type="button">@action.Label</button>
+            }
+        </div>
+    </div>
+
+    <div class="publication-hero-media @Model.HeroVisualClassName">
+        @if (!string.IsNullOrWhiteSpace(Model.HeroImageUrl))
+        {
+            <img class="publication-hero-media__photo" src="@Model.HeroImageUrl" alt="@Model.Title" />
+        }
+        <div class="publication-hero-media__overlay"></div>
+    </div>
+</section>

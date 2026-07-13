@@ -1,0 +1,41 @@
+@model CAFRI.ViewModels.Account.LoginViewModel
+
+<section class="page-shell">
+    <div class="content-card">
+        <div class="eyebrow">Authentication</div>
+        <h1 class="page-title">Sign in to CAFRI</h1>
+        <p class="page-lead">
+            Use the seeded administrator credentials or an approved account to enter protected areas of the platform.
+        </p>
+
+        <form asp-action="Login" method="post" class="access-form" novalidate>
+            <input asp-for="ReturnUrl" type="hidden" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-4">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="form-check mb-4">
+                <input asp-for="RememberMe" class="form-check-input" />
+                <label asp-for="RememberMe" class="form-check-label"></label>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-lg">Sign in</button>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

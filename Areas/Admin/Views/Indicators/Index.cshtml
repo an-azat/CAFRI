@@ -1,0 +1,91 @@
+@model CAFRI.Areas.Admin.ViewModels.Content.IndicatorIndexViewModel
+
+<section class="admin-listing">
+    <div class="admin-page__hero">
+        <div class="admin-listing__header">
+            <div>
+                <div class="admin-eyebrow">Data Layer</div>
+                <h1 class="admin-page__title">Indicators</h1>
+                <p class="admin-page__lead">Manage country indicators that can later power dynamic map layers, country cards and analytical dashboards.</p>
+            </div>
+            <a asp-area="Admin" asp-controller="Indicators" asp-action="Create" class="admin-primary-button">Create Indicator</a>
+        </div>
+    </div>
+
+    <div class="admin-summary-grid">
+        @foreach (var card in Model.SummaryCards)
+        {
+            <article class="admin-summary-card">
+                <div class="admin-summary-card__label">@card.Label</div>
+                <div class="admin-summary-card__value">@card.Value</div>
+                <div class="admin-summary-card__caption">@card.Caption</div>
+            </article>
+        }
+    </div>
+
+    <section class="admin-panel mt-3">
+        <form method="get" class="admin-filters">
+            <input type="search" name="search" value="@Model.Search" class="admin-filter-control" placeholder="Search indicators..." />
+            <select name="category" class="form-select admin-filter-control">
+                <option value="">All Categories</option>
+                @foreach (var category in Model.AvailableCategories)
+                {
+                    <option value="@category" selected="@(category == Model.Category ? "selected" : null)">@category</option>
+                }
+            </select>
+            <select name="country" class="form-select admin-filter-control">
+                <option value="">All Countries</option>
+                @foreach (var country in Model.AvailableCountries)
+                {
+                    <option value="@country" selected="@(country == Model.Country ? "selected" : null)">@country</option>
+                }
+            </select>
+            <select name="status" class="form-select admin-filter-control">
+                <option value="">All Statuses</option>
+                <option value="published" selected="@(Model.Status == "published" ? "selected" : null)">Published</option>
+                <option value="draft" selected="@(Model.Status == "draft" ? "selected" : null)">Draft</option>
+            </select>
+            <div class="d-flex gap-2">
+                <button type="submit" class="admin-primary-button">Apply</button>
+                <a asp-area="Admin" asp-controller="Indicators" asp-action="Index" class="admin-chip">Reset</a>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table admin-data-table align-middle">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Country</th>
+                        <th>Category</th>
+                        <th>Latest Value</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">@item.Name</div>
+                            <div class="text-secondary">@item.SourceName</div>
+                        </td>
+                        <td>@item.CountryCode</td>
+                        <td>@item.Category</td>
+                        <td>@item.LatestValue @item.Unit <span class="text-secondary">(@item.YearLabel)</span></td>
+                        <td><span class="admin-status-pill @(item.IsPublished ? "is-live" : "is-draft")">@(item.IsPublished ? "Published" : "Draft")</span></td>
+                        <td class="text-end">
+                            <a asp-area="Admin" asp-controller="Indicators" asp-action="Edit" asp-route-id="@item.Id" class="admin-inline-link">Edit</a>
+                            <form asp-area="Admin" asp-controller="Indicators" asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-outline-danger ms-2">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</section>

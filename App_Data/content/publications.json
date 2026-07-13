@@ -1,0 +1,286 @@
+{
+  "description": "In-depth reports, country profiles and analytical briefs from the CAFRI team.",
+  "typeOptions": ["All Types", "Reports", "Country Profiles", "Analytical Briefs", "Regulatory Notes", "Banking Reviews", "Sanctions Analysis", "Research Papers"],
+  "countryOptions": ["All Countries", "Regional", "Kazakhstan", "Uzbekistan", "Kyrgyzstan", "Tajikistan", "Turkmenistan"],
+  "topicOptions": ["All Topics", "Banking", "Regulation", "Trade & Logistics", "Sanctions", "Macroeconomics", "Energy Finance"],
+  "tabs": [
+    { "label": "Latest Publications", "isActive": true },
+    { "label": "Most Read" },
+    { "label": "By Country" },
+    { "label": "By Topic" }
+  ],
+  "publications": [
+    { "type": "REGULATORY NOTE", "countryCode": "KZ", "countryLabel": "Kazakhstan", "title": "Kazakhstan Regulatory Landscape Q2 2026", "description": "Summary of significant regulatory changes in Kazakhstan's financial sector during Q2 2026.", "meta": "June 2026 | 12 min read", "slug": "kazakhstan-regulatory-landscape-q2-2026" },
+    { "type": "REPORT", "countryCode": "RG", "countryLabel": "Regional", "title": "Trade Corridor Developments in Central Asia", "description": "Analysis of cargo and trade corridor developments in Central Asia with focus on BRI and EAEU routes.", "meta": "May 2026 | 25 min read", "slug": "trade-corridor-developments-central-asia" },
+    { "type": "COUNTRY PROFILE", "countryCode": "UZ", "countryLabel": "Uzbekistan", "title": "Uzbekistan Banking Reform Progress", "description": "Assessment of ongoing banking sector reforms in Uzbekistan including privatization progress.", "meta": "May 2026 | 14 min read", "slug": "uzbekistan-banking-reform-progress" },
+    { "type": "ANALYTICAL BRIEF", "countryCode": "KG", "countryLabel": "Kyrgyzstan", "title": "Kyrgyzstan Financial Sector Stability Review", "description": "Key financial stability indicators and risk assessment of the Kyrgyz financial sector.", "meta": "May 2026 | 10 min read", "slug": "kyrgyzstan-financial-sector-stability-review" },
+    { "type": "BANKING REVIEW", "countryCode": "TJ", "countryLabel": "Tajikistan", "title": "Tajikistan Banking Sector Outlook", "description": "Review of banking sector capitalization, liquidity, credit trends and supervisory developments.", "meta": "April 2026 | 16 min read", "slug": "tajikistan-banking-sector-outlook" },
+    { "type": "SANCTIONS ANALYSIS", "countryCode": "RG", "countryLabel": "Regional", "title": "Central Asia Sanctions Compliance Monitor", "description": "Overview of sanctions exposure, AML/CFT obligations and compliance updates across the region.", "meta": "April 2026 | 18 min read", "slug": "central-asia-sanctions-compliance-monitor" },
+    { "type": "RESEARCH PAPER", "countryCode": "TM", "countryLabel": "Turkmenistan", "title": "Turkmenistan Energy Finance Monitor", "description": "Research brief on energy-linked financial flows, public finance and banking sector implications.", "meta": "March 2026 | 20 min read", "slug": "turkmenistan-energy-finance-monitor" },
+    { "type": "ANALYTICAL BRIEF", "countryCode": "UZ", "countryLabel": "Uzbekistan", "title": "Inflation Dynamics in Uzbekistan", "description": "Analysis of monetary policy, inflation drivers and expected policy responses.", "meta": "March 2026 | 11 min read", "slug": "inflation-dynamics-in-uzbekistan" }
+  ],
+  "categories": [
+    { "icon": "all", "label": "All Publications", "count": 124, "isActive": true },
+    { "icon": "report", "label": "Reports", "count": 36 },
+    { "icon": "profile", "label": "Country Profiles", "count": 21 },
+    { "icon": "brief", "label": "Analytical Briefs", "count": 28 },
+    { "icon": "note", "label": "Regulatory Notes", "count": 15 },
+    { "icon": "bank", "label": "Banking Reviews", "count": 12 },
+    { "icon": "trade", "label": "Trade & Logistics", "count": 9 },
+    { "icon": "shield", "label": "Sanctions Analysis", "count": 7 },
+    { "icon": "research", "label": "Research Papers", "count": 6 }
+  ],
+  "latestPublications": [
+    { "title": "Uzbekistan Banking Reform Progress", "meta": "Country Profile | May 2026" },
+    { "title": "Kazakhstan Regulatory Landscape Q2 2026", "meta": "Regulatory Note | June 2026" },
+    { "title": "Trade Corridor Developments in Central Asia", "meta": "Report | May 2026" }
+  ],
+  "benefits": [
+    { "icon": "expert", "title": "Expert Analysis", "description": "Professionally researched by regional specialists" },
+    { "icon": "source", "title": "Source-Based", "description": "All intelligence is based on official and reliable sources" },
+    { "icon": "ai", "title": "AI-Assisted", "description": "Advanced AI tools enhance analysis and monitoring" },
+    { "icon": "insight", "title": "Actionable Insights", "description": "Providing actionable intelligence for informed decisions" },
+    { "icon": "updates", "title": "Regular Updates", "description": "Continuous monitoring and timely updates" }
+  ],
+  "details": [
+    {
+      "title": "Trade Corridor Developments in Central Asia",
+      "slug": "trade-corridor-developments-central-asia",
+      "publicationType": "REPORT",
+      "topic": "TRADE & LOGISTICS",
+      "coverageLabel": "Regional",
+      "shortDescription": "Infrastructure, transit volumes, and policy reforms shaping regional connectivity across the Middle Corridor, China-Central Asia routes, and Caspian pathways.",
+      "publishedDate": "May 2026",
+      "readingTime": "16 min read",
+      "authorLabel": "CAFRI Research Team",
+      "documentLabel": "PDF available | 1.8 MB",
+      "heroVisualClassName": "publication-hero-media--trade-corridors",
+      "pdfDownloadUrl": "#",
+      "actions": [
+        { "label": "Read Online" },
+        { "label": "Download Full Report (PDF)" },
+        { "label": "Share" },
+        { "label": "Save" },
+        { "label": "Cite" },
+        { "label": "Print" }
+      ],
+      "tabs": [
+        { "label": "Overview", "targetId": "overview", "isActive": true },
+        { "label": "Key Findings", "targetId": "key-findings" },
+        { "label": "Infrastructure", "targetId": "infrastructure-developments" },
+        { "label": "Transit Data", "targetId": "data-charts" },
+        { "label": "Policy & Reforms", "targetId": "policy-reforms" },
+        { "label": "Map View", "targetId": "map-view" },
+        { "label": "Photo Gallery", "targetId": "photo-gallery" },
+        { "label": "Documents", "targetId": "related-documents" },
+        { "label": "Related Intelligence", "targetId": "related-publications" }
+      ],
+      "kpis": [
+        { "label": "Total Transit Volume", "value": "2.8M TEU", "detail": "+34% YoY growth", "tone": "positive" },
+        { "label": "Middle Corridor Volume", "value": "1.6M TEU", "detail": "+41% YoY growth", "tone": "positive" },
+        { "label": "Investment Pipeline", "value": "$12.4B", "detail": "Infrastructure projects", "tone": "accent" },
+        { "label": "Active Projects", "value": "7", "detail": "Major corridors", "tone": "neutral" },
+        { "label": "Average Transit Time", "value": "12-15 days", "detail": "China-Europe benchmark", "tone": "accent" }
+      ],
+      "executiveSummaryParagraphs": [
+        "In 2025, trade corridors across Central Asia continued to expand in capacity and strategic importance. The Middle Corridor strengthened its competitiveness, while new infrastructure projects in Kazakhstan, Uzbekistan, and Kyrgyzstan improved connectivity and reduced transit time.",
+        "The region also benefited from stronger customs digitalization, multimodal terminal upgrades, and expanded coordination with Caspian and European partners, supporting a more diversified Eurasian logistics architecture."
+      ],
+      "executiveHighlights": [
+        "Strong growth in Middle Corridor volumes",
+        "New logistics hubs and multimodal terminals",
+        "Customs digitalization and single-window systems",
+        "Increased investments in rail and port infrastructure",
+        "Deepening international cooperation and agreements"
+      ],
+      "keyFindings": [
+        { "icon": "01", "title": "Transit volumes increased", "description": "Transit volumes via the Middle Corridor increased by 41% year over year as operators expanded frequency and customs coordination." },
+        { "icon": "02", "title": "Railway modernization advanced", "description": "Railway modernization and electrification projects moved ahead across priority routes in Kazakhstan, Uzbekistan, and Kyrgyzstan." },
+        { "icon": "03", "title": "Digital customs systems", "description": "Digital customs systems reduced document processing time by an estimated 30-40% on selected trade lanes." },
+        { "icon": "04", "title": "New dry ports", "description": "New dry ports and logistics hubs launched in 2025, improving inland distribution and multimodal handling capacity." },
+        { "icon": "05", "title": "Policy harmonization", "description": "Policy harmonization improved cross-border trade efficiency, although implementation remains uneven by corridor." },
+        { "icon": "06", "title": "Strategic diversification", "description": "Governments and shippers increasingly view Central Asia as part of a resilient alternative route network between China and Europe." }
+      ],
+      "sections": [
+        {
+          "id": "regional-context",
+          "heading": "Regional Context",
+          "paragraphs": [
+            "Regional transit infrastructure has become one of the most visible manifestations of Central Asia's geoeconomic repositioning. Corridor competition is no longer driven only by physical rail and road links, but also by customs interoperability, terminal capacity, and the reliability of cross-border procedures.",
+            "As volumes rise, the quality of route governance is becoming a strategic differentiator. Countries that combine infrastructure investment with digital facilitation and predictable regulation are attracting greater cargo flows and long-term logistics partnerships."
+          ],
+          "bulletPoints": [
+            "Middle Corridor utilization improved across rail-port interconnections",
+            "Container handling capacity expanded in both inland and Caspian-facing nodes",
+            "Policy coordination accelerated but bottlenecks remain at border crossings"
+          ],
+          "callout": {
+            "tone": "info",
+            "label": "Important context",
+            "title": "The Middle Corridor is increasingly viewed as a strategic alternative route.",
+            "description": "Shippers and policymakers are positioning Central Asia as a resilient alternative connecting China, the Caspian region, and Europe."
+          }
+        },
+        {
+          "id": "corridor-performance",
+          "heading": "Corridor Performance Overview",
+          "paragraphs": [
+            "The Middle Corridor recorded the strongest momentum, supported by improvements in ferry capacity, rail scheduling, and transit documentation. Growth was also underpinned by political support from governments seeking to diversify exposure to legacy Eurasian transport routes.",
+            "Northern and Southern alternatives remained relevant, but their growth trajectories were more modest and dependent on evolving geopolitical, pricing, and regulatory conditions."
+          ]
+        },
+        {
+          "id": "infrastructure-developments",
+          "heading": "Infrastructure Developments",
+          "paragraphs": [
+            "Infrastructure priorities remained concentrated in rail modernization, intermodal terminals, dry ports, and Caspian port capacity. Kazakhstan and Uzbekistan continued to anchor the highest-value investment pipeline, while Kyrgyzstan advanced enabling projects linked to emerging cross-border routes.",
+            "Port interface efficiency and inland logistics capacity remain decisive constraints. Even where rail improvements are visible, last-mile and customs frictions can offset network gains."
+          ],
+          "callout": {
+            "tone": "success",
+            "label": "Positive development",
+            "title": "Digital customs modernization reduced processing time.",
+            "description": "Selected checkpoints reported significantly lower document handling times after the rollout of integrated digital customs modules."
+          }
+        },
+        {
+          "id": "policy-reforms",
+          "heading": "Policy & Regulatory Reforms",
+          "paragraphs": [
+            "Trade facilitation reforms increasingly target interoperability rather than only domestic simplification. Bilateral and regional arrangements are focusing on data exchange, route transparency, and harmonized controls for high-frequency cargo corridors.",
+            "Despite this progress, regulatory fragmentation remains material, especially where corridor operations cross multiple supervisory regimes, standards, and sectoral licensing requirements."
+          ]
+        },
+        {
+          "id": "country-impact",
+          "heading": "Country Impact Analysis",
+          "paragraphs": [
+            "Kazakhstan continues to serve as the primary anchor for east-west route scaling, with the deepest logistics base and most visible project pipeline. Uzbekistan is improving its role as a multimodal coordination hub, while Kyrgyzstan is positioned to benefit from route diversification tied to new infrastructure links.",
+            "Tajikistan and Turkmenistan remain more selective in corridor integration, but each retains strategic value in southern and energy-linked route development scenarios."
+          ]
+        },
+        {
+          "id": "risks-bottlenecks",
+          "heading": "Risks and Bottlenecks",
+          "paragraphs": [
+            "Capacity constraints at border crossings, uneven customs digitization, and dependence on maritime interface performance in the Caspian remain the most immediate operational risks.",
+            "Longer term, corridor competitiveness will also depend on freight pricing discipline, service reliability, and the institutional ability to sustain cross-border policy coordination."
+          ],
+          "callout": {
+            "tone": "warning",
+            "label": "Risk factor",
+            "title": "Border delays and fragmented regulation remain key bottlenecks.",
+            "description": "Infrastructure investment alone will not close competitiveness gaps if documentation, border controls, and tariff coordination remain inconsistent."
+          }
+        },
+        {
+          "id": "outlook-scenarios",
+          "heading": "Outlook and Scenarios",
+          "paragraphs": [
+            "The baseline outlook remains constructive: route diversification, stronger policy attention, and targeted infrastructure spending should continue to support corridor development over the next 12-24 months.",
+            "However, upside potential depends on execution discipline. If governments can accelerate interoperability and reduce checkpoint variability, Central Asia could materially improve its role in Eurasian transit architecture."
+          ]
+        }
+      ],
+      "charts": [
+        {
+          "title": "Transit Volume Dynamics",
+          "subtitle": "Annual corridor throughput, million TEU",
+          "chartType": "bar",
+          "valueSuffix": "M",
+          "labels": ["2020", "2021", "2022", "2023", "2024", "2025"],
+          "series": [
+            { "label": "Middle Corridor", "color": "#1476ff", "values": [0.6, 0.8, 1.0, 1.2, 1.35, 1.6] },
+            { "label": "Northern Corridor", "color": "#55c6ff", "values": [0.8, 0.9, 0.95, 1.0, 1.05, 1.1] },
+            { "label": "China-Central Asia", "color": "#4de0b5", "values": [0.35, 0.45, 0.58, 0.7, 0.82, 0.9] }
+          ]
+        },
+        {
+          "title": "Average Transit Time",
+          "subtitle": "China-Europe route benchmark, days",
+          "chartType": "line",
+          "valueSuffix": " days",
+          "labels": ["2020", "2021", "2022", "2023", "2024", "2025"],
+          "series": [
+            { "label": "Transit Time", "color": "#7dbbff", "values": [22, 20, 18, 16, 14, 12.5] }
+          ]
+        },
+        {
+          "title": "Investment by Country",
+          "subtitle": "Share of identified 2025-2027 pipeline",
+          "chartType": "doughnut",
+          "valueSuffix": "%",
+          "labels": ["Kazakhstan", "Uzbekistan", "Kyrgyzstan", "Tajikistan", "Turkmenistan"],
+          "series": [
+            { "label": "Investment Share", "color": "#1476ff", "values": [38, 27, 14, 9, 12] }
+          ]
+        }
+      ],
+      "tableRows": [
+        { "corridor": "Middle Corridor", "countriesCovered": "KZ, Caspian, Europe", "mainRoute": "China-Kazakhstan-Caspian-Europe", "volume": "1.6M TEU", "growth": "+41%", "status": "Active" },
+        { "corridor": "China-Central Asia Corridor", "countriesCovered": "KG, UZ, TJ", "mainRoute": "China-Kyrgyzstan-Uzbekistan", "volume": "0.9M TEU", "growth": "+28%", "status": "Expanding" },
+        { "corridor": "Northern Corridor", "countriesCovered": "KZ, Russia", "mainRoute": "China-Kazakhstan-Russia-Europe", "volume": "1.1M TEU", "growth": "+12%", "status": "Stable" },
+        { "corridor": "Southern Corridor", "countriesCovered": "TM, Iran, Turkey", "mainRoute": "Central Asia-Iran-Turkey", "volume": "0.5M TEU", "growth": "+18%", "status": "Developing" }
+      ],
+      "mapRoutes": [
+        { "name": "Middle Corridor", "countries": "China - Kazakhstan - Caspian - Europe", "transitVolume": "1.6M TEU", "averageTime": "12-15 days", "status": "Active", "accentColor": "#1476ff" },
+        { "name": "China-Central Asia Corridor", "countries": "China - Kyrgyzstan - Uzbekistan - Europe", "transitVolume": "0.9M TEU", "averageTime": "14-18 days", "status": "Expanding", "accentColor": "#4de0b5" },
+        { "name": "Northern Corridor", "countries": "China - Kazakhstan - Russia - Europe", "transitVolume": "1.1M TEU", "averageTime": "15-19 days", "status": "Stable", "accentColor": "#55c6ff" },
+        { "name": "Southern Corridor", "countries": "Central Asia - Iran - Turkey", "transitVolume": "0.5M TEU", "averageTime": "16-21 days", "status": "Developing", "accentColor": "#f6b74a" },
+        { "name": "Afghanistan Transit Corridor", "countries": "Uzbekistan - Afghanistan - Pakistan", "transitVolume": "0.2M TEU", "averageTime": "Variable", "status": "Emerging", "accentColor": "#ff7e67" }
+      ],
+      "galleryItems": [
+        { "title": "Aktau port interface", "caption": "Caspian-facing cargo handling and multimodal integration remain central to route scaling.", "visualClassName": "publication-gallery__visual--port" },
+        { "title": "Dry port operations", "caption": "Inland terminals are becoming critical aggregation points for rail and road logistics.", "visualClassName": "publication-gallery__visual--dry-port" },
+        { "title": "Rail modernization", "caption": "Track upgrades and electrification projects continue across key cross-border segments.", "visualClassName": "publication-gallery__visual--rail" },
+        { "title": "Customs digitization", "caption": "Digital documentation and checkpoint automation support faster cargo clearance.", "visualClassName": "publication-gallery__visual--customs" }
+      ],
+      "documents": [
+        { "title": "Middle Corridor Development Plan 2024-2027", "type": "Strategic Plan", "meta": "May 2026 | PDF | 2.4 MB", "downloadUrl": "#" },
+        { "title": "Caspian Ports Capacity Report 2026", "type": "Capacity Assessment", "meta": "April 2026 | PDF | 1.9 MB", "downloadUrl": "#" },
+        { "title": "Railway Modernization Programs in Central Asia", "type": "Program Brief", "meta": "March 2026 | PDF | 1.3 MB", "downloadUrl": "#" }
+      ],
+      "tableOfContents": [
+        { "label": "1. Executive Summary", "targetId": "overview" },
+        { "label": "2. Corridor Performance Overview", "targetId": "corridor-performance" },
+        { "label": "3. Infrastructure Developments", "targetId": "infrastructure-developments" },
+        { "label": "4. Transit Data & Performance", "targetId": "data-charts" },
+        { "label": "5. Policy & Regulatory Reforms", "targetId": "policy-reforms" },
+        { "label": "6. Country Impact Analysis", "targetId": "country-impact" },
+        { "label": "7. Outlook & Scenarios", "targetId": "outlook-scenarios" }
+      ],
+      "keyTopics": [
+        { "label": "Middle Corridor (Trans-Caspian)", "targetId": "map-view" },
+        { "label": "China-Central Asia Corridor", "targetId": "map-view" },
+        { "label": "Northern Corridor", "targetId": "map-view" },
+        { "label": "Southern Corridor", "targetId": "map-view" },
+        { "label": "Afghanistan Transit Corridor", "targetId": "map-view" }
+      ],
+      "sidebarDocuments": [
+        { "title": "Middle Corridor Development Plan 2024-2027", "meta": "Strategic plan | May 2026", "url": "#" },
+        { "title": "Caspian Ports Capacity Report 2026", "meta": "Report | April 2026", "url": "#" },
+        { "title": "Railway Modernization Programs in CA", "meta": "Program brief | March 2026", "url": "#" }
+      ],
+      "relatedIntelligence": [
+        { "title": "Kazakhstan Logistics Sector Review", "meta": "Intelligence update | April 2026", "url": "/intelligence/kazakhstan-logistics-sector-review" },
+        { "title": "Uzbekistan Transport Infrastructure Update", "meta": "Infrastructure monitor | May 2026", "url": "/intelligence/uzbekistan-transport-infrastructure-update" },
+        { "title": "Kyrgyzstan Transit Potential Analysis", "meta": "Analytical note | March 2026", "url": "/intelligence/kyrgyzstan-transit-potential-analysis" }
+      ],
+      "publicationInfo": [
+        { "label": "Publication Type", "value": "Report" },
+        { "label": "Topic", "value": "Trade & Logistics" },
+        { "label": "Published", "value": "May 2026" },
+        { "label": "Reading Time", "value": "16 min" },
+        { "label": "Author", "value": "CAFRI Research Team" },
+        { "label": "Coverage", "value": "Central Asia" },
+        { "label": "Access", "value": "Public" }
+      ],
+      "relatedPublications": [
+        { "type": "REGULATORY NOTE", "countryCode": "KZ", "countryLabel": "Kazakhstan", "title": "Kazakhstan Regulatory Landscape Q2 2026", "description": "Summary of significant regulatory changes in Kazakhstan's financial sector during Q2 2026.", "meta": "June 2026 | 12 min read", "slug": "kazakhstan-regulatory-landscape-q2-2026" },
+        { "type": "COUNTRY PROFILE", "countryCode": "UZ", "countryLabel": "Uzbekistan", "title": "Uzbekistan Banking Reform Progress", "description": "Assessment of ongoing banking sector reforms in Uzbekistan including privatization progress.", "meta": "May 2026 | 14 min read", "slug": "uzbekistan-banking-reform-progress" },
+        { "type": "ANALYTICAL BRIEF", "countryCode": "KG", "countryLabel": "Kyrgyzstan", "title": "Kyrgyzstan Financial Sector Stability Review", "description": "Key financial stability indicators and risk assessment of the Kyrgyz financial sector.", "meta": "May 2026 | 10 min read", "slug": "kyrgyzstan-financial-sector-stability-review" },
+        { "type": "BANKING REVIEW", "countryCode": "TJ", "countryLabel": "Tajikistan", "title": "Tajikistan Banking Sector Outlook", "description": "Review of banking sector capitalization, liquidity, credit trends and supervisory developments.", "meta": "April 2026 | 16 min read", "slug": "tajikistan-banking-sector-outlook" }
+      ]
+    }
+  ]
+}

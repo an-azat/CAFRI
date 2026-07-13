@@ -1,0 +1,8 @@
+@model IReadOnlyList<CAFRI.ViewModels.Countries.CountryTabViewModel>
+
+<nav class="country-tabs" aria-label="Country profile sections">
+    @foreach (var tab in Model)
+    {
+        <button class="country-tabs__button @(tab.IsActive ? "is-active" : null)" type="button">@tab.Label</button>
+    }
+</nav>

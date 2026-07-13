@@ -1,0 +1,19 @@
+<section class="page-shell">
+    <div class="content-card">
+        <div class="eyebrow">Request Received</div>
+        <h1 class="page-title">Thank you. Your request has been received.</h1>
+        <p class="page-lead">
+            Our team will review the request and contact you after review. This matches the current CAFRI launch
+            model, where professional access is approved manually before the subscription layer is introduced.
+        </p>
+
+        @if (!string.IsNullOrWhiteSpace(ViewBag.Email as string))
+        {
+            <p class="confirmation-note">
+                Confirmation target: <strong>@ViewBag.Email</strong>
+            </p>
+        }
+
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary">Return to CAFRI</a>
+    </div>
+</section>

@@ -1,0 +1,35 @@
+@{
+    var pageTitle = ViewData["Title"] as string ?? "CAFRI";
+    var pageTheme = ViewData["PageTheme"] as string ?? "theme-dark";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@pageTitle - CAFRI</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/CAFRI.styles.css" asp-append-version="true" />
+</head>
+<body class="app-body @pageTheme">
+    <div class="site-backdrop"></div>
+
+    <partial name="_Header" />
+
+    <div class="site-main">
+        <div class="site-container">
+            <main role="main">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <partial name="_Footer" />
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,86 @@
+@model CAFRI.Areas.Admin.ViewModels.Content.CountryIndicatorEditViewModel
+
+<section class="admin-page">
+    <div class="admin-page__hero">
+        <div class="admin-eyebrow">Indicator Editor</div>
+        <h1 class="admin-page__title">@((Model.Id is null) ? "Create Indicator" : "Edit Indicator")</h1>
+        <p class="admin-page__lead">Add and maintain structured indicator values for future dynamic charts, maps and data modules.</p>
+    </div>
+
+    <div class="admin-editor">
+        <section class="admin-editor-card">
+            <form method="post" data-live-preview-form>
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(false, "", new { @class = "validation-summary-errors" })
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="Name" class="form-label"></label>
+                        <input asp-for="Name" class="form-control" data-preview-target="Name" data-preview-key="title" />
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="CountryCode" class="form-label"></label>
+                        <input asp-for="CountryCode" class="form-control" data-preview-target="CountryCode" data-preview-key="country" />
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="Category" class="form-label"></label>
+                        <input asp-for="Category" class="form-control" data-preview-target="Category" data-preview-key="category" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Slug" class="form-label"></label>
+                        <input asp-for="Slug" class="form-control" data-preview-target="Slug" data-preview-key="slug" />
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="Unit" class="form-label"></label>
+                        <input asp-for="Unit" class="form-control" data-preview-target="Unit" data-preview-key="unit" />
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="DisplayOrder" class="form-label"></label>
+                        <input asp-for="DisplayOrder" class="form-control" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="LatestValue" class="form-label"></label>
+                        <input asp-for="LatestValue" class="form-control" data-preview-target="LatestValue" data-preview-key="value" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="YearLabel" class="form-label"></label>
+                        <input asp-for="YearLabel" class="form-control" data-preview-target="YearLabel" data-preview-key="year" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="SourceName" class="form-label"></label>
+                        <input asp-for="SourceName" class="form-control" data-preview-target="SourceName" data-preview-key="source" />
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <div class="form-check">
+                            <input asp-for="IsPublished" class="form-check-input" />
+                            <label asp-for="IsPublished" class="form-check-label"></label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Notes" class="form-label"></label>
+                        <textarea asp-for="Notes" class="form-control" rows="6" data-preview-target="Notes" data-preview-key="description"></textarea>
+                    </div>
+                </div>
+                <div class="admin-editor-actions">
+                    <button type="submit" class="admin-primary-button">Save Indicator</button>
+                    <a asp-area="Admin" asp-controller="Indicators" asp-action="Index" class="admin-chip">Back to List</a>
+                </div>
+            </form>
+        </section>
+        <aside class="admin-editor-preview">
+            <section class="admin-preview-card">
+                <div class="admin-panel__eyebrow">Live Preview</div>
+                <div class="admin-preview-card__badge-row">
+                    <span class="admin-preview-card__badge" data-preview="country" data-preview-fallback="Country">@Model.CountryCode</span>
+                    <span class="admin-preview-card__badge" data-preview="category" data-preview-fallback="Category">@Model.Category</span>
+                </div>
+                <h2 class="admin-preview-card__title" data-preview="title" data-preview-fallback="Indicator title">@Model.Name</h2>
+                <div class="admin-preview-card__meta"><span data-preview="value" data-preview-fallback="0">@Model.LatestValue</span> <span data-preview="unit" data-preview-fallback="unit">@Model.Unit</span> • <span data-preview="year" data-preview-fallback="year">@Model.YearLabel</span></div>
+                <p class="admin-preview-card__body" data-preview="description" data-preview-fallback="Indicator notes preview.">@Model.Notes</p>
+                <ul class="admin-preview-list">
+                    <li>Source: <span data-preview="source" data-preview-fallback="not-set">@Model.SourceName</span></li>
+                    <li>Slug: <span data-preview="slug" data-preview-fallback="not-set">@Model.Slug</span></li>
+                </ul>
+            </section>
+        </aside>
+    </div>
+</section>

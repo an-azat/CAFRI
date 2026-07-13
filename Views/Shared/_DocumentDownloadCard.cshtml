@@ -1,0 +1,18 @@
+@model CAFRI.ViewModels.Intelligence.IntelligenceOfficialDocumentViewModel
+
+<article class="document-download-card">
+    <div class="document-download-card__icon">PDF</div>
+    <div class="document-download-card__content">
+        <h3>@Model.Title</h3>
+        <p>@Model.Subtitle</p>
+        <div class="document-download-card__meta">@Model.Meta</div>
+    </div>
+    @if (string.IsNullOrWhiteSpace(Model.DownloadUrl) || Model.DownloadUrl == "#")
+    {
+        <span class="btn btn-outline-light document-download-card__button-disabled" aria-disabled="true">Unavailable</span>
+    }
+    else
+    {
+        <a class="btn btn-primary" href="@Model.DownloadUrl">Download PDF</a>
+    }
+</article>

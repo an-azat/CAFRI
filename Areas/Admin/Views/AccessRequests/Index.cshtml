@@ -1,0 +1,110 @@
+@model CAFRI.Areas.Admin.ViewModels.AccessRequests.AccessRequestIndexViewModel
+
+<section class="admin-listing">
+    <div class="admin-page__hero">
+        <div class="admin-eyebrow">Professional Access</div>
+        <h1 class="admin-page__title">Access Requests</h1>
+        <p class="admin-page__lead">
+            Review pending requests, manage professional access grants and monitor the approval-based access model before the later subscription transition.
+        </p>
+    </div>
+
+    <div class="admin-summary-grid">
+        @foreach (var card in Model.SummaryCards)
+        {
+            <article class="admin-summary-card">
+                <div class="admin-summary-card__label">@card.Label</div>
+                <div class="admin-summary-card__value">@card.Value</div>
+                <div class="admin-summary-card__caption">@card.Caption</div>
+            </article>
+        }
+    </div>
+
+    <section class="admin-panel mt-3">
+        <form method="get" class="admin-filters" style="grid-template-columns: minmax(16rem,1.6fr) minmax(0,1fr) auto;">
+            <input type="search" name="search" value="@Model.Search" class="admin-filter-control" placeholder="Search applicants..." />
+
+            <select name="status" class="form-select admin-filter-control">
+                <option value="">All Statuses</option>
+                <option value="Pending" selected="@(Model.Status == "Pending" ? "selected" : null)">Pending</option>
+                <option value="Approved" selected="@(Model.Status == "Approved" ? "selected" : null)">Approved</option>
+                <option value="Declined" selected="@(Model.Status == "Declined" ? "selected" : null)">Declined</option>
+            </select>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="admin-primary-button">Apply</button>
+                <a asp-area="Admin" asp-controller="AccessRequests" asp-action="Index" class="admin-chip">Reset</a>
+            </div>
+        </form>
+
+        @if (Model.Items.Count == 0)
+        {
+            <div class="admin-empty-state">
+                No access requests found for the current filters.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table admin-data-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Organization</th>
+                            <th>Country</th>
+                            <th>Status</th>
+                            <th>Grant</th>
+                            <th>Created</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        var requestStatusClass = item.Status switch
+                        {
+                            CAFRI.Domain.Access.AccessRequestStatus.Approved => "is-approved",
+                            CAFRI.Domain.Access.AccessRequestStatus.Declined => "is-declined",
+                            _ => "is-pending"
+                        };
+
+                        var grantStatusClass = item.GrantStatus switch
+                        {
+                            CAFRI.Domain.Access.AccessGrantStatus.Active => "is-active",
+                            CAFRI.Domain.Access.AccessGrantStatus.Suspended => "is-suspended",
+                            CAFRI.Domain.Access.AccessGrantStatus.Revoked => "is-revoked",
+                            _ => "is-draft"
+                        };
+
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@item.FullName</div>
+                                <div class="text-secondary">@item.BusinessEmail</div>
+                            </td>
+                            <td>@item.Organization</td>
+                            <td>@item.Country</td>
+                            <td>
+                                <span class="admin-status-pill @requestStatusClass">@item.Status</span>
+                            </td>
+                            <td>
+                                @if (item.GrantStatus is not null)
+                                {
+                                    <span class="admin-status-pill @grantStatusClass">@item.GrantStatus</span>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">No grant</span>
+                                }
+                            </td>
+                            <td>@item.CreatedAtUtc.UtcDateTime.ToString("dd MMM yyyy")</td>
+                            <td class="text-end">
+                                <a asp-area="Admin" asp-controller="AccessRequests" asp-action="Details" asp-route-id="@item.Id" class="admin-inline-link">Review</a>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+</section>

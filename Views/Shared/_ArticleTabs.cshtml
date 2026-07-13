@@ -1,0 +1,11 @@
+@model IReadOnlyList<CAFRI.ViewModels.Intelligence.IntelligenceTabViewModel>
+
+<nav class="article-tabs" aria-label="Article sections">
+    @foreach (var tab in Model)
+    {
+        var sectionId = tab.Label.ToLowerInvariant()
+            .Replace(" & ", "-")
+            .Replace(' ', '-');
+        <a class="article-tabs__button @(tab.IsActive ? "is-active" : null)" href="#@sectionId">@tab.Label</a>
+    }
+</nav>

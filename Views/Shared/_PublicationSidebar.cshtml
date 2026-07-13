@@ -1,0 +1,31 @@
+@model CAFRI.ViewModels.Publications.PublicationsPageViewModel
+
+<div class="publications-sidebar">
+    <section class="publication-sidebar-card">
+        <h2>CATEGORIES</h2>
+        <div class="publication-category-list">
+            @foreach (var item in Model.Categories)
+            {
+                <a class="publication-category-item @(item.IsActive ? "is-active" : null)" href="@item.Url">
+                    <span class="publication-category-item__icon">@item.Label[..1]</span>
+                    <span>@item.Label</span>
+                    <span class="publication-category-item__count">@item.Count</span>
+                </a>
+            }
+        </div>
+    </section>
+
+    <section class="publication-sidebar-card">
+        <h2>LATEST PUBLICATIONS</h2>
+        <div class="publication-latest-list">
+            @foreach (var item in Model.LatestPublications)
+            {
+                <article class="publication-latest-item">
+                    <h3>@item.Title</h3>
+                    <p>@item.Meta</p>
+                </article>
+            }
+        </div>
+        <a class="publication-sidebar-card__link" href="/publications">View all publications <span>&rarr;</span></a>
+    </section>
+</div>

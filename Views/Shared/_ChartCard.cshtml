@@ -1,0 +1,20 @@
+@model CAFRI.ViewModels.Countries.CountryChartSeriesViewModel
+
+@{
+    var labels = string.Join(",", Model.Labels.Select(label => $"'{label}'"));
+    var values = string.Join(",", Model.Values.Select(value => value.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+}
+
+<article class="chart-card">
+    <div class="chart-card__header">
+        <h3 class="chart-card__title">@Model.Title</h3>
+    </div>
+    <div class="chart-card__canvas-shell">
+        <canvas class="chart-card__canvas"
+                data-country-chart
+                data-title="@Model.Title"
+                data-suffix="@Model.ValueSuffix"
+                data-labels="@labels"
+                data-values="@values"></canvas>
+    </div>
+</article>

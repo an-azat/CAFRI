@@ -1,0 +1,119 @@
+@model CAFRI.Areas.Admin.ViewModels.Content.CountryContentEditViewModel
+
+<section class="admin-page">
+    <div class="admin-page__hero">
+        <div class="admin-eyebrow">Country Editor</div>
+        <h1 class="admin-page__title">@((Model.Id is null) ? "Create Country Profile" : "Edit Country Profile")</h1>
+        <p class="admin-page__lead">
+            Edit core country metadata, public summary metrics and the structured detail content that drives the detailed country page.
+        </p>
+    </div>
+
+    <div class="admin-editor">
+        <section class="admin-editor-card">
+            <form method="post" enctype="multipart/form-data" data-live-preview-form>
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(false, "", new { @class = "validation-summary-errors" })
+
+                <div class="row g-3">
+                    <div class="col-md-2">
+                        <label asp-for="Code" class="form-label"></label>
+                        <input asp-for="Code" class="form-control" data-preview-target="Code" data-preview-key="code" />
+                    </div>
+                    <div class="col-md-5">
+                        <label asp-for="Name" class="form-label"></label>
+                        <input asp-for="Name" class="form-control" data-preview-target="Name" data-preview-key="name" />
+                    </div>
+                    <div class="col-md-5">
+                        <label asp-for="Slug" class="form-label"></label>
+                        <input asp-for="Slug" class="form-control" data-preview-target="Slug" data-preview-key="slug" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Capital" class="form-label"></label>
+                        <input asp-for="Capital" class="form-control" data-preview-target="Capital" data-preview-key="capital" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Gdp" class="form-label"></label>
+                        <input asp-for="Gdp" class="form-control" data-preview-target="Gdp" data-preview-key="gdp" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Population" class="form-label"></label>
+                        <input asp-for="Population" class="form-control" data-preview-target="Population" data-preview-key="population" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="BankAssets" class="form-label"></label>
+                        <input asp-for="BankAssets" class="form-control" data-preview-target="BankAssets" data-preview-key="bankAssets" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="HeroClassName" class="form-label"></label>
+                        <input asp-for="HeroClassName" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="HeroGalleryFiles" class="form-label">Hero Gallery Photos</label>
+                        <input asp-for="HeroGalleryFiles" type="file" class="form-control" multiple accept="image/*" />
+                        <div class="form-text">Upload one or more photos. New images will be saved to storage and added to the country hero gallery.</div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="HeroGalleryText" class="form-label">Hero Gallery Items</label>
+                        <div class="admin-media-gallery-editor" data-media-gallery-editor>
+                            <textarea asp-for="HeroGalleryText" class="form-control font-monospace d-none" rows="6" data-media-gallery-raw></textarea>
+                            <div class="admin-media-gallery-editor__list" data-media-gallery-list></div>
+                            <button type="button" class="admin-chip admin-media-gallery-editor__add" data-media-gallery-add>Add Gallery Item</button>
+                        </div>
+                        <div class="form-text">Manage gallery items visually. Data is still stored in the compatible `ImageUrl | Alt | Title | Caption` format.</div>
+                    </div>
+                    <div class="col-md-2">
+                        <label asp-for="DisplayOrder" class="form-label"></label>
+                        <input asp-for="DisplayOrder" class="form-control" />
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <div class="form-check">
+                            <input asp-for="IsPublished" class="form-check-input" />
+                            <label asp-for="IsPublished" class="form-check-label"></label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Summary" class="form-label"></label>
+                        <textarea asp-for="Summary" class="form-control" rows="4" data-preview-target="Summary" data-preview-key="summary"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="DetailsJson" class="form-label"></label>
+                        <textarea asp-for="DetailsJson" class="form-control font-monospace" rows="20"></textarea>
+                        <div class="form-text">`DetailsJson` powers detailed sections, statistics and the full country profile layout.</div>
+                    </div>
+                </div>
+
+                <div class="admin-editor-actions">
+                    <button type="submit" class="admin-primary-button">Save Country</button>
+                    <a asp-area="Admin" asp-controller="Countries" asp-action="Index" class="admin-chip">Back to List</a>
+                </div>
+            </form>
+        </section>
+
+        <aside class="admin-editor-preview">
+            <section class="admin-preview-card">
+                <div class="admin-panel__eyebrow">Live Preview</div>
+                <div class="admin-preview-card__badge-row">
+                    <span class="admin-preview-card__badge" data-preview="code" data-preview-fallback="Code">@Model.Code</span>
+                    <span class="admin-preview-card__badge" data-preview="capital" data-preview-fallback="Capital">@Model.Capital</span>
+                </div>
+                <h2 class="admin-preview-card__title" data-preview="name" data-preview-fallback="Country name">@Model.Name</h2>
+                <p class="admin-preview-card__body" data-preview="summary" data-preview-fallback="Country summary preview.">@Model.Summary</p>
+            </section>
+
+            <section class="admin-preview-card">
+                <div class="admin-panel__eyebrow">Key Metrics</div>
+                <ul class="admin-preview-list">
+                    <li>GDP: <span data-preview="gdp" data-preview-fallback="not-set">@Model.Gdp</span></li>
+                    <li>Population: <span data-preview="population" data-preview-fallback="not-set">@Model.Population</span></li>
+                    <li>Bank Assets: <span data-preview="bankAssets" data-preview-fallback="not-set">@Model.BankAssets</span></li>
+                    <li>Slug: <span data-preview="slug" data-preview-fallback="not-set">@Model.Slug</span></li>
+                </ul>
+            </section>
+        </aside>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/admin-media-editors.js" asp-append-version="true"></script>
+}

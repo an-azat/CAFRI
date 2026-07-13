@@ -1,0 +1,69 @@
+@model CAFRI.ViewModels.Publications.PublicationsPageViewModel
+@{
+    ViewData["Title"] = "Publications";
+    ViewData["PageTheme"] = "theme-dark";
+}
+
+<div class="page-publications">
+    <section class="publications-header">
+        <div class="publications-header__copy">
+            <h1 class="page-title publications-header__title">Publications</h1>
+            <p class="publications-header__description">@Model.Description</p>
+        </div>
+    </section>
+
+    <div class="publications-layout">
+        <main class="publications-main">
+            <partial name="_PublicationTabs" model="Model.Tabs" />
+
+            <div class="publications-results-header">
+                <div class="publications-results-header__count">
+                    @(Model.TotalResults > 0
+                        ? $"Showing {Model.ShowingFrom}-{Model.ShowingTo} of {Model.TotalResults} results"
+                        : "No publications found")
+                </div>
+
+                <div class="publications-results-header__search">
+                    <partial name="_PublicationFilters" model="Model" />
+                </div>
+            </div>
+
+            @if (Model.Publications.Count == 0)
+            {
+                <section class="publications-empty-state">
+                    <h2>No publications found</h2>
+                    <p>Try adjusting your filters or search query.</p>
+                    <a class="btn btn-outline-light" href="/publications">Reset Filters</a>
+                </section>
+            }
+            else
+            {
+                var gridClass = Model.Publications.Count switch
+                {
+                    1 => "publications-grid publications-grid--single",
+                    2 => "publications-grid publications-grid--double",
+                    _ => "publications-grid"
+                };
+
+                <div class="@gridClass">
+                    @foreach (var item in Model.Publications)
+                    {
+                        <partial name="_PublicationCard" model="item" />
+                    }
+                </div>
+            }
+
+            <partial name="_PublicationsPagination" model="Model" />
+        </main>
+
+        <partial name="_PublicationSidebar" model="Model" />
+    </div>
+
+    <partial name="_PublicationFilterModal" model="Model" />
+
+    <partial name="_BenefitsStrip" model="Model.Benefits" />
+</div>
+
+@section Scripts {
+    <script src="~/js/publication-cards.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,15 @@
+@model CAFRI.ViewModels.Publications.PublicationCardViewModel
+
+<article class="publication-card" data-publication-card data-href="@Model.Url" tabindex="0" role="link">
+    <div class="publication-card__badges">
+        <span class="publication-badge">@Model.Type</span>
+        <span class="country-badge @Model.AccentClass">@Model.CountryCode</span>
+        <span class="publication-card__country">@Model.CountryLabel</span>
+    </div>
+    <h2 class="publication-card__title"><a href="@Model.Url">@Model.Title</a></h2>
+    <p class="publication-card__description">@Model.Description</p>
+    <div class="publication-card__footer">
+        <span class="publication-meta">@Model.Meta</span>
+        <a href="@Model.Url">Read <span>&rarr;</span></a>
+    </div>
+</article>

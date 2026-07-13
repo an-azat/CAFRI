@@ -1,0 +1,139 @@
+{
+  "description": "Structured intelligence on regulatory, banking, trade, sanctions, and macroeconomic developments across Central Asia and Eurasian corridors.",
+  "searchPlaceholder": "Search intelligence...",
+  "countrySelectOptions": ["All Countries", "Kazakhstan", "Kyrgyzstan", "Uzbekistan", "Tajikistan", "Turkmenistan"],
+  "categorySelectOptions": ["All Categories", "Financial Regulation", "Banking", "Trade & Logistics", "Sanctions", "Macroeconomics", "Government", "Infrastructure", "International Cooperation"],
+  "institutionSelectOptions": ["All Institutions", "Central Banks", "Financial Supervisors", "Government Ministries", "Customs Authorities", "International Organizations"],
+  "sidebarCountries": [
+    { "label": "All Countries", "value": "all", "isSelected": true },
+    { "label": "Kazakhstan", "value": "kz" },
+    { "label": "Kyrgyzstan", "value": "kg" },
+    { "label": "Uzbekistan", "value": "uz" },
+    { "label": "Tajikistan", "value": "tj" },
+    { "label": "Turkmenistan", "value": "tm" }
+  ],
+  "sidebarCategories": [
+    { "label": "All Categories", "value": "all", "isSelected": true },
+    { "label": "Financial Regulation", "value": "financial-regulation" },
+    { "label": "Banking", "value": "banking" },
+    { "label": "Trade & Logistics", "value": "trade-logistics" },
+    { "label": "Sanctions", "value": "sanctions" },
+    { "label": "Macroeconomics", "value": "macroeconomics" },
+    { "label": "Government", "value": "government" },
+    { "label": "Infrastructure", "value": "infrastructure" },
+    { "label": "International Cooperation", "value": "international-cooperation" }
+  ],
+  "dateRangeOptions": ["Any time", "Last 7 days", "Last 30 days", "Last 90 days"],
+  "items": [
+    { "slug": "national-bank-updates-foreign-exchange-reporting-requirements", "category": "FINANCIAL REGULATION", "countryCode": "KZ", "countryName": "Kazakhstan", "publishedLabel": "Jun 25, 2026", "title": "National Bank updates foreign exchange reporting requirements", "description": "New reporting obligations for cross-border FX transactions effective July 1, 2026.", "source": "National Bank of Kazakhstan" },
+    { "slug": "central-bank-of-uzbekistan-raises-key-policy-rate-to-14", "category": "BANKING", "countryCode": "UZ", "countryName": "Uzbekistan", "publishedLabel": "Jun 24, 2026", "title": "Central Bank of Uzbekistan raises key policy rate to 14%", "description": "Policy rate increased from 13.5% to 14% in response to inflationary pressures.", "source": "Central Bank of Uzbekistan" },
+    { "slug": "kyrgyzstan-implements-new-customs-procedures-for-eaeu-trade", "category": "TRADE & LOGISTICS", "countryCode": "KG", "countryName": "Kyrgyzstan", "publishedLabel": "Jun 24, 2026", "title": "Kyrgyzstan implements new customs procedures for EAEU trade", "description": "Updated clearance procedures align with EAEU standards to improve cross-border trade management.", "source": "State Customs Service of Kyrgyz Republic" },
+    { "slug": "kazakhstan-updates-list-of-sanctioned-entities", "category": "SANCTIONS", "countryCode": "KZ", "countryName": "Kazakhstan", "publishedLabel": "Jun 23, 2026", "title": "Kazakhstan updates list of sanctioned entities", "description": "The Agency for Financial Monitoring publishes the latest list of entities subject to domestic sanctions.", "source": "Agency for Financial Monitoring" },
+    { "slug": "uzbekistan-gdp-growth-reaches-6-8-in-q1-2026", "category": "MACROECONOMICS", "countryCode": "UZ", "countryName": "Uzbekistan", "publishedLabel": "Jun 21, 2026", "title": "Uzbekistan GDP growth reaches 6.8% in Q1 2026", "description": "Official statistics confirm continued economic expansion driven by services, industry, and investment.", "source": "State Statistics Committee" },
+    { "slug": "national-bank-of-tajikistan-issues-new-banking-license-regulations", "category": "BANKING", "countryCode": "TJ", "countryName": "Tajikistan", "publishedLabel": "Jun 20, 2026", "title": "National Bank of Tajikistan issues new banking license regulations", "description": "New licensing rules increase minimum capital requirements and strengthen corporate governance standards.", "source": "National Bank of Tajikistan" },
+    { "slug": "kazakhstan-middle-corridor-rail-freight-volumes-increase-34", "category": "INFRASTRUCTURE", "countryCode": "KZ", "countryName": "Kazakhstan", "publishedLabel": "Jun 25, 2026", "title": "Kazakhstan Middle Corridor rail freight volumes increase 34%", "description": "Trans-Caspian International Transport Route recorded freight volume increases in the first half of 2026.", "source": "Ministry of Transport of Kazakhstan" },
+    { "slug": "turkmenistan-ratifies-adb-agreement-on-development-financing", "category": "INTERNATIONAL COOPERATION", "countryCode": "TM", "countryName": "Turkmenistan", "publishedLabel": "Jun 18, 2026", "title": "Turkmenistan ratifies ADB agreement on development financing", "description": "Parliament ratified a framework financing agreement with the Asian Development Bank.", "source": "Ministry of Finance and Economy" },
+    { "slug": "kyrgyzstan-approves-strategy-for-digital-customs-modernization", "category": "GOVERNMENT", "countryCode": "KG", "countryName": "Kyrgyzstan", "publishedLabel": "Jun 18, 2026", "title": "Kyrgyzstan approves strategy for digital customs modernization", "description": "Government approves the Digital Customs Strategic Program 2026-2030.", "source": "Cabinet of Ministers of Kyrgyz Republic" },
+    { "slug": "uzbekistan-strengthens-aml-cft-supervision-framework", "category": "FINANCIAL REGULATION", "countryCode": "UZ", "countryName": "Uzbekistan", "publishedLabel": "Jun 17, 2026", "title": "Uzbekistan strengthens AML/CFT supervision framework", "description": "New supervisory guidelines enhance risk-based approach and customer due diligence standards.", "source": "Agency for Financial Monitoring" },
+    { "slug": "tajikistan-and-china-expand-trade-corridor-infrastructure", "category": "TRADE & LOGISTICS", "countryCode": "TJ", "countryName": "Tajikistan", "publishedLabel": "Jun 16, 2026", "title": "Tajikistan and China expand trade corridor infrastructure", "description": "New logistics hub project launched to facilitate trade and reduce transport costs.", "source": "Ministry of Economic Development and Trade" },
+    { "slug": "kyrgyzstan-aligns-sanctions-regime-with-unsc-resolutions", "category": "SANCTIONS", "countryCode": "KG", "countryName": "Kyrgyzstan", "publishedLabel": "Jun 15, 2026", "title": "Kyrgyzstan aligns sanctions regime with UNSC resolutions", "description": "New amendments ensure full compliance with UN sanctions obligations.", "source": "Ministry of Justice of Kyrgyz Republic" }
+  ],
+  "showingFrom": 1,
+  "showingTo": 12,
+  "totalResults": 248,
+  "currentPage": 1,
+  "totalPages": 21,
+  "sortBy": "Newest",
+  "professionalAccessBenefits": ["Full Regulatory Timeline", "Historical Analysis", "AI Executive Briefs", "Interactive Dashboards", "Full Publication Library", "Export (PDF & Excel)"],
+  "details": [
+    {
+      "title": "National Bank updates foreign exchange reporting requirements",
+      "slug": "national-bank-updates-foreign-exchange-reporting-requirements",
+      "category": "FINANCIAL REGULATION",
+      "countryCode": "KZ",
+      "countryName": "Kazakhstan",
+      "shortDescription": "The National Bank of Kazakhstan (NBK) has introduced new reporting obligations for resident and non-resident entities on cross-border foreign exchange transactions.",
+      "heroImageClassName": "article-hero-image--kazakhstan",
+      "publishedDate": "June 25, 2026",
+      "readingTime": "8 min read",
+      "analysisType": "CAFRI Regulatory Analysis",
+      "overviewLead": "On June 24, 2026, the National Bank of Kazakhstan issued Regulation No. 24/2026, amending Regulation No. 8/2019 on the execution of foreign exchange transactions and their accounting and reporting. The amendments aim to enhance transparency of cross-border FX flows, align with international standards, and strengthen the country's external sector statistics.",
+      "overviewBody": "The regulation expands the scope of reportable transactions, shortens reporting deadlines, and introduces new templates for data submission through the banks' reporting system.",
+      "effectiveDate": "July 1, 2026",
+      "appliesTo": "Authorized banks, residents, non-residents conducting cross-border FX transactions",
+      "isPremium": true,
+      "actions": [
+        { "label": "Save", "icon": "save" },
+        { "label": "Cite", "icon": "cite" },
+        { "label": "Share", "icon": "share" },
+        { "label": "Print", "icon": "print" }
+      ],
+      "tabs": [
+        { "label": "Overview", "isActive": true },
+        { "label": "Key Changes" },
+        { "label": "Impact Analysis" },
+        { "label": "Timeline" },
+        { "label": "Regulatory Text" },
+        { "label": "Data & Charts" },
+        { "label": "Related Materials" }
+      ],
+      "keyChanges": [
+        { "number": 1, "title": "Expanded Reporting Scope", "description": "New requirements apply to a broader range of cross-border transactions including digital services, IP payments, and intra-group transfers." },
+        { "number": 2, "title": "Shorter Reporting Deadlines", "description": "Transaction reports must be submitted within 2 business days instead of 5 business days from the date of transaction." },
+        { "number": 3, "title": "New Reporting Templates", "description": "Revised forms for statistical reporting on cross-border FX transactions introduced in accordance with BPM6 standards." },
+        { "number": 4, "title": "Additional Data Fields", "description": "Reports must include additional details on counterparty country, purpose code, and underlying economic activity." },
+        { "number": 5, "title": "Strengthened Compliance", "description": "NBK to conduct more frequent data reconciliation and apply risk-based supervision on reporting accuracy." },
+        { "number": 6, "title": "Penalties", "description": "Administrative penalties for late, incomplete, or inaccurate reporting have been increased." }
+      ],
+      "impactAnalysis": [
+        { "title": "Banks", "description": "Banks will need to update internal systems and processes to capture additional data points and meet shorter reporting timelines.", "impactLabel": "Impact: High", "impactTone": "impact-high" },
+        { "title": "Businesses", "description": "Companies engaged in cross-border transactions should ensure accurate classification and timely submission.", "impactLabel": "Impact: Medium", "impactTone": "impact-medium" },
+        { "title": "Market", "description": "Improved data quality will enhance monitoring of capital flows and external sector stability assessment.", "impactLabel": "Impact: Positive", "impactTone": "impact-positive" }
+      ],
+      "timelineItems": [
+        { "dateLabel": "Jun 24, 2026", "description": "Regulation published by National Bank", "stage": "past" },
+        { "dateLabel": "Jul 1, 2026", "description": "Regulation enters into force", "stage": "current" },
+        { "dateLabel": "Jul 1 - Aug 31, 2026", "description": "Transition period for system updates and adaptation", "stage": "future" },
+        { "dateLabel": "Sep 1, 2026", "description": "Full enforcement and penalties applicable", "stage": "future" }
+      ],
+      "officialDocument": {
+        "title": "Regulation No. 24/2026 of the National Bank of Kazakhstan",
+        "subtitle": "Amending Regulation No. 8/2019 on Foreign Exchange Transactions",
+        "meta": "June 24, 2026 | PDF | 1.2 MB"
+      },
+      "documentInformation": [
+        { "label": "Document Type", "value": "Regulation" },
+        { "label": "Document No.", "value": "24/2026" },
+        { "label": "Issuing Authority", "value": "National Bank of Kazakhstan" },
+        { "label": "Date Issued", "value": "June 24, 2026" },
+        { "label": "Effective Date", "value": "July 1, 2026" },
+        { "label": "Status", "value": "In Force" },
+        { "label": "Legal Basis", "value": "Law of the RK on National Bank and Banking Activity" }
+      ],
+      "keyHighlights": [
+        "Aligns with IMF BPM6 and international reporting standards",
+        "Enhances transparency of cross-border capital flows",
+        "Supports macroprudential monitoring and risk assessment",
+        "Strengthens Kazakhstan's external statistics and data quality"
+      ],
+      "relatedOfficialSources": [
+        { "title": "National Bank Press Release", "subtitle": "June 24, 2026" },
+        { "title": "Explanatory Memorandum to Regulation No. 24/2026", "subtitle": "Source temporarily available" },
+        { "title": "Reporting Templates", "subtitle": "FX Transaction Reports" },
+        { "title": "Law of the RK on National Bank and Banking Activity", "subtitle": "Legal basis" }
+      ],
+      "relatedIntelligence": [
+        { "title": "Kazakhstan Banking Sector Outlook 2026", "subtitle": "Related intelligence" },
+        { "title": "Cross-border Payments Monitor", "subtitle": "Related intelligence" },
+        { "title": "Kazakhstan Sanctions Risk Review", "subtitle": "Related intelligence" },
+        { "title": "AML/CFT Regulatory Updates", "subtitle": "Related intelligence" }
+      ],
+      "monitoringStatus": [
+        { "label": "Status", "value": "Monitoring", "isStatus": true },
+        { "label": "Effective Date", "value": "July 1, 2026" },
+        { "label": "Last Review", "value": "June 25, 2026" },
+        { "label": "Monitoring Frequency", "value": "3x per week" }
+      ]
+    }
+  ]
+}

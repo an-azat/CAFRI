@@ -1,0 +1,107 @@
+@model CAFRI.ViewModels.Intelligence.IntelligenceDetailsViewModel
+
+<div class="article-sidebar">
+    <section class="sidebar-card document-information">
+        <h2>Document Information</h2>
+        <dl class="article-sidebar__definition-list">
+            @foreach (var row in Model.DocumentInformation)
+            {
+                <dt>@row.Label</dt>
+                <dd>@row.Value</dd>
+            }
+        </dl>
+    </section>
+
+    <section class="sidebar-card key-highlights">
+        <h2>Key Highlights</h2>
+        <ul class="article-sidebar__check-list">
+            @foreach (var item in Model.KeyHighlights)
+            {
+                <li>@item</li>
+            }
+        </ul>
+    </section>
+
+    <section class="sidebar-card related-sources">
+        <h2>Related Official Sources</h2>
+        <div class="article-sidebar__link-list">
+            @if (Model.RelatedOfficialSources.Count == 0)
+            {
+                <p>Source temporarily unavailable</p>
+            }
+            else
+            {
+                @foreach (var item in Model.RelatedOfficialSources)
+                {
+                    <article>
+                        @if (!string.IsNullOrWhiteSpace(item.Url))
+                        {
+                            <a class="article-sidebar__link-item" href="@item.Url">
+                                <h3>@item.Title</h3>
+                                <p>@item.Subtitle</p>
+                            </a>
+                        }
+                        else
+                        {
+                            <div class="article-sidebar__link-item">
+                                <h3>@item.Title</h3>
+                                <p>@item.Subtitle</p>
+                            </div>
+                        }
+                    </article>
+                }
+            }
+        </div>
+    </section>
+
+    <section class="sidebar-card related-intelligence">
+        <h2>Related Intelligence</h2>
+        <div class="article-sidebar__link-list">
+            @if (Model.RelatedIntelligence.Count == 0)
+            {
+                <p>No related intelligence items available</p>
+            }
+            else
+            {
+                @foreach (var item in Model.RelatedIntelligence)
+                {
+                    <article>
+                        @if (!string.IsNullOrWhiteSpace(item.Url))
+                        {
+                            <a class="article-sidebar__link-item" href="@item.Url">
+                                <h3>@item.Title</h3>
+                                <p>@item.Subtitle</p>
+                            </a>
+                        }
+                        else
+                        {
+                            <div class="article-sidebar__link-item">
+                                <h3>@item.Title</h3>
+                                <p>@item.Subtitle</p>
+                            </div>
+                        }
+                    </article>
+                }
+            }
+        </div>
+    </section>
+
+    <section class="sidebar-card monitoring-status">
+        <h2>Monitoring Status</h2>
+        <div class="article-sidebar__status-list">
+            @foreach (var item in Model.MonitoringStatus)
+            {
+                <div class="article-sidebar__status-row">
+                    <span>@item.Label</span>
+                    <strong class="@(item.IsStatus ? "status-dot" : null)">@item.Value</strong>
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="sidebar-card stay-updated-card">
+        <h2>Stay Updated</h2>
+        <p>Get the latest regulatory updates and analysis.</p>
+        <a class="btn btn-outline-light" href="/access/request">Subscribe to Alerts</a>
+    </section>
+</div>

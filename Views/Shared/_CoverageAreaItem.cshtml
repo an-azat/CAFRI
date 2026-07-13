@@ -1,0 +1,31 @@
+@model CAFRI.ViewModels.Home.HomeCoverageAreaItemViewModel
+
+<article class="coverage-item">
+    <div class="coverage-item__icon" aria-hidden="true">
+        @switch (Model.Icon)
+        {
+            case "institution":
+                <svg viewBox="0 0 24 24"><path d="M12 4 4 8v1.5h16V8L12 4Zm-6 7h1.5v5H6v-5Zm5.25 0h1.5v5h-1.5v-5Zm5.25 0H18v5h-1.5v-5ZM4 18h16v1.5H4V18Z" /></svg>
+                break;
+            case "shield":
+                <svg viewBox="0 0 24 24"><path d="M12 3.5 5.5 6v5.46c0 4.03 2.78 7.8 6.5 8.96 3.72-1.16 6.5-4.93 6.5-8.96V6L12 3.5Zm0 1.61 5 1.92v4.43c0 3.22-2.17 6.25-5 7.28-2.83-1.03-5-4.06-5-7.28V7.03l5-1.92Z" /></svg>
+                break;
+            case "truck":
+                <svg viewBox="0 0 24 24"><path d="M3.5 6h10v8H3.5V6Zm11.5 2h3.07l2.43 2.74V14h-1.14a2.5 2.5 0 0 1-4.72 0H9.36a2.5 2.5 0 0 1-4.72 0H3.5v-1.5h1.14a2.5 2.5 0 0 1 4.72 0h5.28A2.5 2.5 0 0 1 17 12.5h2V11.3L17.4 9.5H15V8Z" /></svg>
+                break;
+            case "chart":
+                <svg viewBox="0 0 24 24"><path d="M5 18h14v1.5H5V18Zm1-2.25H7.5V10H6v5.75Zm5.25 0h1.5V6.5h-1.5v9.25Zm5.25 0H18v-7h-1.5v7Z" /></svg>
+                break;
+            case "globe":
+                <svg viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 1 0 16 8 8 0 0 1 0-16Zm-5.92 7.25h3.04c.12-1.54.58-3 1.31-4.13A6.52 6.52 0 0 0 6.08 11.25Zm0 1.5a6.52 6.52 0 0 0 4.35 4.13c-.73-1.13-1.19-2.59-1.31-4.13H6.08Zm4.54 0c.15 1.9.77 3.66 1.38 4.54.61-.88 1.23-2.64 1.38-4.54H10.62Zm2.76-1.5c-.15-1.9-.77-3.66-1.38-4.54-.61.88-1.23 2.64-1.38 4.54h2.76Zm1.19 5.63a6.52 6.52 0 0 0 4.35-4.13h-3.04c-.12 1.54-.58 3-1.31 4.13Zm1.31-5.63h3.04a6.52 6.52 0 0 0-4.35-4.13c.73 1.13 1.19 2.59 1.31 4.13Z" /></svg>
+                break;
+            default:
+                <svg viewBox="0 0 24 24"><path d="M7 17h10v1.5H7V17Zm0-4h10v1.5H7V13Zm0-4h10v1.5H7V9Z" /></svg>
+                break;
+        }
+    </div>
+    <div class="coverage-item__body">
+        <h3 class="coverage-item__title">@Model.Title</h3>
+        <p class="coverage-item__description">@Model.Description</p>
+    </div>
+</article>

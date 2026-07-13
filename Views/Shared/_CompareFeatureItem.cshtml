@@ -1,0 +1,29 @@
+@model CAFRI.ViewModels.Countries.CountryCompareFeatureViewModel
+
+<article class="compare-feature-item">
+    <div class="compare-feature-item__icon" aria-hidden="true">
+        @switch (Model.Icon)
+        {
+            case "bank":
+                <svg viewBox="0 0 24 24"><path d="M12 4 4 8v1.5h16V8L12 4Zm-6 7h1.5v5H6v-5Zm5.25 0h1.5v5h-1.5v-5Zm5.25 0H18v5h-1.5v-5ZM4 18h16v1.5H4V18Z" /></svg>
+                break;
+            case "shield":
+                <svg viewBox="0 0 24 24"><path d="M12 3.5 5.5 6v5.46c0 4.03 2.78 7.8 6.5 8.96 3.72-1.16 6.5-4.93 6.5-8.96V6L12 3.5Zm0 1.61 5 1.92v4.43c0 3.22-2.17 6.25-5 7.28-2.83-1.03-5-4.06-5-7.28V7.03l5-1.92Z" /></svg>
+                break;
+            case "trade":
+                <svg viewBox="0 0 24 24"><path d="M5 7h8v1.5H7.56l9.97 9.97-1.06 1.06L6.5 9.56V15H5V7Zm14 2h-1.5v5.44L7.53 4.47 8.59 3.4 18.5 13.32V9H20v8h-8v-1.5h5.44L7.47 5.53 8.53 4.47 18.5 14.44V9Z" /></svg>
+                break;
+            case "check":
+                <svg viewBox="0 0 24 24"><path d="M9.55 16.3 5.75 12.5l1.06-1.06 2.74 2.74 7.63-7.63 1.06 1.06-8.69 8.69Z" /></svg>
+                break;
+            case "institution":
+                <svg viewBox="0 0 24 24"><path d="M12 4 4 8v1.5h16V8L12 4Zm-6 7h1.5v5H6v-5Zm5.25 0h1.5v5h-1.5v-5Zm5.25 0H18v5h-1.5v-5ZM4 18h16v1.5H4V18Z" /></svg>
+                break;
+            default:
+                <svg viewBox="0 0 24 24"><path d="M5 18h14v1.5H5V18Zm1-2.25H7.5V10H6v5.75Zm5.25 0h1.5V6.5h-1.5v9.25Zm5.25 0H18v-7h-1.5v7Z" /></svg>
+                break;
+        }
+    </div>
+    <h3 class="compare-feature-item__title">@Model.Title</h3>
+    <p class="compare-feature-item__description">@Model.Description</p>
+</article>

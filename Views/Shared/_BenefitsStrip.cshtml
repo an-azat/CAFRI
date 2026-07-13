@@ -1,0 +1,12 @@
+@model IReadOnlyList<CAFRI.ViewModels.Publications.PublicationBenefitViewModel>
+
+<section class="benefits-strip">
+    @foreach (var item in Model)
+    {
+        <article class="benefit-item">
+            <div class="benefit-item__icon">@item.Title[..1]</div>
+            <h3>@item.Title</h3>
+            <p>@item.Description</p>
+        </article>
+    }
+</section>

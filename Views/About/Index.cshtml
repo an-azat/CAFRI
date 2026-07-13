@@ -1,0 +1,143 @@
+@model CAFRI.ViewModels.About.AboutPageViewModel
+@{
+    ViewData["Title"] = "About";
+    ViewData["PageTheme"] = "theme-dark";
+}
+
+<div class="page-about">
+    <section class="about-hero">
+        <div class="about-hero-content">
+            <h1 class="page-title">About CAFRI</h1>
+            <p class="page-lead">@Model.Description</p>
+            <p class="page-lead">@Model.DescriptionSecondary</p>
+            <div class="hero-actions">
+                @if (User.Identity?.IsAuthenticated != true)
+                {
+                    <a class="btn btn-primary btn-lg" href="/access/request">Request Professional Access</a>
+                }
+                <a class="btn btn-outline-light btn-lg" href="mailto:contact@cafri.org">Contact Us</a>
+            </div>
+        </div>
+
+        <div class="about-hero-map">
+            <svg viewBox="0 0 720 480" role="img" aria-label="Central Asia decorative map">
+                <rect x="0" y="0" width="720" height="480" rx="24" fill="#061426" />
+                <path d="M34 82c98-38 204-54 320-46 106 8 205 34 302 92" fill="none" stroke="rgba(55,130,210,0.16)" stroke-width="1.5" />
+                <path d="M58 278c74 24 160 22 240-2 68-20 116-40 194-44 68-4 126 8 170 24" fill="none" stroke="rgba(55,130,210,0.12)" stroke-width="1.2" />
+                <text class="about-hero-map__label" x="333.4" y="189.0">KAZAKHSTAN</text>
+                <text class="about-hero-map__label" x="352.5" y="306.4">UZBEKISTAN</text>
+                <text class="about-hero-map__label" x="455.8" y="305.1">KYRGYZSTAN</text>
+                <text class="about-hero-map__label" x="421.4" y="336.9">TAJIKISTAN</text>
+                <text class="about-hero-map__label" x="222.4" y="328.0">TURKMENISTAN</text>
+                <circle cx="430" cy="140" r="5"></circle>
+                <circle cx="385" cy="286" r="5"></circle>
+                <circle cx="470" cy="304" r="5"></circle>
+                <circle cx="421" cy="344" r="5"></circle>
+                <circle cx="200" cy="334" r="5"></circle>
+                <path d="M430 140 385 286 470 304" stroke="rgba(79,140,255,0.26)" stroke-width="1.2" fill="none" />
+                <path d="M385 286 421 344 200 334" stroke="rgba(79,140,255,0.18)" stroke-width="1.2" fill="none" />
+            </svg>
+        </div>
+    </section>
+
+    <section class="about-feature-row">
+        @foreach (var item in Model.HeroFeatures)
+        {
+            <partial name="_AboutFeatureItem" model="item" />
+        }
+    </section>
+
+    <section class="about-section">
+        <div class="about-section__grid">
+            <div>
+                <h2>What is CAFRI?</h2>
+                <p>CAFRI is an intelligence and data platform that tracks financial regulation, banking sector developments, trade and logistics, sanctions, compliance requirements, and macroeconomic indicators across Kazakhstan, Kyrgyzstan, Uzbekistan, Tajikistan, and Turkmenistan.</p>
+                <p>The goal of the platform is to turn complex regulatory and economic information into clear, structured, and actionable intelligence for professionals working with Central Asia.</p>
+            </div>
+            <article class="about-mission-card">
+                <div class="about-mission-card__icon">@Model.MissionCard.Title[..1]</div>
+                <h3>@Model.MissionCard.Title</h3>
+                <p>@Model.MissionCard.Description</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="about-section">
+        <h2>What CAFRI Covers</h2>
+        <p>CAFRI monitors and organizes information across the main areas that shape financial and economic decision-making in Central Asia.</p>
+        <div class="coverage-grid">
+            @foreach (var item in Model.CoverageAreas)
+            {
+                <partial name="_CoverageAreaCard" model="item" />
+            }
+        </div>
+    </section>
+
+    <section class="about-section geographic-coverage">
+        <div class="about-section__grid">
+            <div>
+                <h2>Geographic Coverage</h2>
+                <p>The platform focuses on Central Asia, with structured profiles and intelligence coverage for five countries.</p>
+                <ul class="about-list">
+                    @foreach (var item in Model.GeographicCountries)
+                    {
+                        <li>@item</li>
+                    }
+                </ul>
+            </div>
+            <div class="geographic-coverage__badges">
+                @foreach (var item in Model.CountryBadges)
+                {
+                    <span class="country-badge @(item switch { "KZ" => "country-badge--kz", "UZ" => "country-badge--uz", "KG" => "country-badge--kg", "TJ" => "country-badge--tj", "TM" => "country-badge--tm", _ => "country-badge--default" })">@item</span>
+                }
+            </div>
+        </div>
+    </section>
+
+    <section class="about-section">
+        <h2>Our Sources</h2>
+        <p>CAFRI collects and structures information from official and reliable sources.</p>
+        <div class="sources-grid">
+            @foreach (var item in Model.Sources)
+            {
+                <partial name="_SourceItem" model="item" />
+            }
+        </div>
+    </section>
+
+    <section class="about-section">
+        <h2>How CAFRI Works</h2>
+        <p>CAFRI follows a structured workflow to ensure accuracy, consistency, and relevance.</p>
+        <div class="workflow">
+            @foreach (var item in Model.WorkflowSteps)
+            {
+                <partial name="_WorkflowStep" model="item" />
+            }
+        </div>
+    </section>
+
+    <section class="about-section">
+        <h2>Who Uses CAFRI?</h2>
+        <p>CAFRI is designed for professionals and organizations that need reliable intelligence to assess risks, monitor developments, and support strategic planning in Central Asia.</p>
+        <div class="audience-grid">
+            @foreach (var item in Model.Audiences)
+            {
+                <partial name="_AudienceCard" model="item" />
+            }
+        </div>
+    </section>
+
+    <section class="about-section why-cafri">
+        <h2>Why CAFRI Matters</h2>
+        <p>Central Asia is becoming increasingly important for trade, finance, logistics, investment, and regional connectivity. At the same time, information across the region is often fragmented across multiple institutions, countries, and languages.</p>
+        <p>CAFRI helps solve this problem by collecting, structuring, and presenting intelligence in a clear format that supports professional decision-making.</p>
+        <ul class="about-list">
+            @foreach (var item in Model.WhyItMattersPoints)
+            {
+                <li>@item</li>
+            }
+        </ul>
+    </section>
+
+    <partial name="_BottomCta" />
+</div>

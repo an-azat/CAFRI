@@ -1,0 +1,73 @@
+@model CAFRI.Areas.Admin.ViewModels.Content.ContentSourceEditViewModel
+
+<section class="admin-page">
+    <div class="admin-page__hero">
+        <div class="admin-eyebrow">Source Editor</div>
+        <h1 class="admin-page__title">@((Model.Id is null) ? "Create Source" : "Edit Source")</h1>
+        <p class="admin-page__lead">Maintain the source registry used by editors for regulatory, macroeconomic and institutional references.</p>
+    </div>
+
+    <div class="admin-editor">
+        <section class="admin-editor-card">
+            <form method="post" data-live-preview-form>
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(false, "", new { @class = "validation-summary-errors" })
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="Name" class="form-label"></label>
+                        <input asp-for="Name" class="form-control" data-preview-target="Name" data-preview-key="title" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Slug" class="form-label"></label>
+                        <input asp-for="Slug" class="form-control" data-preview-target="Slug" data-preview-key="slug" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="SourceType" class="form-label"></label>
+                        <input asp-for="SourceType" class="form-control" data-preview-target="SourceType" data-preview-key="type" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="CountryCode" class="form-label"></label>
+                        <input asp-for="CountryCode" class="form-control" data-preview-target="CountryCode" data-preview-key="country" />
+                    </div>
+                    <div class="col-md-2">
+                        <label asp-for="DisplayOrder" class="form-label"></label>
+                        <input asp-for="DisplayOrder" class="form-control" />
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <div class="form-check">
+                            <input asp-for="IsPublished" class="form-check-input" />
+                            <label asp-for="IsPublished" class="form-check-label"></label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Url" class="form-label"></label>
+                        <input asp-for="Url" class="form-control" data-preview-target="Url" data-preview-key="url" />
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Summary" class="form-label"></label>
+                        <textarea asp-for="Summary" class="form-control" rows="6" data-preview-target="Summary" data-preview-key="description"></textarea>
+                    </div>
+                </div>
+                <div class="admin-editor-actions">
+                    <button type="submit" class="admin-primary-button">Save Source</button>
+                    <a asp-area="Admin" asp-controller="Sources" asp-action="Index" class="admin-chip">Back to List</a>
+                </div>
+            </form>
+        </section>
+        <aside class="admin-editor-preview">
+            <section class="admin-preview-card">
+                <div class="admin-panel__eyebrow">Live Preview</div>
+                <div class="admin-preview-card__badge-row">
+                    <span class="admin-preview-card__badge" data-preview="type" data-preview-fallback="Type">@Model.SourceType</span>
+                    <span class="admin-preview-card__badge" data-preview="country" data-preview-fallback="Country">@Model.CountryCode</span>
+                </div>
+                <h2 class="admin-preview-card__title" data-preview="title" data-preview-fallback="Source name">@Model.Name</h2>
+                <p class="admin-preview-card__body" data-preview="description" data-preview-fallback="Source summary preview.">@Model.Summary</p>
+                <ul class="admin-preview-list">
+                    <li>URL: <span data-preview="url" data-preview-fallback="not-set">@Model.Url</span></li>
+                    <li>Slug: <span data-preview="slug" data-preview-fallback="not-set">@Model.Slug</span></li>
+                </ul>
+            </section>
+        </aside>
+    </div>
+</section>

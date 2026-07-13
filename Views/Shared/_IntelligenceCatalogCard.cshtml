@@ -1,0 +1,23 @@
+@model CAFRI.ViewModels.Intelligence.IntelligenceItemCardViewModel
+
+<article class="intelligence-card">
+    <div class="category-label">@Model.Category</div>
+
+    <div class="intelligence-card__country-row">
+        <span class="country-badge @Model.CountryAccentClass">@Model.CountryCode</span>
+        <span class="intelligence-card__country-name">@Model.CountryName</span>
+    </div>
+
+    <div class="intelligence-card__date">@Model.PublishedLabel</div>
+
+    <h2 class="intelligence-card__title">
+        <a href="@Model.Url">@Model.Title</a>
+    </h2>
+
+    <p class="intelligence-card__description">@Model.Description</p>
+
+    <div class="intelligence-card__footer">
+        <span class="intelligence-card__source">Source: @Model.Source</span>
+        <a class="intelligence-card__link" href="@Model.Url">Read Full Analysis <span>&rarr;</span></a>
+    </div>
+</article>

@@ -1,0 +1,29 @@
+@model CAFRI.ViewModels.Publications.PublicationChartViewModel
+@using System.Text.Json
+
+@{
+    var chartConfig = JsonSerializer.Serialize(new
+    {
+        type = Model.ChartType,
+        title = Model.Title,
+        subtitle = Model.Subtitle,
+        suffix = Model.ValueSuffix,
+        labels = Model.Labels,
+        series = Model.Series.Select(item => new
+        {
+            label = item.Label,
+            color = item.Color,
+            values = item.Values
+        })
+    });
+}
+
+<article class="publication-chart-card">
+    <div class="publication-chart-card__header">
+        <h3>@Model.Title</h3>
+        <p>@Model.Subtitle</p>
+    </div>
+    <div class="publication-chart-card__canvas-shell">
+        <canvas data-publication-chart='@chartConfig'></canvas>
+    </div>
+</article>

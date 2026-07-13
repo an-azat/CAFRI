@@ -1,0 +1,168 @@
+@model CAFRI.ViewModels.Countries.CountryProfilePageViewModel
+@{
+    ViewData["Title"] = Model.Country.Name;
+    ViewData["PageTheme"] = "theme-dark";
+}
+
+<div class="page-country-profile">
+    <nav class="country-breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span>/</span>
+        <a href="/countries">Countries</a>
+        <span>/</span>
+        <span class="is-active">@Model.Country.Name</span>
+    </nav>
+
+    <partial name="_CountryProfileHero" model="Model" />
+    <partial name="_CountryTabs" model="Model.Tabs" />
+
+    <div class="country-profile-layout">
+        <main class="country-main-content">
+            <section class="country-overview-card">
+                <h2>Overview</h2>
+                <p>@Model.OverviewText</p>
+
+                <div class="country-highlights-grid">
+                    @foreach (var item in Model.Highlights)
+                    {
+                        <article class="country-highlight-item">
+                            <div class="country-highlight-item__icon" aria-hidden="true">
+                                @switch (item.Icon)
+                                {
+                                    case "shield":
+                                        <svg viewBox="0 0 24 24"><path d="M12 3.5 5.5 6v5.46c0 4.03 2.78 7.8 6.5 8.96 3.72-1.16 6.5-4.93 6.5-8.96V6L12 3.5Zm0 1.61 5 1.92v4.43c0 3.22-2.17 6.25-5 7.28-2.83-1.03-5-4.06-5-7.28V7.03l5-1.92Z" /></svg>
+                                        break;
+                                    case "trade":
+                                        <svg viewBox="0 0 24 24"><path d="M5 7h8v1.5H7.56l9.97 9.97-1.06 1.06L6.5 9.56V15H5V7Zm14 2h-1.5v5.44L7.53 4.47 8.59 3.4 18.5 13.32V9H20v8h-8v-1.5h5.44L7.47 5.53 8.53 4.47 18.5 14.44V9Z" /></svg>
+                                        break;
+                                    case "bank":
+                                        <svg viewBox="0 0 24 24"><path d="M12 4 4 8v1.5h16V8L12 4Zm-6 7h1.5v5H6v-5Zm5.25 0h1.5v5h-1.5v-5Zm5.25 0H18v5h-1.5v-5ZM4 18h16v1.5H4V18Z" /></svg>
+                                        break;
+                                    default:
+                                        <svg viewBox="0 0 24 24"><path d="M5 18h14v1.5H5V18Zm1-2.25H7.5V10H6v5.75Zm5.25 0h1.5V6.5h-1.5v9.25Zm5.25 0H18v-7h-1.5v7Z" /></svg>
+                                        break;
+                                }
+                            </div>
+                            <h3>@item.Title</h3>
+                            <p>@item.Description</p>
+                        </article>
+                    }
+                </div>
+            </section>
+
+            <section class="country-metric-grid">
+                @foreach (var item in Model.MacroSummaryCards)
+                {
+                    <partial name="_MetricCard" model="item" />
+                }
+            </section>
+
+            <section class="macro-overview">
+                <article class="table-card">
+                    <h2>Macroeconomic Overview</h2>
+                    <div class="table-card__scroll">
+                        <table class="country-data-table">
+                            <thead>
+                                <tr>
+                                    <th>Indicator</th>
+                                    <th>2023</th>
+                                    <th>2024</th>
+                                    <th>2025*</th>
+                                    <th>2026*</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var row in Model.MacroIndicatorRows)
+                                {
+                                    <tr>
+                                        <td>@row.Indicator</td>
+                                        <td>@row.Value2023</td>
+                                        <td>@row.Value2024</td>
+                                        <td>@row.Value2025</td>
+                                        <td>@row.Value2026</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-card__footnote">* Forecast by CAFRI Research Team</div>
+                </article>
+
+                <partial name="_ChartCard" model="Model.GdpGrowthChart" />
+                <partial name="_ChartCard" model="Model.InflationChart" />
+            </section>
+
+            <section class="financial-sector-snapshot">
+                <h2>Financial Sector Snapshot (2025)</h2>
+                <div class="financial-sector-snapshot__grid">
+                    @foreach (var item in Model.FinancialSectorSnapshot)
+                    {
+                        <article class="financial-sector-card">
+                            <div class="financial-sector-card__label">@item.Label</div>
+                            <div class="financial-sector-card__value">@item.Value</div>
+                            <div class="financial-sector-card__description">@item.Description</div>
+                        </article>
+                    }
+                </div>
+            </section>
+
+            <section class="country-banking-grid">
+                <partial name="_ChartCard" model="Model.BankingAssetsChart" />
+
+                <article class="table-card top-banks-table">
+                    <h2>Top Banks by Assets (May 2026)</h2>
+                    <div class="table-card__scroll">
+                        <table class="country-data-table">
+                            <thead>
+                                <tr>
+                                    <th>Bank</th>
+                                    <th>Assets (USD B)</th>
+                                    <th>Market Share</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var bank in Model.TopBanks)
+                                {
+                                    <tr>
+                                        <td>@bank.Name</td>
+                                        <td>@bank.Assets</td>
+                                        <td>@bank.MarketShare</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <a class="table-card__link" href="#">View all banks <span>&rarr;</span></a>
+                </article>
+            </section>
+        </main>
+
+        <aside class="country-sidebar">
+            <partial name="_SidebarCard" model='Tuple.Create("Latest Updates", Model.LatestUpdates, "View all updates")' />
+            <partial name="_SidebarCard" model='Tuple.Create("Related Publications", Model.RelatedPublications, "View all publications")' />
+
+            <section class="sidebar-card">
+                <h2 class="sidebar-card__title">Key Institutions</h2>
+                <div class="sidebar-card__items">
+                    @foreach (var item in Model.KeyInstitutions)
+                    {
+                        <article class="sidebar-card__item sidebar-card__item--institution">
+                            <h3>@item.Name</h3>
+                            <p>@item.Role</p>
+                        </article>
+                    }
+                </div>
+                <a class="sidebar-card__link" href="#">View all institutions <span>&rarr;</span></a>
+            </section>
+        </aside>
+    </div>
+
+    <partial name="_ExploreCountryLinks" model="Model" />
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="~/js/country-tabs.js" asp-append-version="true"></script>
+    <script src="~/js/country-charts.js" asp-append-version="true"></script>
+    <script src="~/js/country-hero-gallery.js" asp-append-version="true"></script>
+}

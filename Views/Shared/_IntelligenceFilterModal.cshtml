@@ -1,0 +1,75 @@
+@model CAFRI.ViewModels.Intelligence.IntelligencePageViewModel
+
+<div class="intelligence-filter-modal" data-intelligence-filter-modal hidden>
+    <div class="intelligence-filter-modal__backdrop" data-intelligence-filter-close></div>
+
+    <div class="intelligence-filter-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="intelligence-filter-title">
+        <form method="get" class="intelligence-filter-modal__form">
+            <div class="intelligence-filter-modal__header">
+                <div>
+                    <div class="intelligence-filter-modal__eyebrow">Filters</div>
+                    <h2 id="intelligence-filter-title" class="intelligence-filter-modal__title">Refine Intelligence</h2>
+                </div>
+
+                <button class="intelligence-filter-modal__close" type="button" aria-label="Close filters" data-intelligence-filter-close>
+                    <svg viewBox="0 0 24 24"><path d="M6.53 5.47 12 10.94l5.47-5.47 1.06 1.06L13.06 12l5.47 5.47-1.06 1.06L12 13.06l-5.47 5.47-1.06-1.06L10.94 12 5.47 6.53l1.06-1.06Z" /></svg>
+                </button>
+            </div>
+
+            <div class="intelligence-filter-modal__body">
+                <input type="hidden" name="search" value="@Model.SearchTerm" />
+                <input type="hidden" name="sortBy" value="@Model.SortBy" />
+
+                <div class="intelligence-filter-modal__grid">
+                    <section class="filter-group">
+                        <label class="filter-group__title" for="modal-country">Country</label>
+                        <select id="modal-country" name="country">
+                            @foreach (var option in Model.CountrySelectOptions)
+                            {
+                                <option value="@(option == "All Countries" ? string.Empty : option)" selected="@(option == Model.CountryFilter ? "selected" : null)">@option</option>
+                            }
+                        </select>
+                    </section>
+
+                    <section class="filter-group">
+                        <label class="filter-group__title" for="modal-category">Category</label>
+                        <select id="modal-category" name="category">
+                            @foreach (var option in Model.CategorySelectOptions)
+                            {
+                                <option value="@(option == "All Categories" ? string.Empty : option)" selected="@(option == Model.CategoryFilter ? "selected" : null)">@option</option>
+                            }
+                        </select>
+                    </section>
+
+                    <section class="filter-group">
+                        <label class="filter-group__title" for="modal-institution">Institution</label>
+                        <select id="modal-institution" name="institution">
+                            @foreach (var option in Model.InstitutionSelectOptions)
+                            {
+                                <option value="@(option == "All Institutions" ? string.Empty : option)" selected="@(option == Model.InstitutionFilter ? "selected" : null)">@option</option>
+                            }
+                        </select>
+                    </section>
+
+                    <section class="filter-group">
+                        <label class="filter-group__title" for="modal-date-range">Date Range</label>
+                        <select id="modal-date-range" name="dateRange">
+                            @foreach (var option in Model.DateRangeOptions)
+                            {
+                                <option value="@(option == "Any time" ? string.Empty : option)" selected="@(option == Model.DateRangeFilter ? "selected" : null)">@option</option>
+                            }
+                        </select>
+                    </section>
+                </div>
+            </div>
+
+            <div class="intelligence-filter-modal__footer">
+                <a class="intelligence-filter-modal__reset" href="@Url.Action("Index", "Intelligence", new { search = Model.SearchTerm, sortBy = Model.SortBy == "Newest" ? null : Model.SortBy })">Reset Filters</a>
+                <div class="intelligence-filter-modal__actions">
+                    <button class="intelligence-filter-modal__secondary" type="button" data-intelligence-filter-close>Cancel</button>
+                    <button class="intelligence-filter-modal__primary" type="submit">Apply Filters</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

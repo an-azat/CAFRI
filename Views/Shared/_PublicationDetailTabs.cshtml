@@ -1,0 +1,11 @@
+@model IReadOnlyList<CAFRI.ViewModels.Publications.PublicationDetailsTabViewModel>
+
+<nav class="publication-tabs" aria-label="Publication sections">
+    @foreach (var tab in Model)
+    {
+        <a class="publication-tabs__link @(tab.IsActive ? "is-active" : null)"
+           href="#@tab.TargetId"
+           data-section-link
+           data-target="@tab.TargetId">@tab.Label</a>
+    }
+</nav>

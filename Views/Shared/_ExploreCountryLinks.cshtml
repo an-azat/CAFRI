@@ -1,0 +1,21 @@
+@model CAFRI.ViewModels.Countries.CountryProfilePageViewModel
+
+<section class="explore-country">
+    <div class="explore-country__main">
+        <h2 class="explore-country__title">Explore More About @Model.Country.Name</h2>
+        <div class="explore-country__grid">
+            @foreach (var item in Model.ExploreLinks)
+            {
+                <article class="explore-country__item">
+                    <h3>@item.Title</h3>
+                    <a href="@item.Url">@item.Description <span>&rarr;</span></a>
+                </article>
+            }
+        </div>
+    </div>
+
+    <aside class="explore-country__compare">
+        <h3>Compare with Other Countries</h3>
+        <a href="/countries">Go to comparison <span>&rarr;</span></a>
+    </aside>
+</section>

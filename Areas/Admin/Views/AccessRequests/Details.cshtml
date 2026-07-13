@@ -1,0 +1,186 @@
+@model CAFRI.Areas.Admin.ViewModels.AccessRequests.AccessRequestReviewViewModel
+
+@{
+    var activationLink = !string.IsNullOrWhiteSpace(Model.ActivationToken)
+        ? Url.Action("Activate", "Account", new { area = "", token = Model.ActivationToken }, Context.Request.Scheme)
+        : null;
+
+    var requestStatusClass = Model.Status switch
+    {
+        CAFRI.Domain.Access.AccessRequestStatus.Approved => "is-approved",
+        CAFRI.Domain.Access.AccessRequestStatus.Declined => "is-declined",
+        _ => "is-pending"
+    };
+
+    var grantStatusClass = Model.GrantStatus switch
+    {
+        CAFRI.Domain.Access.AccessGrantStatus.Active => "is-active",
+        CAFRI.Domain.Access.AccessGrantStatus.Suspended => "is-suspended",
+        CAFRI.Domain.Access.AccessGrantStatus.Revoked => "is-revoked",
+        _ => "is-draft"
+    };
+}
+
+<section class="admin-page">
+    <div class="admin-page__hero">
+        <div class="admin-eyebrow">Access Review</div>
+        <h1 class="admin-page__title">@Model.FullName</h1>
+        <p class="admin-page__lead">
+            Review the applicant profile, inspect the current grant state and issue or modify approval-based professional access.
+        </p>
+    </div>
+
+    <div class="admin-dashboard-grid">
+        <section class="admin-side-stack">
+            @if (TempData["AdminError"] is string errorMessage)
+            {
+                <div class="alert alert-danger mb-0">@errorMessage</div>
+            }
+
+            @if (TempData["AdminSuccess"] is string successMessage)
+            {
+                <div class="alert alert-success mb-0">@successMessage</div>
+            }
+
+            <section class="admin-panel">
+                <div class="admin-panel__header">
+                    <div>
+                        <div class="admin-panel__eyebrow">Applicant</div>
+                        <h2 class="admin-panel__title">Profile</h2>
+                    </div>
+                    <span class="admin-status-pill @requestStatusClass">@Model.Status</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table admin-data-table">
+                        <tbody>
+                            <tr><th>Organization</th><td>@Model.Organization</td></tr>
+                            <tr><th>Position</th><td>@Model.Position</td></tr>
+                            <tr><th>Business email</th><td>@Model.BusinessEmail</td></tr>
+                            <tr><th>Country</th><td>@Model.Country</td></tr>
+                            <tr><th>Submitted</th><td>@Model.CreatedAtUtc.UtcDateTime.ToString("yyyy-MM-dd HH:mm 'UTC'")</td></tr>
+                            <tr><th>Reviewed</th><td>@(Model.ReviewedAtUtc?.UtcDateTime.ToString("yyyy-MM-dd HH:mm 'UTC'") ?? "Not reviewed yet")</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="admin-panel">
+                <div class="admin-panel__eyebrow">Purpose</div>
+                <h2 class="admin-panel__title">Why access was requested</h2>
+                <p>@Model.PurposeOfAccess</p>
+            </section>
+
+            @if (!string.IsNullOrWhiteSpace(Model.ActivationToken) && !string.IsNullOrWhiteSpace(activationLink))
+            {
+                <section class="admin-panel">
+                    <div class="admin-panel__eyebrow">Activation</div>
+                    <h2 class="admin-panel__title">Onboarding link</h2>
+                    <p class="admin-help-text">Share this link with the user so they can create their own password and activate the account.</p>
+                    <div class="admin-activation-controls">
+                        <input id="activation-link"
+                               class="form-control admin-filter-control"
+                               type="text"
+                               readonly
+                               value="@activationLink" />
+                        <button type="button" class="admin-chip" data-copy-text="@activationLink">Copy Link</button>
+                    </div>
+                    <p class="admin-help-text">Status: <strong>@(Model.ActivationStatus ?? "Unknown")</strong></p>
+                    <p class="admin-help-text">Expires: @(Model.ActivationExpiresAtUtc?.UtcDateTime.ToString("yyyy-MM-dd HH:mm 'UTC'") ?? "n/a")</p>
+                    <p class="admin-note">
+                        <a href="@activationLink" class="admin-inline-link" target="_blank" rel="noreferrer">Open activation page</a>
+                    </p>
+                </section>
+            }
+        </section>
+
+        <aside class="admin-side-stack">
+            <section class="admin-panel">
+                <div class="admin-panel__eyebrow">Grant Status</div>
+                <h2 class="admin-panel__title">Professional access</h2>
+                <p class="mb-3">
+                    @if (Model.GrantStatus is not null)
+                    {
+                        <span class="admin-status-pill @grantStatusClass">@Model.GrantStatus</span>
+                    }
+                    else
+                    {
+                        <span class="admin-status-pill is-draft">No grant</span>
+                    }
+                </p>
+                <ul class="admin-preview-list">
+                    <li>Grant issued: @(Model.HasGrant ? "Yes" : "No")</li>
+                    <li>Access type: @(Model.GrantAccessType?.ToString() ?? "n/a")</li>
+                    <li>Grant expiry: @(Model.GrantExpiresAtUtc?.UtcDateTime.ToString("yyyy-MM-dd HH:mm 'UTC'") ?? "Open-ended")</li>
+                    <li>Review note: @(string.IsNullOrWhiteSpace(Model.ReviewNote) ? "No note recorded." : Model.ReviewNote)</li>
+                </ul>
+            </section>
+
+            <section class="admin-panel">
+                <div class="admin-panel__eyebrow">Actions</div>
+                <h2 class="admin-panel__title">Moderation controls</h2>
+                <div class="admin-action-list">
+                    @if (Model.Status != CAFRI.Domain.Access.AccessRequestStatus.Approved)
+                    {
+                        <form asp-area="Admin" asp-controller="AccessRequests" asp-action="Approve" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="admin-primary-button w-100">Approve and Issue Access</button>
+                        </form>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Model.ActivationToken))
+                    {
+                        <form asp-area="Admin" asp-controller="AccessRequests" asp-action="RegenerateActivationLink" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="btn btn-outline-light w-100">Regenerate Activation Link</button>
+                        </form>
+                    }
+
+                    @if (Model.Status != CAFRI.Domain.Access.AccessRequestStatus.Declined)
+                    {
+                        <form asp-area="Admin" asp-controller="AccessRequests" asp-action="Decline" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <input type="text" name="reviewNote" class="form-control admin-filter-control mb-2" placeholder="Optional decline note" />
+                            <button type="submit" class="btn btn-outline-warning w-100">Decline Request</button>
+                        </form>
+                    }
+
+                    @if (Model.HasGrant && Model.GrantStatus != CAFRI.Domain.Access.AccessGrantStatus.Suspended)
+                    {
+                        <form asp-area="Admin" asp-controller="AccessRequests" asp-action="SuspendGrant" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="btn btn-outline-warning w-100">Suspend Grant</button>
+                        </form>
+                    }
+
+                    @if (Model.HasGrant && Model.GrantStatus == CAFRI.Domain.Access.AccessGrantStatus.Suspended)
+                    {
+                        <form asp-area="Admin" asp-controller="AccessRequests" asp-action="ReactivateGrant" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="btn btn-outline-success w-100">Reactivate Grant</button>
+                        </form>
+                    }
+
+                    @if (Model.HasGrant && Model.GrantStatus != CAFRI.Domain.Access.AccessGrantStatus.Revoked)
+                    {
+                        <form asp-area="Admin" asp-controller="AccessRequests" asp-action="RevokeGrant" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="btn btn-outline-danger w-100">Revoke Grant</button>
+                        </form>
+                    }
+
+                    <a asp-area="Admin" asp-controller="AccessRequests" asp-action="Index" class="admin-chip">Back to Queue</a>
+                </div>
+            </section>
+        </aside>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/admin-access-requests.js" asp-append-version="true"></script>
+}

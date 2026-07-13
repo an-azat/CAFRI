@@ -1,0 +1,930 @@
+@model CAFRI.Areas.Admin.ViewModels.Content.PublicationContentEditViewModel
+@using System.Linq
+
+@{
+    var savedGalleryItems = (Model.GalleryText ?? string.Empty)
+        .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .Select(line => line.Split('|').Select(part => part.Trim()).ToArray())
+        .Where(parts => parts.Length != 0 && !string.IsNullOrWhiteSpace(parts[0]))
+        .Select(parts => new
+        {
+            ImageUrl = parts[0],
+            Alt = parts.Length > 1 ? parts[1] : string.Empty,
+            Title = parts.Length > 2 ? parts[2] : string.Empty,
+            Caption = parts.Length > 3 ? string.Join(" | ", parts.Skip(3)) : string.Empty
+        })
+        .ToList();
+}
+
+<section class="admin-page">
+    <div class="admin-page__hero">
+        <div class="admin-eyebrow">Publication Editor</div>
+        <h1 class="admin-page__title">@((Model.Id is null) ? "Create Publication" : "Edit Publication")</h1>
+        <p class="admin-page__lead">
+            Update the database record, publication metadata and the main detail-page content from a single editorial workspace.
+        </p>
+    </div>
+
+    <div class="admin-editor admin-editor--single">
+        <section class="admin-editor-card">
+            @if (Model.Id is not null && !string.IsNullOrWhiteSpace(Model.Slug))
+            {
+                <div class="admin-editor-actions mb-4">
+                    <a class="admin-primary-button" href="/publications/@Model.Slug" target="_blank" rel="noreferrer">Open Publication Page</a>
+                </div>
+            }
+
+            <form method="post" enctype="multipart/form-data" data-live-preview-form>
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(false, "", new { @class = "validation-summary-errors" })
+
+                @if (TempData["AdminSuccess"] is string successMessage)
+                {
+                    <div class="alert alert-success mb-4">@successMessage</div>
+                }
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label asp-for="Slug" class="form-label"></label>
+                        <input asp-for="Slug" class="form-control" data-preview-target="Slug" data-preview-key="slug" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Type" class="form-label"></label>
+                        <select asp-for="Type" class="form-select" data-preview-target="Type" data-preview-key="type">
+                            @foreach (var type in Model.AvailableTypes)
+                            {
+                                <option value="@type">@type</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label asp-for="CountryCode" class="form-label"></label>
+                        <select asp-for="CountryCode" class="form-select" data-preview-target="CountryCode" data-preview-key="countryCode">
+                            @foreach (var country in Model.AvailableCountries)
+                            {
+                                <option value="@country.Code">@country.Code</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label asp-for="DisplayOrder" class="form-label"></label>
+                        <input asp-for="DisplayOrder" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="CountryLabel" class="form-label"></label>
+                        <input asp-for="CountryLabel" class="form-control" readonly data-preview-target="CountryLabel" data-preview-key="countryLabel" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Meta" class="form-label"></label>
+                        <input asp-for="Meta" class="form-control" readonly data-preview-target="Meta" data-preview-key="meta" />
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Title" class="form-label"></label>
+                        <input asp-for="Title" class="form-control" data-preview-target="Title" data-preview-key="title" />
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Description" class="form-label"></label>
+                        <textarea asp-for="Description" class="form-control" rows="4" data-preview-target="Description" data-preview-key="description"></textarea>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Topic" class="form-label"></label>
+                        <select asp-for="Topic" class="form-select">
+                            @foreach (var topic in Model.AvailableTopics)
+                            {
+                                <option value="@topic">@topic</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="PublishedDate" class="form-label"></label>
+                        <input asp-for="PublishedDate" class="form-control" readonly />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="PublishedMonth" class="form-label"></label>
+                        <input asp-for="PublishedMonth" type="month" class="form-control" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="ReadingTime" class="form-label"></label>
+                        <select asp-for="ReadingTime" class="form-select">
+                            @foreach (var readingTime in Model.AvailableReadingTimes)
+                            {
+                                <option value="@readingTime">@readingTime</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="AuthorLabel" class="form-label"></label>
+                        <input asp-for="AuthorLabel" class="form-control" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="DocumentLabel" class="form-label"></label>
+                        <input asp-for="DocumentLabel" class="form-control" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="HeroVisualClassName" class="form-label"></label>
+                        <input asp-for="HeroVisualClassName" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <div class="admin-media-hero-editor" data-media-hero-editor>
+                            <div class="admin-media-hero-editor__preview">
+                                <img data-media-hero-preview-image alt="Publication hero image" hidden />
+                                <div class="admin-media-hero-editor__placeholder" data-media-hero-preview-placeholder>No hero image</div>
+                                <div class="admin-media-hero-editor__label" data-media-hero-preview-label>No hero image uploaded yet</div>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="HeroImageUrl" class="form-label"></label>
+                                    <input asp-for="HeroImageUrl" class="form-control" readonly data-media-hero-url />
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="HeroImageFile" class="form-label">Hero Photo Upload</label>
+                                    <input asp-for="HeroImageFile" type="file" class="form-control" accept="image/*" data-media-hero-file />
+                                    <span asp-validation-for="HeroImageFile" class="field-validation-error"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(Model.HeroImageUrl) || savedGalleryItems.Count != 0)
+                    {
+                        <div class="col-12">
+                            <section class="admin-saved-media">
+                                <div class="admin-panel__eyebrow">Currently Saved Media</div>
+                                <div class="admin-saved-media__grid">
+                                    <div class="admin-saved-media__section">
+                                        <h3>Saved Hero Image</h3>
+                                        @if (!string.IsNullOrWhiteSpace(Model.HeroImageUrl))
+                                        {
+                                            <div class="admin-saved-media__hero">
+                                                <img src="@Model.HeroImageUrl" alt="Saved publication hero image" />
+                                                <div class="admin-saved-media__url">@Model.HeroImageUrl</div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="admin-saved-media__empty">No hero image saved yet.</div>
+                                        }
+                                    </div>
+                                    <div class="admin-saved-media__section">
+                                        <h3>Saved Gallery</h3>
+                                        @if (savedGalleryItems.Count != 0)
+                                        {
+                                            <div class="admin-saved-media__gallery">
+                                                @foreach (var item in savedGalleryItems)
+                                                {
+                                                    <article class="admin-saved-media__gallery-item">
+                                                        <img src="@item.ImageUrl" alt="@(string.IsNullOrWhiteSpace(item.Alt) ? item.Title : item.Alt)" />
+                                                        <div class="admin-saved-media__gallery-copy">
+                                                            <strong>@(string.IsNullOrWhiteSpace(item.Title) ? "Untitled image" : item.Title)</strong>
+                                                            @if (!string.IsNullOrWhiteSpace(item.Caption))
+                                                            {
+                                                                <p>@item.Caption</p>
+                                                            }
+                                                            <span>@item.ImageUrl</span>
+                                                        </div>
+                                                    </article>
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="admin-saved-media__empty">No gallery images saved yet.</div>
+                                        }
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    }
+                    <div class="col-12">
+                        <label asp-for="PdfDownloadUrl" class="form-label"></label>
+                        <input asp-for="PdfDownloadUrl" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="GalleryFiles" class="form-label">Photo Gallery Uploads</label>
+                        <input asp-for="GalleryFiles" type="file" class="form-control" multiple accept="image/*" />
+                        <span asp-validation-for="GalleryFiles" class="field-validation-error"></span>
+                        <div class="form-text">Upload one or more photos for the publication gallery.</div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="GalleryText" class="form-label">Photo Gallery Items</label>
+                        <div class="admin-media-gallery-editor" data-media-gallery-editor>
+                            <textarea asp-for="GalleryText" class="form-control font-monospace d-none" rows="6" data-media-gallery-raw></textarea>
+                            <div class="admin-media-gallery-editor__list" data-media-gallery-list></div>
+                            <button type="button" class="admin-chip admin-media-gallery-editor__add" data-media-gallery-add>Add Gallery Item</button>
+                        </div>
+                        <div class="form-text">Manage gallery items visually. Data is still stored in the compatible `ImageUrl | Alt | Title | Caption` format.</div>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <div class="form-check">
+                            <input asp-for="IsPublished" class="form-check-input" />
+                            <label asp-for="IsPublished" class="form-check-label"></label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="ActionsText" class="form-label"></label>
+                        <textarea asp-for="ActionsText" class="form-control font-monospace" rows="4"></textarea>
+                        <div class="form-text">One action per line. Example: `Read Online`</div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="ExecutiveSummaryText" class="form-label"></label>
+                        <textarea asp-for="ExecutiveSummaryText" class="form-control" rows="5"></textarea>
+                        <div class="form-text">One paragraph per line.</div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="ExecutiveHighlightsText" class="form-label"></label>
+                        <textarea asp-for="ExecutiveHighlightsText" class="form-control" rows="4"></textarea>
+                        <div class="form-text">One highlight per line.</div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="KeyFindingsText" class="form-label"></label>
+                        <textarea asp-for="KeyFindingsText" class="form-control font-monospace d-none" rows="6" data-publication-findings-raw></textarea>
+                        <div class="publication-findings-editor" data-publication-findings-editor>
+                            <div class="publication-findings-editor__list" data-publication-findings-list></div>
+                            <button type="button" class="admin-chip publication-findings-editor__add" data-publication-findings-add>Add Key Finding</button>
+                        </div>
+                        <div class="form-text">Manage key findings as structured cards. They will be saved into the compatible `Icon | Title | Description` format automatically.</div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="SectionsText" class="form-label"></label>
+                        <textarea asp-for="SectionsText" class="form-control font-monospace d-none" rows="8" data-publication-sections-raw></textarea>
+                        <div class="publication-sections-editor" data-publication-sections-editor>
+                            <div class="publication-sections-editor__list" data-publication-sections-list></div>
+                            <button type="button" class="admin-chip publication-sections-editor__add" data-publication-sections-add>Add Section</button>
+                        </div>
+                        <div class="form-text">Manage article sections as structured blocks. Paragraphs and bullet points accept one item per line and will be saved into the compatible pipe format automatically.</div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="DocumentsText" class="form-label"></label>
+                        <textarea asp-for="DocumentsText" class="form-control font-monospace d-none" rows="5" data-publication-documents-raw></textarea>
+                        <div class="publication-documents-editor" data-publication-documents-editor>
+                            <div class="publication-documents-editor__list" data-publication-documents-list></div>
+                            <button type="button" class="admin-chip publication-documents-editor__add" data-publication-documents-add>Add Document</button>
+                        </div>
+                        <div class="form-text">Manage publication documents as structured items. They will be saved into the compatible `Title | Type | Meta | DownloadUrl` format automatically.</div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="RelatedIntelligenceText" class="form-label"></label>
+                        <textarea asp-for="RelatedIntelligenceText" class="form-control font-monospace d-none" rows="5" data-publication-related-raw></textarea>
+                        <div class="publication-related-editor" data-publication-related-editor>
+                            <div class="publication-related-editor__list" data-publication-related-list></div>
+                            <button type="button" class="admin-chip publication-related-editor__add" data-publication-related-add>Add Related Item</button>
+                        </div>
+                        <div class="form-text">Manage related intelligence items as structured entries. They will be saved into the compatible `Title | Meta | Url` format automatically.</div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="PublicationInfoText" class="form-label"></label>
+                        <textarea asp-for="PublicationInfoText" class="form-control font-monospace d-none" rows="5" data-publication-info-raw></textarea>
+                        <div class="publication-info-editor" data-publication-info-editor>
+                            <div class="publication-info-editor__list" data-publication-info-list></div>
+                            <button type="button" class="admin-chip publication-info-editor__add" data-publication-info-add>Add Info Row</button>
+                        </div>
+                        <div class="form-text">Manage publication info as structured label/value pairs. They will be saved into the compatible `Label | Value` format automatically.</div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="DetailsJson" class="form-label"></label>
+                        <textarea asp-for="DetailsJson" class="form-control font-monospace" rows="8"></textarea>
+                        <div class="form-text">Legacy JSON fallback. Existing advanced blocks are preserved, but primary editing should now happen through the structured fields above.</div>
+                    </div>
+                </div>
+
+                <div class="admin-editor-actions">
+                    <button type="submit" class="admin-primary-button">Save Publication</button>
+                    <a asp-area="Admin" asp-controller="Publications" asp-action="Index" class="admin-chip">Back to List</a>
+                </div>
+            </form>
+        </section>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/admin-media-editors.js" asp-append-version="true"></script>
+    <script>
+        (() => {
+            const countryCode = document.getElementById("CountryCode");
+            const countryLabel = document.getElementById("CountryLabel");
+            const publishedMonth = document.getElementById("PublishedMonth");
+            const publishedDate = document.getElementById("PublishedDate");
+            const readingTime = document.getElementById("ReadingTime");
+            const meta = document.getElementById("Meta");
+            const documentsRaw = document.querySelector("[data-publication-documents-raw]");
+            const documentsEditor = document.querySelector("[data-publication-documents-editor]");
+            const documentsList = document.querySelector("[data-publication-documents-list]");
+            const addDocumentButton = document.querySelector("[data-publication-documents-add]");
+            const relatedRaw = document.querySelector("[data-publication-related-raw]");
+            const relatedEditor = document.querySelector("[data-publication-related-editor]");
+            const relatedList = document.querySelector("[data-publication-related-list]");
+            const addRelatedButton = document.querySelector("[data-publication-related-add]");
+            const infoRaw = document.querySelector("[data-publication-info-raw]");
+            const infoEditor = document.querySelector("[data-publication-info-editor]");
+            const infoList = document.querySelector("[data-publication-info-list]");
+            const addInfoButton = document.querySelector("[data-publication-info-add]");
+            const findingsRaw = document.querySelector("[data-publication-findings-raw]");
+            const findingsEditor = document.querySelector("[data-publication-findings-editor]");
+            const findingsList = document.querySelector("[data-publication-findings-list]");
+            const addFindingsButton = document.querySelector("[data-publication-findings-add]");
+            const sectionsRaw = document.querySelector("[data-publication-sections-raw]");
+            const sectionsEditor = document.querySelector("[data-publication-sections-editor]");
+            const sectionsList = document.querySelector("[data-publication-sections-list]");
+            const addSectionsButton = document.querySelector("[data-publication-sections-add]");
+            if (!countryCode || !countryLabel) {
+                return;
+            }
+
+            const labels = {
+                @for (var i = 0; i < Model.AvailableCountries.Count; i++)
+                {
+                    var item = Model.AvailableCountries[i];
+                    @:@Html.Raw(System.Text.Json.JsonSerializer.Serialize(item.Code)): @Html.Raw(System.Text.Json.JsonSerializer.Serialize(item.Label))@(i < Model.AvailableCountries.Count - 1 ? "," : "")
+                }
+            };
+
+            const syncCountryLabel = () => {
+                countryLabel.value = labels[countryCode.value] || countryLabel.value;
+            };
+
+            const syncMeta = () => {
+                if (!publishedMonth || !publishedDate || !readingTime || !meta) {
+                    return;
+                }
+
+                if (publishedMonth.value) {
+                    const [year, month] = publishedMonth.value.split("-");
+                    const date = new Date(Number(year), Number(month) - 1, 1);
+                    publishedDate.value = date.toLocaleString("en-US", { month: "long", year: "numeric" });
+                }
+
+                meta.value = `${publishedDate.value || "TBD"} | ${readingTime.value || "12 min read"}`;
+            };
+
+            const parseDocumentRows = (raw) => {
+                if (!raw || !raw.trim()) {
+                    return [];
+                }
+
+                return raw
+                    .split(/\r?\n/)
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .map((line) => {
+                        const parts = line.split("|").map((part) => part.trim());
+                        return {
+                            title: parts[0] || "",
+                            type: parts[1] || "",
+                            meta: parts[2] || "",
+                            url: parts.slice(3).join(" | ") || "#"
+                        };
+                    });
+            };
+
+            const serializeDocumentRows = () => {
+                if (!documentsRaw || !documentsList) {
+                    return;
+                }
+
+                const rows = Array.from(documentsList.querySelectorAll("[data-document-row]"))
+                    .map((row) => {
+                        const title = row.querySelector("[data-document-field='title']")?.value?.trim() || "";
+                        const type = row.querySelector("[data-document-field='type']")?.value?.trim() || "";
+                        const itemMeta = row.querySelector("[data-document-field='meta']")?.value?.trim() || "";
+                        const url = row.querySelector("[data-document-field='url']")?.value?.trim() || "#";
+                        if (!title && !type && !itemMeta && !url) {
+                            return null;
+                        }
+
+                        return `${title} | ${type} | ${itemMeta} | ${url}`;
+                    })
+                    .filter(Boolean);
+
+                documentsRaw.value = rows.join("\n");
+            };
+
+            const buildDocumentRow = (item = {}) => {
+                const escapeValue = (value) =>
+                    String(value ?? "")
+                        .replace(/&/g, "&amp;")
+                        .replace(/"/g, "&quot;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;");
+
+                const row = document.createElement("div");
+                row.className = "publication-document-row";
+                row.setAttribute("data-document-row", "");
+                row.innerHTML = `
+                    <div class="publication-document-row__grid">
+                        <div>
+                            <label class="form-label">Title</label>
+                            <input type="text" class="form-control" data-document-field="title" value="${escapeValue(item.title)}">
+                        </div>
+                        <div>
+                            <label class="form-label">Type</label>
+                            <input type="text" class="form-control" data-document-field="type" value="${escapeValue(item.type)}">
+                        </div>
+                        <div>
+                            <label class="form-label">Meta</label>
+                            <input type="text" class="form-control" data-document-field="meta" value="${escapeValue(item.meta)}">
+                        </div>
+                        <div>
+                            <label class="form-label">Download URL</label>
+                            <input type="text" class="form-control" data-document-field="url" value="${escapeValue(item.url || "#")}">
+                        </div>
+                    </div>
+                    <div class="publication-document-row__actions">
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-document-remove>Remove</button>
+                    </div>
+                `;
+
+                row.querySelectorAll("input").forEach((input) => {
+                    input.addEventListener("input", serializeDocumentRows);
+                });
+
+                row.querySelector("[data-document-remove]")?.addEventListener("click", () => {
+                    row.remove();
+                    serializeDocumentRows();
+                });
+
+                return row;
+            };
+
+            const initDocumentsEditor = () => {
+                if (!documentsRaw || !documentsEditor || !documentsList || !addDocumentButton) {
+                    return;
+                }
+
+                const initialRows = parseDocumentRows(documentsRaw.value);
+                if (initialRows.length === 0) {
+                    documentsList.appendChild(buildDocumentRow({}));
+                } else {
+                    initialRows.forEach((item) => documentsList.appendChild(buildDocumentRow(item)));
+                }
+
+                addDocumentButton.addEventListener("click", () => {
+                    documentsList.appendChild(buildDocumentRow({}));
+                    serializeDocumentRows();
+                });
+
+                documentsRaw.form?.addEventListener("submit", serializeDocumentRows);
+                serializeDocumentRows();
+            };
+
+            const parseRelatedRows = (raw) => {
+                if (!raw || !raw.trim()) {
+                    return [];
+                }
+
+                return raw
+                    .split(/\r?\n/)
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .map((line) => {
+                        const parts = line.split("|").map((part) => part.trim());
+                        return {
+                            title: parts[0] || "",
+                            meta: parts[1] || "",
+                            url: parts.slice(2).join(" | ") || "#"
+                        };
+                    });
+            };
+
+            const serializeRelatedRows = () => {
+                if (!relatedRaw || !relatedList) {
+                    return;
+                }
+
+                const rows = Array.from(relatedList.querySelectorAll("[data-related-row]"))
+                    .map((row) => {
+                        const title = row.querySelector("[data-related-field='title']")?.value?.trim() || "";
+                        const itemMeta = row.querySelector("[data-related-field='meta']")?.value?.trim() || "";
+                        const url = row.querySelector("[data-related-field='url']")?.value?.trim() || "#";
+                        if (!title && !itemMeta && !url) {
+                            return null;
+                        }
+
+                        return `${title} | ${itemMeta} | ${url}`;
+                    })
+                    .filter(Boolean);
+
+                relatedRaw.value = rows.join("\n");
+            };
+
+            const buildRelatedRow = (item = {}) => {
+                const escapeValue = (value) =>
+                    String(value ?? "")
+                        .replace(/&/g, "&amp;")
+                        .replace(/"/g, "&quot;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;");
+
+                const row = document.createElement("div");
+                row.className = "publication-related-row";
+                row.setAttribute("data-related-row", "");
+                row.innerHTML = `
+                    <div class="publication-related-row__grid">
+                        <div>
+                            <label class="form-label">Title</label>
+                            <input type="text" class="form-control" data-related-field="title" value="${escapeValue(item.title)}">
+                        </div>
+                        <div>
+                            <label class="form-label">Meta</label>
+                            <input type="text" class="form-control" data-related-field="meta" value="${escapeValue(item.meta)}">
+                        </div>
+                        <div>
+                            <label class="form-label">URL</label>
+                            <input type="text" class="form-control" data-related-field="url" value="${escapeValue(item.url || "#")}">
+                        </div>
+                    </div>
+                    <div class="publication-related-row__actions">
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-related-remove>Remove</button>
+                    </div>
+                `;
+
+                row.querySelectorAll("input").forEach((input) => {
+                    input.addEventListener("input", serializeRelatedRows);
+                });
+
+                row.querySelector("[data-related-remove]")?.addEventListener("click", () => {
+                    row.remove();
+                    serializeRelatedRows();
+                });
+
+                return row;
+            };
+
+            const initRelatedEditor = () => {
+                if (!relatedRaw || !relatedEditor || !relatedList || !addRelatedButton) {
+                    return;
+                }
+
+                const initialRows = parseRelatedRows(relatedRaw.value);
+                if (initialRows.length === 0) {
+                    relatedList.appendChild(buildRelatedRow({}));
+                } else {
+                    initialRows.forEach((item) => relatedList.appendChild(buildRelatedRow(item)));
+                }
+
+                addRelatedButton.addEventListener("click", () => {
+                    relatedList.appendChild(buildRelatedRow({}));
+                    serializeRelatedRows();
+                });
+
+                relatedRaw.form?.addEventListener("submit", serializeRelatedRows);
+                serializeRelatedRows();
+            };
+
+            const parseInfoRows = (raw) => {
+                if (!raw || !raw.trim()) {
+                    return [];
+                }
+
+                return raw
+                    .split(/\r?\n/)
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .map((line) => {
+                        const parts = line.split("|").map((part) => part.trim());
+                        return {
+                            label: parts[0] || "",
+                            value: parts.slice(1).join(" | ") || ""
+                        };
+                    });
+            };
+
+            const serializeInfoRows = () => {
+                if (!infoRaw || !infoList) {
+                    return;
+                }
+
+                const rows = Array.from(infoList.querySelectorAll("[data-info-row]"))
+                    .map((row) => {
+                        const label = row.querySelector("[data-info-field='label']")?.value?.trim() || "";
+                        const value = row.querySelector("[data-info-field='value']")?.value?.trim() || "";
+                        if (!label && !value) {
+                            return null;
+                        }
+
+                        return `${label} | ${value}`;
+                    })
+                    .filter(Boolean);
+
+                infoRaw.value = rows.join("\n");
+            };
+
+            const buildInfoRow = (item = {}) => {
+                const escapeValue = (value) =>
+                    String(value ?? "")
+                        .replace(/&/g, "&amp;")
+                        .replace(/"/g, "&quot;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;");
+
+                const row = document.createElement("div");
+                row.className = "publication-info-row";
+                row.setAttribute("data-info-row", "");
+                row.innerHTML = `
+                    <div class="publication-info-row__grid">
+                        <div>
+                            <label class="form-label">Label</label>
+                            <input type="text" class="form-control" data-info-field="label" value="${escapeValue(item.label)}">
+                        </div>
+                        <div>
+                            <label class="form-label">Value</label>
+                            <input type="text" class="form-control" data-info-field="value" value="${escapeValue(item.value)}">
+                        </div>
+                    </div>
+                    <div class="publication-info-row__actions">
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-info-remove>Remove</button>
+                    </div>
+                `;
+
+                row.querySelectorAll("input").forEach((input) => {
+                    input.addEventListener("input", serializeInfoRows);
+                });
+
+                row.querySelector("[data-info-remove]")?.addEventListener("click", () => {
+                    row.remove();
+                    serializeInfoRows();
+                });
+
+                return row;
+            };
+
+            const initInfoEditor = () => {
+                if (!infoRaw || !infoEditor || !infoList || !addInfoButton) {
+                    return;
+                }
+
+                const initialRows = parseInfoRows(infoRaw.value);
+                if (initialRows.length === 0) {
+                    infoList.appendChild(buildInfoRow({}));
+                } else {
+                    initialRows.forEach((item) => infoList.appendChild(buildInfoRow(item)));
+                }
+
+                addInfoButton.addEventListener("click", () => {
+                    infoList.appendChild(buildInfoRow({}));
+                    serializeInfoRows();
+                });
+
+                infoRaw.form?.addEventListener("submit", serializeInfoRows);
+                serializeInfoRows();
+            };
+
+            const parseFindingRows = (raw) => {
+                if (!raw || !raw.trim()) {
+                    return [];
+                }
+
+                return raw
+                    .split(/\r?\n/)
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .map((line) => {
+                        const parts = line.split("|").map((part) => part.trim());
+                        return {
+                            icon: parts[0] || "",
+                            title: parts[1] || "",
+                            description: parts.slice(2).join(" | ") || ""
+                        };
+                    });
+            };
+
+            const serializeFindingRows = () => {
+                if (!findingsRaw || !findingsList) {
+                    return;
+                }
+
+                const rows = Array.from(findingsList.querySelectorAll("[data-finding-row]"))
+                    .map((row) => {
+                        const icon = row.querySelector("[data-finding-field='icon']")?.value?.trim() || "";
+                        const title = row.querySelector("[data-finding-field='title']")?.value?.trim() || "";
+                        const description = row.querySelector("[data-finding-field='description']")?.value?.trim() || "";
+                        if (!icon && !title && !description) {
+                            return null;
+                        }
+
+                        return `${icon} | ${title} | ${description}`;
+                    })
+                    .filter(Boolean);
+
+                findingsRaw.value = rows.join("\n");
+            };
+
+            const buildFindingRow = (item = {}) => {
+                const escapeValue = (value) =>
+                    String(value ?? "")
+                        .replace(/&/g, "&amp;")
+                        .replace(/"/g, "&quot;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;");
+
+                const row = document.createElement("div");
+                row.className = "publication-finding-row";
+                row.setAttribute("data-finding-row", "");
+                row.innerHTML = `
+                    <div class="publication-finding-row__grid">
+                        <div>
+                            <label class="form-label">Icon / No.</label>
+                            <input type="text" class="form-control" data-finding-field="icon" value="${escapeValue(item.icon)}">
+                        </div>
+                        <div>
+                            <label class="form-label">Title</label>
+                            <input type="text" class="form-control" data-finding-field="title" value="${escapeValue(item.title)}">
+                        </div>
+                        <div class="publication-finding-row__description">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" rows="3" data-finding-field="description">${escapeValue(item.description)}</textarea>
+                        </div>
+                    </div>
+                    <div class="publication-finding-row__actions">
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-finding-remove>Remove</button>
+                    </div>
+                `;
+
+                row.querySelectorAll("input, textarea").forEach((input) => {
+                    input.addEventListener("input", serializeFindingRows);
+                });
+
+                row.querySelector("[data-finding-remove]")?.addEventListener("click", () => {
+                    row.remove();
+                    serializeFindingRows();
+                });
+
+                return row;
+            };
+
+            const initFindingsEditor = () => {
+                if (!findingsRaw || !findingsEditor || !findingsList || !addFindingsButton) {
+                    return;
+                }
+
+                const initialRows = parseFindingRows(findingsRaw.value);
+                if (initialRows.length === 0) {
+                    findingsList.appendChild(buildFindingRow({}));
+                } else {
+                    initialRows.forEach((item) => findingsList.appendChild(buildFindingRow(item)));
+                }
+
+                addFindingsButton.addEventListener("click", () => {
+                    findingsList.appendChild(buildFindingRow({}));
+                    serializeFindingRows();
+                });
+
+                findingsRaw.form?.addEventListener("submit", serializeFindingRows);
+                serializeFindingRows();
+            };
+
+            const parseSectionRows = (raw) => {
+                if (!raw || !raw.trim()) {
+                    return [];
+                }
+
+                return raw
+                    .split(/\r?\n/)
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .map((line) => {
+                        const parts = line.split("|").map((part) => part.trim());
+                        return {
+                            id: parts[0] || "",
+                            heading: parts[1] || "",
+                            paragraphs: (parts[2] || "").split("~~").map((value) => value.trim()).filter(Boolean).join("\n"),
+                            bulletPoints: (parts[3] || "").split("~~").map((value) => value.trim()).filter(Boolean).join("\n"),
+                            tone: parts[4] || "",
+                            calloutLabel: parts[5] || "",
+                            calloutTitle: parts[6] || "",
+                            calloutDescription: parts.slice(7).join(" | ") || ""
+                        };
+                    });
+            };
+
+            const serializeSectionRows = () => {
+                if (!sectionsRaw || !sectionsList) {
+                    return;
+                }
+
+                const joinMulti = (value) =>
+                    value
+                        .split(/\r?\n/)
+                        .map((item) => item.trim())
+                        .filter(Boolean)
+                        .join(" ~~ ");
+
+                const rows = Array.from(sectionsList.querySelectorAll("[data-section-row]"))
+                    .map((row) => {
+                        const id = row.querySelector("[data-section-field='id']")?.value?.trim() || "";
+                        const heading = row.querySelector("[data-section-field='heading']")?.value?.trim() || "";
+                        const paragraphs = joinMulti(row.querySelector("[data-section-field='paragraphs']")?.value || "");
+                        const bulletPoints = joinMulti(row.querySelector("[data-section-field='bulletPoints']")?.value || "");
+                        const tone = row.querySelector("[data-section-field='tone']")?.value?.trim() || "";
+                        const calloutLabel = row.querySelector("[data-section-field='calloutLabel']")?.value?.trim() || "";
+                        const calloutTitle = row.querySelector("[data-section-field='calloutTitle']")?.value?.trim() || "";
+                        const calloutDescription = row.querySelector("[data-section-field='calloutDescription']")?.value?.trim() || "";
+
+                        if (!id && !heading && !paragraphs && !bulletPoints && !tone && !calloutLabel && !calloutTitle && !calloutDescription) {
+                            return null;
+                        }
+
+                        return [id, heading, paragraphs, bulletPoints, tone, calloutLabel, calloutTitle, calloutDescription].join(" | ");
+                    })
+                    .filter(Boolean);
+
+                sectionsRaw.value = rows.join("\n");
+            };
+
+            const buildSectionRow = (item = {}) => {
+                const escapeValue = (value) =>
+                    String(value ?? "")
+                        .replace(/&/g, "&amp;")
+                        .replace(/"/g, "&quot;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;");
+
+                const row = document.createElement("div");
+                row.className = "publication-section-row";
+                row.setAttribute("data-section-row", "");
+                row.innerHTML = `
+                    <div class="publication-section-row__grid">
+                        <div>
+                            <label class="form-label">Id</label>
+                            <input type="text" class="form-control" data-section-field="id" value="${escapeValue(item.id)}">
+                        </div>
+                        <div>
+                            <label class="form-label">Heading</label>
+                            <input type="text" class="form-control" data-section-field="heading" value="${escapeValue(item.heading)}">
+                        </div>
+                        <div class="publication-section-row__full">
+                            <label class="form-label">Paragraphs</label>
+                            <textarea class="form-control" rows="4" data-section-field="paragraphs">${escapeValue(item.paragraphs)}</textarea>
+                            <div class="form-text">One paragraph per line.</div>
+                        </div>
+                        <div class="publication-section-row__full">
+                            <label class="form-label">Bullet Points</label>
+                            <textarea class="form-control" rows="3" data-section-field="bulletPoints">${escapeValue(item.bulletPoints)}</textarea>
+                            <div class="form-text">One bullet per line.</div>
+                        </div>
+                        <div>
+                            <label class="form-label">Callout Tone</label>
+                            <input type="text" class="form-control" data-section-field="tone" value="${escapeValue(item.tone)}">
+                        </div>
+                        <div>
+                            <label class="form-label">Callout Label</label>
+                            <input type="text" class="form-control" data-section-field="calloutLabel" value="${escapeValue(item.calloutLabel)}">
+                        </div>
+                        <div>
+                            <label class="form-label">Callout Title</label>
+                            <input type="text" class="form-control" data-section-field="calloutTitle" value="${escapeValue(item.calloutTitle)}">
+                        </div>
+                        <div class="publication-section-row__full">
+                            <label class="form-label">Callout Description</label>
+                            <textarea class="form-control" rows="3" data-section-field="calloutDescription">${escapeValue(item.calloutDescription)}</textarea>
+                        </div>
+                    </div>
+                    <div class="publication-section-row__actions">
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-section-remove>Remove</button>
+                    </div>
+                `;
+
+                row.querySelectorAll("input, textarea").forEach((input) => {
+                    input.addEventListener("input", serializeSectionRows);
+                });
+
+                row.querySelector("[data-section-remove]")?.addEventListener("click", () => {
+                    row.remove();
+                    serializeSectionRows();
+                });
+
+                return row;
+            };
+
+            const initSectionsEditor = () => {
+                if (!sectionsRaw || !sectionsEditor || !sectionsList || !addSectionsButton) {
+                    return;
+                }
+
+                const initialRows = parseSectionRows(sectionsRaw.value);
+                if (initialRows.length === 0) {
+                    sectionsList.appendChild(buildSectionRow({}));
+                } else {
+                    initialRows.forEach((item) => sectionsList.appendChild(buildSectionRow(item)));
+                }
+
+                addSectionsButton.addEventListener("click", () => {
+                    sectionsList.appendChild(buildSectionRow({}));
+                    serializeSectionRows();
+                });
+
+                sectionsRaw.form?.addEventListener("submit", serializeSectionRows);
+                serializeSectionRows();
+            };
+
+            countryCode.addEventListener("change", syncCountryLabel);
+            publishedMonth?.addEventListener("change", syncMeta);
+            readingTime?.addEventListener("change", syncMeta);
+            syncCountryLabel();
+            syncMeta();
+            initDocumentsEditor();
+            initRelatedEditor();
+            initInfoEditor();
+            initFindingsEditor();
+            initSectionsEditor();
+        })();
+    </script>
+}

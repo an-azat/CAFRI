@@ -1,0 +1,12 @@
+@model IReadOnlyList<CAFRI.ViewModels.Intelligence.IntelligenceTimelineItemViewModel>
+
+<div class="timeline">
+    @foreach (var item in Model)
+    {
+        <article class="timeline-item timeline-item--@item.Stage">
+            <div class="timeline-item__dot"></div>
+            <div class="timeline-item__date">@item.DateLabel</div>
+            <div class="timeline-item__description">@item.Description</div>
+        </article>
+    }
+</div>

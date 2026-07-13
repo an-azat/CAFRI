@@ -1,0 +1,15 @@
+@model Tuple<string, IReadOnlyList<CAFRI.ViewModels.Countries.CountrySidebarLinkItemViewModel>, string>
+
+<section class="sidebar-card">
+    <h2 class="sidebar-card__title">@Model.Item1</h2>
+    <div class="sidebar-card__items">
+        @foreach (var item in Model.Item2)
+        {
+            <article class="sidebar-card__item">
+                <h3>@item.Title</h3>
+                <p>@item.Meta</p>
+            </article>
+        }
+    </div>
+    <a class="sidebar-card__link" href="#">@Model.Item3 <span>&rarr;</span></a>
+</section>

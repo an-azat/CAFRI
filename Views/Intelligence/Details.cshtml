@@ -1,0 +1,166 @@
+@model CAFRI.ViewModels.Intelligence.IntelligenceDetailsViewModel
+@{
+    ViewData["Title"] = Model.Title;
+    ViewData["PageTheme"] = "theme-dark";
+    var showLockedPreview = Model.IsPremium && !Model.CanAccessFullContent;
+    var loginUrl = Url.Action("Login", "Account", new { returnUrl = Context.Request.Path + Context.Request.QueryString }) ?? "/Account/Login";
+    var accessCta = new CAFRI.ViewModels.Shared.ProfessionalAccessCtaViewModel
+    {
+        Title = "Full analysis is available after sign in",
+        Description = "Guests can review only the short preview. Sign in to access the full intelligence material, structured analysis, timeline, official sources, and monitoring context.",
+        ButtonText = "Sign In to Continue",
+        ButtonUrl = loginUrl,
+        Benefits =
+        [
+            "Full intelligence articles and regulatory analysis",
+            "Official sources, monitoring status, and related materials",
+            "Structured country and sector intelligence across Central Asia"
+        ]
+    };
+}
+
+<div class="page-intelligence-detail">
+    <nav class="article-breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span>/</span>
+        <a href="/intelligence">Intelligence</a>
+        <span>/</span>
+        <a href="/intelligence">@Model.Category</a>
+        <span>/</span>
+        <a href="/countries/@Model.CountryName.ToLowerInvariant()">@Model.CountryName</a>
+        <span>/</span>
+        <span class="is-active">@Model.Title</span>
+    </nav>
+
+    <partial name="_ArticleHero" model="Model" />
+
+    @if (showLockedPreview)
+    {
+        <section class="article-premium-banner article-premium-banner--detail">
+            <div class="article-premium-banner__preview">
+                <span class="article-premium-banner__eyebrow">Preview Available</span>
+                <h2>Full material is currently locked</h2>
+                <p>@Model.OverviewLead</p>
+            </div>
+
+            <partial name="_ProfessionalAccessCta" model="accessCta" />
+        </section>
+    }
+    else
+    {
+        <partial name="_ArticleTabs" model="Model.Tabs" />
+
+        <div class="article-layout">
+            <main class="article-main">
+                <section id="overview" class="article-section article-overview">
+                    <h2>Overview</h2>
+                    <p>@Model.OverviewLead</p>
+                    <p>@Model.OverviewBody</p>
+                    <partial name="_InfoBox" model="Model" />
+                </section>
+
+                <section id="key-changes" class="article-section">
+                    <h2>Key Changes</h2>
+                    <div class="key-changes-grid">
+                        @foreach (var item in Model.KeyChanges)
+                        {
+                            <partial name="_KeyChangeCard" model="item" />
+                        }
+                    </div>
+                </section>
+
+                <section id="impact-analysis" class="article-section">
+                    <h2>Impact Analysis</h2>
+                    <div class="impact-analysis-grid">
+                        @foreach (var item in Model.ImpactAnalysis)
+                        {
+                            <partial name="_ImpactCard" model="item" />
+                        }
+                    </div>
+                </section>
+
+                <section id="timeline" class="article-section">
+                    <h2>Timeline</h2>
+                    <partial name="_Timeline" model="Model.TimelineItems" />
+                </section>
+
+                <section id="regulatory-text" class="article-section">
+                    <h2>Regulatory Text &amp; Official Document</h2>
+                    @if (string.IsNullOrWhiteSpace(Model.OfficialDocument.Title))
+                    {
+                        <div class="article-empty-block">
+                            <h3>Official document is not available yet</h3>
+                            <p>The document reference can be added later through the CAFRI admin content layer.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <partial name="_DocumentDownloadCard" model="Model.OfficialDocument" />
+                    }
+                </section>
+
+                <section id="data-charts" class="article-section">
+                    <h2>Data &amp; Charts</h2>
+                    <div class="article-empty-block">
+                        <h3>Data visualization is not available for this item yet</h3>
+                        <p>Chart modules can be added when a material requires macroeconomic, banking, or market trend visualization.</p>
+                    </div>
+                </section>
+
+                <section id="related-materials" class="article-section">
+                    <h2>Related Materials</h2>
+                    @if (Model.RelatedOfficialSources.Count == 0 && Model.RelatedIntelligence.Count == 0)
+                    {
+                        <div class="article-empty-block">
+                            <h3>No related intelligence items available</h3>
+                            <p>Related materials will appear here as editors connect this analysis to official sources and other CAFRI coverage.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="article-related-grid">
+                            @foreach (var item in Model.RelatedOfficialSources)
+                            {
+                                <article class="article-related-card">
+                                    <div class="article-related-card__label">Official Source</div>
+                                    @if (!string.IsNullOrWhiteSpace(item.Url))
+                                    {
+                                        <a class="article-related-card__title" href="@item.Url">@item.Title</a>
+                                    }
+                                    else
+                                    {
+                                        <div class="article-related-card__title">@item.Title</div>
+                                    }
+                                    <p>@item.Subtitle</p>
+                                </article>
+                            }
+
+                            @foreach (var item in Model.RelatedIntelligence)
+                            {
+                                <article class="article-related-card">
+                                    <div class="article-related-card__label">Related Intelligence</div>
+                                    @if (!string.IsNullOrWhiteSpace(item.Url))
+                                    {
+                                        <a class="article-related-card__title" href="@item.Url">@item.Title</a>
+                                    }
+                                    else
+                                    {
+                                        <div class="article-related-card__title">@item.Title</div>
+                                    }
+                                    <p>@item.Subtitle</p>
+                                </article>
+                            }
+                        </div>
+                    }
+                </section>
+            </main>
+
+            <partial name="_ArticleSidebar" model="Model" />
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/js/article-tabs.js" asp-append-version="true"></script>
+    <script src="~/js/article-actions.js" asp-append-version="true"></script>
+}

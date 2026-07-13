@@ -1,0 +1,45 @@
+@model IReadOnlyList<CAFRI.ViewModels.Publications.PublicationGalleryItemViewModel>
+
+@{
+    var featured = Model[0];
+}
+
+<section class="photo-gallery">
+    <button class="photo-gallery__featured" type="button" data-gallery-open data-gallery-image="@featured.ImageUrl" data-gallery-class="@featured.VisualClassName" data-gallery-title="@featured.Title" data-gallery-caption="@featured.Caption">
+        <img class="photo-gallery__featured-image" src="@featured.ImageUrl" alt="@(string.IsNullOrWhiteSpace(featured.Alt) ? featured.Title : featured.Alt)" @(string.IsNullOrWhiteSpace(featured.ImageUrl) ? "hidden" : null) />
+        <div class="photo-gallery__featured-visual @featured.VisualClassName" @(!string.IsNullOrWhiteSpace(featured.ImageUrl) ? "hidden" : null)></div>
+        <div class="photo-gallery__featured-copy">
+            <h3>@featured.Title</h3>
+            <p>@featured.Caption</p>
+        </div>
+    </button>
+
+    <div class="photo-gallery__thumbs">
+        @foreach (var item in Model)
+        {
+            <button class="photo-gallery__thumb" type="button" data-gallery-select data-gallery-image="@item.ImageUrl" data-gallery-class="@item.VisualClassName" data-gallery-caption="@item.Caption" data-gallery-title="@item.Title">
+                @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                {
+                    <img class="photo-gallery__thumb-image" src="@item.ImageUrl" alt="@(string.IsNullOrWhiteSpace(item.Alt) ? item.Title : item.Alt)" />
+                }
+                else
+                {
+                    <div class="photo-gallery__thumb-visual @item.VisualClassName"></div>
+                }
+                <span>@item.Title</span>
+            </button>
+        }
+    </div>
+
+    <div class="photo-gallery__lightbox" hidden data-gallery-lightbox>
+        <button class="photo-gallery__lightbox-close" type="button" aria-label="Close gallery" data-gallery-close>&times;</button>
+        <div class="photo-gallery__lightbox-frame">
+            <div class="photo-gallery__lightbox-visual @featured.VisualClassName" data-gallery-lightbox-visual hidden></div>
+            <img class="photo-gallery__lightbox-image" src="@featured.ImageUrl" alt="@(string.IsNullOrWhiteSpace(featured.Alt) ? featured.Title : featured.Alt)" data-gallery-lightbox-image />
+            <div class="photo-gallery__lightbox-copy">
+                <h3 data-gallery-lightbox-title>@featured.Title</h3>
+                <p data-gallery-lightbox-caption>@featured.Caption</p>
+            </div>
+        </div>
+    </div>
+</section>

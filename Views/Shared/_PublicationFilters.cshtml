@@ -1,0 +1,20 @@
+@model CAFRI.ViewModels.Publications.PublicationsPageViewModel
+
+<form method="get" class="publications-filter-bar" aria-label="Publications search">
+    <div class="publications-filter-bar__search">
+        <label class="visually-hidden" for="publications-search">Search publications</label>
+        <input id="publications-search" name="query" type="search" value="@Model.Query" placeholder="Search publications..." />
+        <button class="publications-filter-bar__submit" type="submit" aria-label="Search publications">
+            <svg viewBox="0 0 24 24"><path d="M10.5 4a6.5 6.5 0 1 0 4.03 11.6l4.43 4.43 1.06-1.06-4.43-4.43A6.5 6.5 0 0 0 10.5 4Zm0 1.5a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z" /></svg>
+        </button>
+    </div>
+
+    <button class="publications-filter-bar__modal-trigger" type="button" aria-label="Open filters" aria-haspopup="dialog" data-publications-filter-open>
+        <svg viewBox="0 0 24 24"><path d="M4 6.75A.75.75 0 0 1 4.75 6h14.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 6.75Zm3 5.25A.75.75 0 0 1 7.75 11h8.5a.75.75 0 0 1 0 1.5h-8.5A.75.75 0 0 1 7 12Zm3.5 5.25A.75.75 0 0 1 11.25 16h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75Z" /></svg>
+    </button>
+
+    <input type="hidden" name="type" value="@(Model.SelectedType == "All Types" ? string.Empty : Model.SelectedType)" />
+    <input type="hidden" name="country" value="@(Model.SelectedCountry == "All Countries" ? string.Empty : Model.SelectedCountry)" />
+    <input type="hidden" name="topic" value="@(Model.SelectedTopic == "All Topics" ? string.Empty : Model.SelectedTopic)" />
+    <input type="hidden" name="tab" value="@Model.SelectedTab" />
+</form>
