@@ -1,5 +1,6 @@
 using System.Text.Json;
 using CAFRI.Application.Abstractions.Services;
+using CAFRI.ViewModels.Shared;
 using CAFRI.Infrastructure.Persistence;
 using CAFRI.ViewModels.Countries;
 using CAFRI.ViewModels.Map;
@@ -82,6 +83,9 @@ public sealed class DbCountryContentService : ICountryContentService
                     BankAssets = x.BankAssets,
                     Slug = x.Slug,
                     HeroClassName = x.HeroClassName,
+                    HeroImageUrl = ContentImageTextSerializer.Parse(x.HeroGalleryJson)
+                        .Select(item => item.ImageUrl)
+                        .FirstOrDefault(url => !string.IsNullOrWhiteSpace(url)) ?? string.Empty,
                     IndicatorLabel = primaryIndicator is null ? "Indicator" : $"{primaryIndicator.Name} {primaryIndicator.YearLabel}".Trim(),
                     IndicatorValue = primaryIndicator?.LatestValue ?? "No data",
                     Indicators = countryIndicators,

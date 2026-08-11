@@ -12,6 +12,7 @@ public sealed class AboutController : Controller
         {
             Description = "CAFRI - Central Asia Financial & Regulatory Intelligence Initiative - is an analytical platform providing structured intelligence on financial regulation, banking sector developments, trade, sanctions, and macroeconomic trends across Central Asia.",
             DescriptionSecondary = "The platform helps institutions, regulators, businesses, researchers, and professionals monitor key developments, understand regional risks, and make informed decisions based on reliable and structured information.",
+            AuthorDescription = "The project is developed by the author as an independent initiative focused on making Central Asia more transparent and accessible through structured financial, regulatory, and institutional intelligence. The goal is to combine regional expertise, verified sources, and a practical research framework in a single platform for professional use.",
             HeroFeatures =
             [
                 new() { Icon = "independent", Title = "Independent", Description = "Non-commercial and impartial analytical perspective." },

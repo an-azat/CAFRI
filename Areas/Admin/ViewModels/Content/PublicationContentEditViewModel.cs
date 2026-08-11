@@ -10,6 +10,27 @@ public sealed class PublicationContentEditViewModel
     [Required, StringLength(180)]
     public string Slug { get; init; } = string.Empty;
 
+    [Required, StringLength(40)]
+    public string WorkflowStatus { get; init; } = string.Empty;
+
+    public IReadOnlyList<string> AvailableStatuses { get; init; } = [];
+
+    public bool RequiresReview { get; init; }
+
+    [StringLength(300)]
+    public string? ExternalId { get; init; }
+
+    [StringLength(220)]
+    public string? SourceName { get; init; }
+
+    [StringLength(1000)]
+    public string? SourceUrl { get; init; }
+
+    [StringLength(220)]
+    public string? SourceDomain { get; init; }
+
+    public string? SourcePublishedAtUtc { get; init; }
+
     [Required, StringLength(120)]
     public string Type { get; init; } = string.Empty;
 
@@ -67,8 +88,14 @@ public sealed class PublicationContentEditViewModel
 
     public IFormFile[]? GalleryFiles { get; init; }
 
+    public IFormFile[]? DocumentFiles { get; init; }
+
     [StringLength(500)]
     public string PdfDownloadUrl { get; init; } = string.Empty;
+
+    public string AssignedCountriesText { get; init; } = string.Empty;
+
+    public string AssignedCategoriesText { get; init; } = string.Empty;
 
     public string ActionsText { get; init; } = string.Empty;
 
@@ -80,7 +107,13 @@ public sealed class PublicationContentEditViewModel
 
     public string SectionsText { get; init; } = string.Empty;
 
+    public string? ChartsText { get; init; }
+
+    public string? TableRowsText { get; init; }
+
     public string DocumentsText { get; init; } = string.Empty;
+
+    public string? DocumentUploadMapText { get; init; }
 
     public string RelatedIntelligenceText { get; init; } = string.Empty;
 

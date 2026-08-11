@@ -1,13 +1,33 @@
-<section class="page-shell">
-    <div class="content-card">
-        <div class="eyebrow">Activation</div>
-        <h1 class="page-title">Activation link is invalid or expired</h1>
-        <p class="page-lead">
-            The activation link may already have been used, or its validity window has ended. Contact the CAFRI
-            editorial team to issue a fresh activation link.
-        </p>
-        <div class="form-actions">
-            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-light">Return home</a>
+@{
+    ViewData["Title"] = "Activation Invalid";
+    ViewData["PageTheme"] = "theme-home";
+}
+
+<div class="access-shell">
+    <section class="access-shell__hero">
+        <div class="access-shell__copy">
+            <span class="home-v2-section__label">Activation</span>
+            <h1 class="page-title">Activation link is invalid or expired</h1>
+            <p class="page-lead">
+                The activation link may already have been used, or its validity window has ended. Contact the CAFRI
+                editorial team to issue a fresh activation link.
+            </p>
         </div>
-    </div>
-</section>
+
+        <div class="access-shell__summary">
+            <article class="access-shell__summary-card">
+                <span>Activation state</span>
+                <strong>Link unavailable</strong>
+                <p>A new activation message is required before this account can complete setup.</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="access-shell__layout access-shell__layout--compact">
+        <div class="access-shell__panel">
+            <div class="form-actions">
+                <a asp-controller="Home" asp-action="Index" class="home-v2-button home-v2-button--ghost">Return home</a>
+            </div>
+        </div>
+    </section>
+</div>

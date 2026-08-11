@@ -1,35 +1,57 @@
 @model CAFRI.ViewModels.Account.ActivationViewModel
+@{
+    ViewData["Title"] = "Activate Account";
+    ViewData["PageTheme"] = "theme-home";
+}
 
-<section class="page-shell">
-    <div class="content-card">
-        <div class="eyebrow">Activation</div>
-        <h1 class="page-title">Activate your CAFRI account</h1>
-        <p class="page-lead">
-            Set your password to complete professional access activation and enter the protected intelligence area.
-        </p>
+<div class="access-shell">
+    <section class="access-shell__hero">
+        <div class="access-shell__copy">
+            <span class="home-v2-section__label">Activation</span>
+            <h1 class="page-title">Activate your CAFRI account</h1>
+            <p class="page-lead">
+                Set your password to complete professional access activation and enter the protected intelligence area.
+            </p>
+        </div>
 
-        <form asp-action="Activate" method="post" class="access-form" novalidate>
-            <input asp-for="Token" type="hidden" />
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <div class="access-shell__summary">
+            <article class="access-shell__summary-card">
+                <span>Activation step</span>
+                <strong>Final setup</strong>
+                <p>Create a secure password to finish onboarding and unlock approved access.</p>
+            </article>
+        </div>
+    </section>
 
-            <div class="mb-4">
-                <label asp-for="Password" class="form-label"></label>
-                <input asp-for="Password" class="form-control" />
-                <span asp-validation-for="Password" class="text-danger"></span>
-            </div>
+    <section class="access-shell__layout access-shell__layout--compact">
+        <div class="access-shell__panel">
+            <h2>Password setup</h2>
+            <p>Choose a strong password for your CAFRI account.</p>
 
-            <div class="mb-4">
-                <label asp-for="ConfirmPassword" class="form-label"></label>
-                <input asp-for="ConfirmPassword" class="form-control" />
-                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-            </div>
+            <form asp-action="Activate" method="post" class="access-form access-form--editorial" novalidate>
+                <input asp-for="Token" type="hidden" />
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary btn-lg">Activate account</button>
-            </div>
-        </form>
-    </div>
-</section>
+                <div class="row g-4">
+                    <div class="col-12">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="ConfirmPassword" class="form-label"></label>
+                        <input asp-for="ConfirmPassword" class="form-control" />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="home-v2-button home-v2-button--primary">Activate account</button>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

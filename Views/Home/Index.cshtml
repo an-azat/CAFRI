@@ -25,15 +25,12 @@
         <div class="site-container">
             <div class="home-v2-hero__content">
                
-                <h1 class="home-v2-hero__title">Central Asia Financial &amp; Regulatory Intelligence Initiative</h1>
-                <p class="home-v2-hero__lead">
-                    Your gateway to country profiles, investment climate, regulatory developments, publications
-                    and regional intelligence across Central Asia.
-                </p>
+                <h1 class="home-v2-hero__title">@Model.HeroTitle</h1>
+                <p class="home-v2-hero__lead">@Model.HeroLead</p>
 
                 <div class="home-v2-hero__actions">
-                    <a class="home-v2-button home-v2-button--primary" href="/countries">Explore Countries &rarr;</a>
-                    <a class="home-v2-button home-v2-button--ghost" href="/intelligence">View Intelligence</a>
+                    <a class="home-v2-button home-v2-button--primary" href="@Model.HeroPrimaryCtaUrl">@Model.HeroPrimaryCtaLabel</a>
+                    <a class="home-v2-button home-v2-button--ghost" href="@Model.HeroSecondaryCtaUrl">@Model.HeroSecondaryCtaLabel</a>
                 </div>
 
                
@@ -43,84 +40,30 @@
 
     <section class="home-v2-intro">
         <div class="home-v2-intro__card">
-            <h2>One regional platform for Central Asia</h2>
-            <p>
-                CAFRI brings together structured country information, investment climate context,
-                regulatory intelligence, publications and an interactive regional map in one place.
-                The platform is built for investors, researchers, policy analysts and institutions.
-            </p>
+            <h2>@Model.IntroTitle</h2>
+            <p>@Model.IntroDescription</p>
         </div>
     </section>
 
     <section class="home-v2-section">
         <div class="home-v2-section__head">
-            <span class="home-v2-section__label">Platform sections</span>
-            <h2>What you can explore</h2>
-            <p>
-                Main entry points of the platform: countries, investment environment,
-                regulatory monitoring, publications and the regional map.
-            </p>
+            <span class="home-v2-section__label">@Model.PlatformSectionLabel</span>
+            <h2>@Model.PlatformSectionTitle</h2>
+            <p>@Model.PlatformSectionDescription</p>
         </div>
 
         <div class="home-v2-directions">
-            <a class="home-v2-direction-card" href="/countries">
-                <div>
-                    <span class="home-v2-direction-card__number">01</span>
-                    <h3>Explore Countries</h3>
-                    <p>
-                        Access country-level profiles covering institutions, market environment,
-                        regulation and development priorities.
-                    </p>
-                </div>
-                <span class="home-v2-direction-card__link">View country profiles &rarr;</span>
-            </a>
-
-            <a class="home-v2-direction-card" href="/about">
-                <div>
-                    <span class="home-v2-direction-card__number">02</span>
-                    <h3>Investment Climate</h3>
-                    <p>
-                        Understand investment conditions, sector priorities, infrastructure
-                        and regional trade corridors.
-                    </p>
-                </div>
-                <span class="home-v2-direction-card__link">Explore investment climate &rarr;</span>
-            </a>
-
-            <a class="home-v2-direction-card" href="/intelligence">
-                <div>
-                    <span class="home-v2-direction-card__number">03</span>
-                    <h3>Regulatory Intelligence</h3>
-                    <p>
-                        Track regulatory developments, policy changes and institutional updates
-                        across Central Asia.
-                    </p>
-                </div>
-                <span class="home-v2-direction-card__link">View updates &rarr;</span>
-            </a>
-
-            <a class="home-v2-direction-card" href="/publications">
-                <div>
-                    <span class="home-v2-direction-card__number">04</span>
-                    <h3>Publications</h3>
-                    <p>
-                        Read research reports, policy briefs, country reviews and analytical materials.
-                    </p>
-                </div>
-                <span class="home-v2-direction-card__link">View publications &rarr;</span>
-            </a>
-
-            <a class="home-v2-direction-card home-v2-direction-card--wide" href="/countries">
-                <div>
-                    <span class="home-v2-direction-card__number">05</span>
-                    <h3>Regional Coverage</h3>
-                    <p>
-                        Navigate Central Asia through structured country profiles and explore
-                        regulation, investment climate and related publications.
-                    </p>
-                </div>
-                <span class="home-v2-direction-card__link">Open country coverage &rarr;</span>
-            </a>
+            @foreach (var item in Model.Directions)
+            {
+                <a class="home-v2-direction-card @(item.IsWide ? "home-v2-direction-card--wide" : null)" href="@item.Url">
+                    <div>
+                        <span class="home-v2-direction-card__number">@item.Number</span>
+                        <h3>@item.Title</h3>
+                        <p>@item.Description</p>
+                    </div>
+                    <span class="home-v2-direction-card__link">@item.LinkLabel</span>
+                </a>
+            }
         </div>
     </section>
 
@@ -128,12 +71,9 @@
         <div class="home-v2-countries__layout">
             <div>
                 <div class="home-v2-section__head">
-                    <span class="home-v2-section__label">Explore countries</span>
-                    <h2>Country profiles across Central Asia</h2>
-                    <p>
-                        Each country page includes overview, institutions, regulation,
-                        investment environment, infrastructure and related publications.
-                    </p>
+                    <span class="home-v2-section__label">@Model.CountriesSectionLabel</span>
+                    <h2>@Model.CountriesSectionTitle</h2>
+                    <p>@Model.CountriesSectionDescription</p>
                 </div>
 
                 <div class="home-v2-country-list">
@@ -155,11 +95,8 @@
 
             <a class="home-v2-visual-panel" href="/countries">
                 <div class="home-v2-visual-panel__caption">
-                    <h3>Regional Country Coverage</h3>
-                    <p>
-                        A structured entry point to Central Asia. Open a country profile to access
-                        its regulatory environment, investment climate and publications.
-                    </p>
+                    <h3>@Model.CountriesVisualTitle</h3>
+                    <p>@Model.CountriesVisualDescription</p>
                 </div>
             </a>
         </div>
@@ -167,51 +104,38 @@
 
     <section class="home-v2-section home-v2-section--features">
         <div class="home-v2-section__head">
-            <span class="home-v2-section__label">Core themes</span>
-            <h2>Investment climate, regulation and research</h2>
-            <p>
-                Three core content pillars help users understand the region through a clear,
-                structured and institutional-grade interface.
-            </p>
+            <span class="home-v2-section__label">@Model.FeaturesSectionLabel</span>
+            <h2>@Model.FeaturesSectionTitle</h2>
+            <p>@Model.FeaturesSectionDescription</p>
         </div>
 
         <div class="home-v2-feature-grid">
-            <a class="home-v2-feature-card home-v2-feature-card--investment" href="/about">
-                <h3>Investment Climate</h3>
-                <p>Market conditions, sectors, infrastructure, business environment and regional corridors.</p>
-            </a>
-
-            <a class="home-v2-feature-card home-v2-feature-card--regulatory" href="/intelligence">
-                <h3>Regulatory Intelligence</h3>
-                <p>Policy changes, institutional updates and regulation-focused monitoring.</p>
-            </a>
-
-            <a class="home-v2-feature-card home-v2-feature-card--publications" href="/publications">
-                <h3>Publications</h3>
-                <p>Reports, research notes, country reviews and analytical materials.</p>
-            </a>
+            @foreach (var item in Model.FeatureCards)
+            {
+                <a class="home-v2-feature-card @item.CssClassName" href="@item.Url">
+                    <h3>@item.Title</h3>
+                    <p>@item.Description</p>
+                </a>
+            }
         </div>
     </section>
 
     <section class="home-v2-latest">
         <div class="home-v2-section__head">
-            <span class="home-v2-section__label">Latest materials</span>
-            <h2>Latest intelligence and publications</h2>
-            <p>
-                The latest updates added through CAFRI content workflows: intelligence items,
-                reports, briefs and regional analytical materials.
-            </p>
+            <span class="home-v2-section__label">@Model.LatestSectionLabel</span>
+            <h2>@Model.LatestSectionTitle</h2>
+            <p>@Model.LatestSectionDescription</p>
         </div>
 
         <div class="home-v2-latest__grid">
             <article class="home-v2-article-card home-v2-article-card--main">
                 <div class="home-v2-article-card__meta">
-                    <span>@Model.FeaturedPublication.Eyebrow</span>
+                    <span>@(string.IsNullOrWhiteSpace(Model.FeaturedPublicationEyebrow) ? Model.FeaturedPublication.Eyebrow : Model.FeaturedPublicationEyebrow)</span>
                     <span>@Model.FeaturedPublication.MetaItems.FirstOrDefault(x => x.Icon == "calendar")?.Label</span>
                 </div>
                 <h3>@Model.FeaturedPublication.Title</h3>
                 <p>@Model.FeaturedPublication.Description</p>
-                <a href="@Model.FeaturedPublication.ReadOnlineUrl">Read more &rarr;</a>
+                <a href="@Model.FeaturedPublication.ReadOnlineUrl">@Model.LatestFeaturedLinkLabel</a>
             </article>
 
             @foreach (var item in latestCards.Skip(1))
@@ -223,7 +147,7 @@
                     </div>
                     <h3>@item.Title</h3>
                     <p>@item.Summary</p>
-                    <a href="@item.Url">Read more &rarr;</a>
+                    <a href="@item.Url">@Model.LatestIntelligenceLinkLabel</a>
                 </article>
             }
         </div>
@@ -232,13 +156,8 @@
     <section class="home-v2-about">
         <div class="home-v2-about__box">
             <div>
-                <h2>About CAFRI</h2>
-                <p>
-                    CAFRI is designed as a regional intelligence initiative focused on Central Asia.
-                    The platform helps users explore country profiles, investment climate,
-                    regulatory environment, publications and regional context through a clean,
-                    structured interface.
-                </p>
+                <h2>@Model.AboutTitle</h2>
+                <p>@Model.AboutDescription</p>
             </div>
 
             <div class="home-v2-about__list">

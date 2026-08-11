@@ -1,39 +1,70 @@
 @model CAFRI.ViewModels.Access.ProfessionalDashboardViewModel
+@{
+    ViewData["Title"] = "Account Dashboard";
+    ViewData["PageTheme"] = "theme-home";
+}
 
-<section class="page-shell">
-    <div class="content-card content-card-wide">
-        <div class="eyebrow">Account Area</div>
-        <h1 class="page-title">Welcome, @Model.FullName</h1>
-        <p class="page-lead">
-            This dashboard confirms that the account is signed in and can access protected CAFRI intelligence,
-            publications, and country content. Administrative tools remain available only to users with the Admin role.
-        </p>
+<div class="access-shell">
+    <section class="access-shell__hero">
+        <div class="access-shell__copy">
+            <span class="home-v2-section__label">Account Area</span>
+            <h1 class="page-title">Welcome, @Model.FullName</h1>
+            <p class="page-lead">
+                This dashboard confirms that the account is signed in and can access protected CAFRI intelligence,
+                publications, and country content. Administrative tools remain available only to users with the Admin role.
+            </p>
+        </div>
 
-        <div class="detail-grid">
-            <div class="detail-card">
-                <h2>Account</h2>
-                <dl class="detail-list">
-                    <dt>Email</dt>
-                    <dd>@Model.Email</dd>
-                    <dt>Organization</dt>
-                    <dd>@(Model.Organization ?? "Not specified")</dd>
-                    <dt>Position</dt>
-                    <dd>@(Model.Position ?? "Not specified")</dd>
-                    <dt>Professional flag</dt>
-                    <dd>@(Model.IsProfessional ? "Enabled" : "Disabled")</dd>
-                </dl>
-            </div>
-            <div class="detail-card">
-                <h2>Access status</h2>
-                <dl class="detail-list">
-                    <dt>Content access</dt>
-                    <dd>Enabled</dd>
-                    <dt>Admin panel</dt>
-                    <dd>@(User.IsInRole("Admin") ? "Available" : "Not available")</dd>
-                    <dt>Account role</dt>
-                    <dd>@(User.IsInRole("Admin") ? "Administrator" : "Authenticated user")</dd>
-                </dl>
+        <div class="access-shell__summary">
+            <article class="access-shell__summary-card">
+                <span>Role</span>
+                <strong>@(User.IsInRole("Admin") ? "Administrator" : "Authenticated user")</strong>
+                <p>@(User.IsInRole("Admin") ? "Administrative tools are available for this account." : "Protected content is available for this signed-in account.")</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="access-shell__layout">
+        <div class="access-shell__panel">
+            <h2>Account information</h2>
+            <div class="access-detail-grid">
+                <article class="access-detail-card">
+                    <h3>Profile</h3>
+                    <dl class="access-detail-list">
+                        <dt>Email</dt>
+                        <dd>@Model.Email</dd>
+                        <dt>Organization</dt>
+                        <dd>@(Model.Organization ?? "Not specified")</dd>
+                        <dt>Position</dt>
+                        <dd>@(Model.Position ?? "Not specified")</dd>
+                        <dt>Professional flag</dt>
+                        <dd>@(Model.IsProfessional ? "Enabled" : "Disabled")</dd>
+                    </dl>
+                </article>
+
+                <article class="access-detail-card">
+                    <h3>Access status</h3>
+                    <dl class="access-detail-list">
+                        <dt>Content access</dt>
+                        <dd>Enabled</dd>
+                        <dt>Admin panel</dt>
+                        <dd>@(User.IsInRole("Admin") ? "Available" : "Not available")</dd>
+                        <dt>Access model</dt>
+                        <dd>@Model.AccessType</dd>
+                    </dl>
+                </article>
             </div>
         </div>
-    </div>
-</section>
+
+        <aside class="access-shell__sidebar">
+            <article class="access-shell__sidecard">
+                <h2>Next steps</h2>
+                <ul class="access-request-list">
+                    <li>Open Intelligence and Publications to review protected content</li>
+                    <li>Use Dashboard access for account-level navigation</li>
+                    <li>Admin tools stay limited to administrator accounts</li>
+                </ul>
+            </article>
+        </aside>
+    </section>
+</div>

@@ -1,40 +1,62 @@
 @model CAFRI.ViewModels.Account.LoginViewModel
+@{
+    ViewData["Title"] = "Sign In";
+    ViewData["PageTheme"] = "theme-home";
+}
 
-<section class="page-shell">
-    <div class="content-card">
-        <div class="eyebrow">Authentication</div>
-        <h1 class="page-title">Sign in to CAFRI</h1>
-        <p class="page-lead">
-            Use the seeded administrator credentials or an approved account to enter protected areas of the platform.
-        </p>
+<div class="access-shell">
+    <section class="access-shell__hero">
+        <div class="access-shell__copy">
+            <span class="home-v2-section__label">Authentication</span>
+            <h1 class="page-title">Sign in to CAFRI</h1>
+            <p class="page-lead">
+                Use an approved account or administrator credentials to enter protected areas of the platform.
+            </p>
+        </div>
 
-        <form asp-action="Login" method="post" class="access-form" novalidate>
-            <input asp-for="ReturnUrl" type="hidden" />
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <div class="access-shell__summary">
+            <article class="access-shell__summary-card">
+                <span>Account types</span>
+                <strong>User and Admin</strong>
+                <p>Authenticated users can access protected content, while admin tools remain role-restricted.</p>
+            </article>
+        </div>
+    </section>
 
-            <div class="mb-4">
-                <label asp-for="Email" class="form-label"></label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
+    <section class="access-shell__layout access-shell__layout--compact">
+        <div class="access-shell__panel">
+            <h2>Sign-in form</h2>
+            <p>Enter your account credentials to continue.</p>
 
-            <div class="mb-4">
-                <label asp-for="Password" class="form-label"></label>
-                <input asp-for="Password" class="form-control" />
-                <span asp-validation-for="Password" class="text-danger"></span>
-            </div>
+            <form asp-action="Login" method="post" class="access-form access-form--editorial" novalidate>
+                <input asp-for="ReturnUrl" type="hidden" />
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-            <div class="form-check mb-4">
-                <input asp-for="RememberMe" class="form-check-input" />
-                <label asp-for="RememberMe" class="form-check-label"></label>
-            </div>
+                <div class="row g-4">
+                    <div class="col-12">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                </div>
 
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary btn-lg">Sign in</button>
-            </div>
-        </form>
-    </div>
-</section>
+                <label class="access-form__check">
+                    <input asp-for="RememberMe" class="form-check-input" />
+                    <span class="access-form__check-label">@Html.DisplayNameFor(x => x.RememberMe)</span>
+                </label>
+
+                <div class="form-actions">
+                    <button type="submit" class="home-v2-button home-v2-button--primary">Sign in</button>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

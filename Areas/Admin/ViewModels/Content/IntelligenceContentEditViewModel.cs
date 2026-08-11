@@ -36,6 +36,8 @@ public sealed class IntelligenceContentEditViewModel
 
     public IFormFile? HeroImageFile { get; init; }
 
+    public IFormFile[]? DocumentFiles { get; init; }
+
     public string? DetailsJson { get; init; }
 
     public string OverviewLead { get; init; } = string.Empty;
@@ -53,6 +55,8 @@ public sealed class IntelligenceContentEditViewModel
     public string DocumentMeta { get; init; } = string.Empty;
 
     public string DocumentDownloadUrl { get; init; } = string.Empty;
+
+    public string DocumentsText { get; init; } = string.Empty;
 
     public string KeyChangesText { get; init; } = string.Empty;
 

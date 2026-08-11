@@ -20,8 +20,11 @@ public sealed class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<SubscriptionPlan> SubscriptionPlans => Set<SubscriptionPlan>();
     public DbSet<UserSubscription> UserSubscriptions => Set<UserSubscription>();
     public DbSet<CountryContent> CountryContents => Set<CountryContent>();
+    public DbSet<HomePageContent> HomePageContents => Set<HomePageContent>();
     public DbSet<IntelligenceContentItem> IntelligenceContentItems => Set<IntelligenceContentItem>();
     public DbSet<PublicationContentItem> PublicationContentItems => Set<PublicationContentItem>();
+    public DbSet<PublicationCountryAssignment> PublicationCountryAssignments => Set<PublicationCountryAssignment>();
+    public DbSet<PublicationCategoryAssignment> PublicationCategoryAssignments => Set<PublicationCategoryAssignment>();
     public DbSet<ContentCategory> ContentCategories => Set<ContentCategory>();
     public DbSet<ContentSource> ContentSources => Set<ContentSource>();
     public DbSet<CountryIndicator> CountryIndicators => Set<CountryIndicator>();

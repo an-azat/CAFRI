@@ -1,0 +1,181 @@
+@model CAFRI.Areas.Admin.ViewModels.Content.HomePageContentEditViewModel
+
+<section class="admin-page">
+    <div class="admin-page__hero">
+        <div class="admin-eyebrow">Pages / Home</div>
+        <h1 class="admin-page__title">Edit Home Page</h1>
+        <p class="admin-page__lead">
+            Manage the editorial copy of the public home page. Latest intelligence and the featured publication are pulled from the database, while this screen controls the page structure and messaging.
+        </p>
+    </div>
+
+    <div class="admin-editor admin-editor--single">
+        <section class="admin-editor-card">
+            <form method="post" data-live-preview-form>
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(false, "", new { @class = "validation-summary-errors" })
+
+                @if (TempData["AdminSuccess"] is string successMessage)
+                {
+                    <div class="alert alert-success mb-4">@successMessage</div>
+                }
+
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label asp-for="HeroTitle" class="form-label"></label>
+                        <input asp-for="HeroTitle" class="form-control" data-preview-target="HeroTitle" data-preview-key="heroTitle" />
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="HeroLead" class="form-label"></label>
+                        <textarea asp-for="HeroLead" class="form-control" rows="3" data-preview-target="HeroLead" data-preview-key="heroLead"></textarea>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="HeroPrimaryCtaLabel" class="form-label"></label>
+                        <input asp-for="HeroPrimaryCtaLabel" class="form-control" />
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="HeroPrimaryCtaUrl" class="form-label"></label>
+                        <input asp-for="HeroPrimaryCtaUrl" class="form-control" />
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="HeroSecondaryCtaLabel" class="form-label"></label>
+                        <input asp-for="HeroSecondaryCtaLabel" class="form-control" />
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="HeroSecondaryCtaUrl" class="form-label"></label>
+                        <input asp-for="HeroSecondaryCtaUrl" class="form-control" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="IntroTitle" class="form-label"></label>
+                        <input asp-for="IntroTitle" class="form-control" />
+                    </div>
+                    <div class="col-md-8">
+                        <label asp-for="IntroDescription" class="form-label"></label>
+                        <textarea asp-for="IntroDescription" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="PlatformSectionLabel" class="form-label"></label>
+                        <input asp-for="PlatformSectionLabel" class="form-control" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="PlatformSectionTitle" class="form-label"></label>
+                        <input asp-for="PlatformSectionTitle" class="form-control" />
+                    </div>
+                    <div class="col-md-5">
+                        <label asp-for="PlatformSectionDescription" class="form-label"></label>
+                        <textarea asp-for="PlatformSectionDescription" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="DirectionsText" class="form-label"></label>
+                        <textarea asp-for="DirectionsText" class="form-control font-monospace" rows="8"></textarea>
+                        <div class="form-text">Format: `Number | Title | Description | Url | LinkLabel | wide(optional)`</div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="CountriesSectionLabel" class="form-label"></label>
+                        <input asp-for="CountriesSectionLabel" class="form-control" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="CountriesSectionTitle" class="form-label"></label>
+                        <input asp-for="CountriesSectionTitle" class="form-control" />
+                    </div>
+                    <div class="col-md-5">
+                        <label asp-for="CountriesSectionDescription" class="form-label"></label>
+                        <textarea asp-for="CountriesSectionDescription" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="CountriesVisualTitle" class="form-label"></label>
+                        <input asp-for="CountriesVisualTitle" class="form-control" />
+                    </div>
+                    <div class="col-md-8">
+                        <label asp-for="CountriesVisualDescription" class="form-label"></label>
+                        <textarea asp-for="CountriesVisualDescription" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="FeaturesSectionLabel" class="form-label"></label>
+                        <input asp-for="FeaturesSectionLabel" class="form-control" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="FeaturesSectionTitle" class="form-label"></label>
+                        <input asp-for="FeaturesSectionTitle" class="form-control" />
+                    </div>
+                    <div class="col-md-5">
+                        <label asp-for="FeaturesSectionDescription" class="form-label"></label>
+                        <textarea asp-for="FeaturesSectionDescription" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="FeatureCardsText" class="form-label"></label>
+                        <textarea asp-for="FeatureCardsText" class="form-control font-monospace" rows="6"></textarea>
+                        <div class="form-text">Format: `Title | Description | Url | CssClassName`</div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="LatestSectionLabel" class="form-label"></label>
+                        <input asp-for="LatestSectionLabel" class="form-control" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="LatestSectionTitle" class="form-label"></label>
+                        <input asp-for="LatestSectionTitle" class="form-control" />
+                    </div>
+                    <div class="col-md-5">
+                        <label asp-for="LatestSectionDescription" class="form-label"></label>
+                        <textarea asp-for="LatestSectionDescription" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="FeaturedPublicationEyebrow" class="form-label"></label>
+                        <input asp-for="FeaturedPublicationEyebrow" class="form-control" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="LatestFeaturedLinkLabel" class="form-label"></label>
+                        <input asp-for="LatestFeaturedLinkLabel" class="form-control" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="LatestIntelligenceLinkLabel" class="form-label"></label>
+                        <input asp-for="LatestIntelligenceLinkLabel" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="FeaturedPublicationId" class="form-label">Featured Publication</label>
+                        <select asp-for="FeaturedPublicationId" class="form-select">
+                            <option value="">Use latest published publication</option>
+                            @foreach (var item in Model.AvailablePublications)
+                            {
+                                <option value="@item.Id">@item.Title (@item.Meta)</option>
+                            }
+                        </select>
+                        <div class="form-text">This card is rendered from the publications table, not from manual text.</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="AboutTitle" class="form-label"></label>
+                        <input asp-for="AboutTitle" class="form-control" />
+                    </div>
+                    <div class="col-md-8">
+                        <label asp-for="AboutDescription" class="form-label"></label>
+                        <textarea asp-for="AboutDescription" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="CoverageAreasText" class="form-label"></label>
+                        <textarea asp-for="CoverageAreasText" class="form-control font-monospace" rows="8"></textarea>
+                        <div class="form-text">Format: `Icon | Title | Description`</div>
+                    </div>
+                </div>
+
+                <div class="admin-editor-actions">
+                    <button type="submit" class="admin-primary-button">Save Home Page</button>
+                    <a href="/" target="_blank" rel="noreferrer" class="admin-chip">Open Website</a>
+                </div>
+            </form>
+        </section>
+
+        <aside class="admin-editor-preview">
+            <section class="admin-preview-card">
+                <div class="admin-panel__eyebrow">Hero Preview</div>
+                <h2 class="admin-preview-card__title" data-preview="heroTitle" data-preview-fallback="Home page hero title">@Model.HeroTitle</h2>
+                <p class="admin-preview-card__body" data-preview="heroLead" data-preview-fallback="Home page lead text.">@Model.HeroLead</p>
+            </section>
+        </aside>
+    </div>
+</section>

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using CAFRI.Areas.Admin.ViewModels.Content;
 using CAFRI.Domain.Content;
 using CAFRI.Domain.Users;
@@ -15,6 +16,9 @@ namespace CAFRI.Areas.Admin.Controllers;
 [Authorize(Roles = SystemRoles.Admin)]
 public sealed class PublicationsController : Controller
 {
+    private static readonly string[] DefaultPublicationActions = ["Download Full Report", "Share", "Print"];
+    private sealed record UploadedPublicationDocumentFile(string Title, string Type, string Meta, string DownloadUrl);
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
@@ -22,6 +26,49 @@ public sealed class PublicationsController : Controller
 
     private readonly AppDbContext _dbContext;
     private readonly ContentMediaStorageService _mediaStorage;
+
+    private static bool LooksLikeHtml(string? value) =>
+        !string.IsNullOrWhiteSpace(value) &&
+        value.Contains('<', StringComparison.Ordinal) &&
+        value.Contains('>', StringComparison.Ordinal);
+
+    private static bool HasExplicitJsonCollection(string? rawJson, string propertyName)
+    {
+        if (string.IsNullOrWhiteSpace(rawJson))
+        {
+            return false;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(rawJson);
+            return document.RootElement.TryGetProperty(propertyName, out var property) &&
+                   property.ValueKind == JsonValueKind.Array;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static string SanitizeRichTextHtml(string? html)
+    {
+        if (string.IsNullOrWhiteSpace(html))
+        {
+            return string.Empty;
+        }
+
+        var sanitized = html.Trim();
+        sanitized = Regex.Replace(sanitized, @"<(script|style)\b[^>]*>.*?</\1>", string.Empty, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        sanitized = Regex.Replace(sanitized, @"\scontenteditable\s*=\s*(""[^""]*""|'[^']*'|[^\s>]+)", string.Empty, RegexOptions.IgnoreCase);
+        sanitized = Regex.Replace(sanitized, @"\sspellcheck\s*=\s*(""[^""]*""|'[^']*'|[^\s>]+)", string.Empty, RegexOptions.IgnoreCase);
+        sanitized = Regex.Replace(sanitized, @"\s(?:data|aria)-[\w:-]+\s*=\s*(""[^""]*""|'[^']*'|[^\s>]+)", string.Empty, RegexOptions.IgnoreCase);
+        sanitized = Regex.Replace(sanitized, @"\s(?:role|tabindex|autocorrect|autocapitalize)\s*=\s*(""[^""]*""|'[^']*'|[^\s>]+)", string.Empty, RegexOptions.IgnoreCase);
+        sanitized = Regex.Replace(sanitized, @"\sclass\s*=\s*(""[^""]*\bql-[^""]*""|'[^']*\bql-[^']*')", string.Empty, RegexOptions.IgnoreCase);
+        sanitized = Regex.Replace(sanitized, @"\sstyle\s*=\s*(""[^""]*""|'[^']*')", string.Empty, RegexOptions.IgnoreCase);
+
+        return sanitized.Trim();
+    }
 
     public PublicationsController(AppDbContext dbContext, ContentMediaStorageService mediaStorage)
     {
@@ -48,6 +95,60 @@ public sealed class PublicationsController : Controller
         return (requestFiles ?? Array.Empty<IFormFile>())
             .Where(file => file is not null && file.Length > 0)
             .ToList();
+    }
+
+    private static string FormatFileSize(long bytes)
+    {
+        if (bytes >= 1024 * 1024)
+        {
+            return $"{bytes / (1024d * 1024d):0.#} MB";
+        }
+
+        if (bytes >= 1024)
+        {
+            return $"{bytes / 1024d:0.#} KB";
+        }
+
+        return $"{bytes} B";
+    }
+
+    private static string BuildDocumentTypeFromExtension(string fileName)
+    {
+        var extension = Path.GetExtension(fileName).TrimStart('.').ToUpperInvariant();
+        return string.IsNullOrWhiteSpace(extension) ? "FILE" : extension;
+    }
+
+    private async Task<IReadOnlyList<UploadedPublicationDocumentFile>> BuildUploadedPublicationDocumentsAsync(
+        Guid publicationId,
+        IReadOnlyList<IFormFile> files)
+    {
+        if (files.Count == 0)
+        {
+            return [];
+        }
+
+        var items = new List<UploadedPublicationDocumentFile>();
+        foreach (var file in files)
+        {
+            var url = await _mediaStorage.SaveDocumentAsync(file, "publications", HttpContext.RequestAborted);
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                continue;
+            }
+
+            var title = Path.GetFileNameWithoutExtension(file.FileName)
+                .Replace('_', ' ')
+                .Replace('-', ' ')
+                .Trim();
+
+            items.Add(new UploadedPublicationDocumentFile(
+                string.IsNullOrWhiteSpace(title) ? "Publication document" : title,
+                BuildDocumentTypeFromExtension(file.FileName),
+                $"{BuildDocumentTypeFromExtension(file.FileName)} | {FormatFileSize(file.Length)}",
+                url));
+        }
+
+        return items;
     }
 
     private List<AdminCountryOptionViewModel> GetAvailableCountries()
@@ -89,8 +190,56 @@ public sealed class PublicationsController : Controller
         return string.IsNullOrWhiteSpace(label) ? fallbackLabel.Trim() : label;
     }
 
+    private static bool TryParseDateInput(string? value, out DateTime date)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            date = default;
+            return false;
+        }
+
+        return DateTime.TryParseExact(
+            value.Trim(),
+            "yyyy-MM-dd",
+            System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None,
+            out date);
+    }
+
+    private async Task ReplaceAssignmentsAsync(Guid publicationId, string? countriesText, string? categoriesText)
+    {
+        var existingCountries = await _dbContext.PublicationCountryAssignments
+            .Where(x => x.PublicationContentItemId == publicationId)
+            .ToListAsync();
+        var existingCategories = await _dbContext.PublicationCategoryAssignments
+            .Where(x => x.PublicationContentItemId == publicationId)
+            .ToListAsync();
+
+        _dbContext.PublicationCountryAssignments.RemoveRange(existingCountries);
+        _dbContext.PublicationCategoryAssignments.RemoveRange(existingCategories);
+
+        var countries = await PublicationImportHelpers.ResolveCountryAssignmentsAsync(
+            _dbContext,
+            PublicationImportHelpers.ParseDelimitedValues(countriesText),
+            publicationId,
+            HttpContext.RequestAborted);
+        var categories = await PublicationImportHelpers.ResolveCategoryAssignmentsAsync(
+            _dbContext,
+            PublicationImportHelpers.ParseDelimitedValues(categoriesText),
+            publicationId,
+            HttpContext.RequestAborted);
+
+        _dbContext.PublicationCountryAssignments.AddRange(countries);
+        _dbContext.PublicationCategoryAssignments.AddRange(categories);
+    }
+
     private void ValidatePublicationModel(PublicationContentEditViewModel model, Guid? currentId = null)
     {
+        if (!PublicationWorkflowStatuses.IsValid(model.WorkflowStatus))
+        {
+            ModelState.AddModelError(nameof(model.WorkflowStatus), "Select a valid publication status.");
+        }
+
         if (!PublicationTopicMapper.CanonicalTypes.Contains(model.Type))
         {
             ModelState.AddModelError(nameof(model.Type), "Select a valid publication type.");
@@ -121,6 +270,12 @@ public sealed class PublicationsController : Controller
             ModelState.AddModelError(nameof(model.PublishedMonth), "Select a valid publication month.");
         }
 
+        if (!string.IsNullOrWhiteSpace(model.SourcePublishedAtUtc) &&
+            !DateTimeOffset.TryParse(model.SourcePublishedAtUtc.Trim(), out _))
+        {
+            ModelState.AddModelError(nameof(model.SourcePublishedAtUtc), "Enter a valid source publication date.");
+        }
+
         var normalizedSlug = model.Slug.Trim();
         var slugExists = _dbContext.PublicationContentItems
             .AsNoTracking()
@@ -142,15 +297,25 @@ public sealed class PublicationsController : Controller
         {
             ModelState.AddModelError(nameof(model.GalleryFiles), $"One or more gallery files use an unsupported format. Allowed: {_mediaStorage.GetAllowedExtensionsLabel()}");
         }
+
+        var documentFiles = ResolveFiles(model.DocumentFiles, Request.Form.Files.GetFiles(nameof(model.DocumentFiles)));
+        if (documentFiles.Any(file => !_mediaStorage.IsSupportedDocument(file)))
+        {
+            ModelState.AddModelError(nameof(model.DocumentFiles), $"One or more document files use an unsupported format. Allowed: {_mediaStorage.GetAllowedDocumentExtensionsLabel()}");
+        }
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index(string? search, string? type, string? country, string? topic, string? status)
+    public async Task<IActionResult> Index(string? search, string? type, string? country, string? topic, string? source, string? status, string? dateFrom, string? dateTo)
     {
         ViewData["Title"] = "Admin Publications";
         ViewData["AdminNav"] = "publications";
 
-        var query = _dbContext.PublicationContentItems.AsNoTracking();
+        var query = _dbContext.PublicationContentItems
+            .AsNoTracking()
+            .Include(x => x.CountryAssignments)
+            .Include(x => x.CategoryAssignments)
+            .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -168,49 +333,120 @@ public sealed class PublicationsController : Controller
 
         if (!string.IsNullOrWhiteSpace(country))
         {
-            query = query.Where(x => x.CountryLabel == country);
+            query = query.Where(x =>
+                x.CountryLabel == country ||
+                x.CountryAssignments.Any(item => item.CountryLabel == country || item.CountryCode == country));
         }
 
         if (!string.IsNullOrWhiteSpace(topic))
         {
-            query = query.Where(x => x.Topic == topic);
+            query = query.Where(x =>
+                x.Topic == topic ||
+                x.CategoryAssignments.Any(item => item.CategoryName == topic || item.CategorySlug == topic));
+        }
+
+        if (!string.IsNullOrWhiteSpace(source))
+        {
+            query = query.Where(x => x.SourceName == source || x.SourceDomain == source);
         }
 
         if (status == "published")
         {
-            query = query.Where(x => x.IsPublished);
+            query = query.Where(x => x.WorkflowStatus == PublicationWorkflowStatuses.Published);
         }
         else if (status == "draft")
         {
-            query = query.Where(x => !x.IsPublished);
+            query = query.Where(x => x.WorkflowStatus == PublicationWorkflowStatuses.Draft);
+        }
+        else if (status == "rejected")
+        {
+            query = query.Where(x => x.WorkflowStatus == PublicationWorkflowStatuses.Rejected);
+        }
+        else if (status == "archived")
+        {
+            query = query.Where(x => x.WorkflowStatus == PublicationWorkflowStatuses.Archived);
+        }
+        else if (status == "review")
+        {
+            query = query.Where(x => x.RequiresReview);
+        }
+
+        if (TryParseDateInput(dateFrom, out var fromDate))
+        {
+            var start = new DateTimeOffset(fromDate, TimeSpan.Zero);
+            query = query.Where(x => (x.SourcePublishedAtUtc ?? x.CreatedAtUtc) >= start);
+        }
+
+        if (TryParseDateInput(dateTo, out var toDate))
+        {
+            var endExclusive = new DateTimeOffset(toDate.AddDays(1), TimeSpan.Zero);
+            query = query.Where(x => (x.SourcePublishedAtUtc ?? x.CreatedAtUtc) < endExclusive);
         }
 
         var items = await query
-            .OrderBy(x => x.DisplayOrder)
-            .ThenByDescending(x => x.UpdatedAtUtc)
+            .OrderBy(x => x.WorkflowStatus == PublicationWorkflowStatuses.Draft && x.ImportedAtUtc != null ? 0 : 1)
+            .ThenByDescending(x => x.ImportedAtUtc ?? x.UpdatedAtUtc)
+            .ThenBy(x => x.DisplayOrder)
             .ToListAsync();
 
-        var allItems = await _dbContext.PublicationContentItems.AsNoTracking().ToListAsync();
+        var allItems = await _dbContext.PublicationContentItems
+            .AsNoTracking()
+            .Include(x => x.CountryAssignments)
+            .Include(x => x.CategoryAssignments)
+            .ToListAsync();
         var monthStart = new DateTimeOffset(DateTimeOffset.UtcNow.Year, DateTimeOffset.UtcNow.Month, 1, 0, 0, 0, TimeSpan.Zero);
+        var todayStart = new DateTimeOffset(DateTimeOffset.UtcNow.Date, TimeSpan.Zero);
+        var importedDraftCount = allItems.Count(x => x.ImportedAtUtc != null && x.WorkflowStatus == PublicationWorkflowStatuses.Draft);
+        var reviewRequiredCount = allItems.Count(x => x.RequiresReview && x.WorkflowStatus == PublicationWorkflowStatuses.Draft);
+        var importedTodayCount = allItems.Count(x => x.ImportedAtUtc >= todayStart);
+        var reviewQueue = allItems
+            .Where(x => x.WorkflowStatus == PublicationWorkflowStatuses.Draft && (x.RequiresReview || x.ImportedAtUtc != null))
+            .OrderByDescending(x => x.RequiresReview)
+            .ThenByDescending(x => x.ImportedAtUtc ?? x.UpdatedAtUtc)
+            .Take(6)
+            .ToList();
 
         return View(new PublicationIndexViewModel
         {
             Items = items,
+            ReviewQueue = reviewQueue,
             SummaryCards =
             [
                 new AdminSummaryCardViewModel { Label = "All Publications", Value = allItems.Count.ToString(), Caption = "Database records" },
-                new AdminSummaryCardViewModel { Label = "Published", Value = allItems.Count(x => x.IsPublished).ToString(), Caption = "Visible on the platform" },
-                new AdminSummaryCardViewModel { Label = "Drafts", Value = allItems.Count(x => !x.IsPublished).ToString(), Caption = "Hidden from public pages" },
+                new AdminSummaryCardViewModel { Label = "Published", Value = allItems.Count(x => x.WorkflowStatus == PublicationWorkflowStatuses.Published).ToString(), Caption = "Visible on the platform" },
+                new AdminSummaryCardViewModel { Label = "Draft Review", Value = allItems.Count(x => x.WorkflowStatus == PublicationWorkflowStatuses.Draft && x.RequiresReview).ToString(), Caption = "Need editorial review" },
                 new AdminSummaryCardViewModel { Label = "Updated This Month", Value = allItems.Count(x => x.UpdatedAtUtc >= monthStart).ToString(), Caption = "Recently touched items" }
             ],
             AvailableTypes = allItems.Select(x => x.Type).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().Order().ToList(),
-            AvailableCountries = allItems.Select(x => x.CountryLabel).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().Order().ToList(),
-            AvailableTopics = allItems.Select(x => x.Topic).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().Order().ToList(),
+            AvailableCountries = allItems
+                .SelectMany(x => x.CountryAssignments.Count == 0 ? [x.CountryLabel] : x.CountryAssignments.Select(item => item.CountryLabel))
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Distinct()
+                .Order()
+                .ToList(),
+            AvailableTopics = allItems
+                .SelectMany(x => x.CategoryAssignments.Count == 0 ? [x.Topic] : x.CategoryAssignments.Select(item => item.CategoryName))
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Distinct()
+                .Order()
+                .ToList(),
+            AvailableSources = allItems
+                .Select(x => string.IsNullOrWhiteSpace(x.SourceName) ? x.SourceDomain : x.SourceName)
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Distinct()
+                .Order()
+                .ToList()!,
             Search = search,
             Type = type,
             Country = country,
             Topic = topic,
-            Status = status
+            Source = source,
+            Status = status,
+            DateFrom = dateFrom,
+            DateTo = dateTo,
+            ImportedDraftCount = importedDraftCount,
+            ReviewRequiredCount = reviewRequiredCount,
+            ImportedTodayCount = importedTodayCount
         });
     }
 
@@ -237,11 +473,18 @@ public sealed class PublicationsController : Controller
             : model.HeroImageUrl.Trim();
         var galleryItems = ContentImageTextSerializer.Parse(model.GalleryText).ToList();
         galleryItems.AddRange(await _mediaStorage.SaveImagesAsync(ResolveFiles(model.GalleryFiles, Request.Form.Files.GetFiles(nameof(model.GalleryFiles))), "publications", HttpContext.RequestAborted));
+        var uploadedDocumentFiles = ResolveFiles(model.DocumentFiles, Request.Form.Files.GetFiles(nameof(model.DocumentFiles)));
 
         var entity = new PublicationContentItem
         {
             Id = Guid.NewGuid(),
             Slug = model.Slug.Trim(),
+            WorkflowStatus = PublicationWorkflowStatuses.Normalize(model.WorkflowStatus),
+            RequiresReview = model.RequiresReview,
+            ExternalId = string.IsNullOrWhiteSpace(model.ExternalId) ? null : model.ExternalId.Trim(),
+            SourceName = string.IsNullOrWhiteSpace(model.SourceName) ? null : model.SourceName.Trim(),
+            SourceUrl = string.IsNullOrWhiteSpace(model.SourceUrl) ? null : PublicationImportHelpers.NormalizeSourceUrl(model.SourceUrl),
+            SourceDomain = string.IsNullOrWhiteSpace(model.SourceUrl) ? null : PublicationImportHelpers.ExtractDomain(model.SourceUrl),
             Type = model.Type.Trim(),
             CountryCode = model.CountryCode.Trim(),
             CountryLabel = ResolveCountryLabel(model.CountryCode, model.CountryLabel),
@@ -257,15 +500,21 @@ public sealed class PublicationsController : Controller
             HeroImageUrl = heroImageUrl,
             GalleryJson = ContentImageTextSerializer.Serialize(galleryItems),
             PdfDownloadUrl = string.IsNullOrWhiteSpace(model.PdfDownloadUrl) ? "#" : model.PdfDownloadUrl.Trim(),
-            DetailsJson = string.IsNullOrWhiteSpace(model.DetailsJson) ? null : model.DetailsJson.Trim(),
+            DetailsJson = null,
             DisplayOrder = model.DisplayOrder,
-            IsPublished = model.IsPublished,
+            IsPublished = PublicationWorkflowStatuses.IsPublishedStatus(model.WorkflowStatus),
+            SourcePublishedAtUtc = string.IsNullOrWhiteSpace(model.SourcePublishedAtUtc) ? null : DateTimeOffset.Parse(model.SourcePublishedAtUtc),
+            ImportedAtUtc = DateTimeOffset.UtcNow,
             CreatedAtUtc = DateTimeOffset.UtcNow,
             UpdatedAtUtc = DateTimeOffset.UtcNow
         };
 
+        entity.DetailsJson = BuildDetailsJson(entity, model);
+
         _dbContext.PublicationContentItems.Add(entity);
-        await ReplaceStructuredDetailsAsync(entity.Id, model);
+        await ReplaceAssignmentsAsync(entity.Id, model.AssignedCountriesText, model.AssignedCategoriesText);
+        var uploadedDocuments = await BuildUploadedPublicationDocumentsAsync(entity.Id, uploadedDocumentFiles);
+        await ReplaceStructuredDetailsAsync(entity.Id, model, uploadedDocuments);
         await _dbContext.SaveChangesAsync();
         TempData["AdminSuccess"] = $"Publication saved. Hero: {(string.IsNullOrWhiteSpace(entity.HeroImageUrl) ? "not saved" : entity.HeroImageUrl)}. Gallery items: {galleryItems.Count}.";
         return RedirectToAction(nameof(Edit), new { id = entity.Id });
@@ -275,6 +524,8 @@ public sealed class PublicationsController : Controller
     public async Task<IActionResult> Edit(Guid id)
     {
         var entity = await _dbContext.PublicationContentItems
+            .Include(x => x.CountryAssignments)
+            .Include(x => x.CategoryAssignments)
             .Include(x => x.ActionEntries)
             .Include(x => x.HighlightEntries)
             .Include(x => x.FindingEntries)
@@ -307,8 +558,15 @@ public sealed class PublicationsController : Controller
         var uploadedHeroImageUrl = await _mediaStorage.SaveImageAsync(ResolveSingleFile(model.HeroImageFile, Request.Form.Files.GetFile(nameof(model.HeroImageFile))), "publications", HttpContext.RequestAborted);
         var galleryItems = ContentImageTextSerializer.Parse(model.GalleryText).ToList();
         galleryItems.AddRange(await _mediaStorage.SaveImagesAsync(ResolveFiles(model.GalleryFiles, Request.Form.Files.GetFiles(nameof(model.GalleryFiles))), "publications", HttpContext.RequestAborted));
+        var uploadedDocumentFiles = ResolveFiles(model.DocumentFiles, Request.Form.Files.GetFiles(nameof(model.DocumentFiles)));
 
         entity.Slug = model.Slug.Trim();
+        entity.WorkflowStatus = PublicationWorkflowStatuses.Normalize(model.WorkflowStatus);
+        entity.RequiresReview = model.RequiresReview;
+        entity.ExternalId = string.IsNullOrWhiteSpace(model.ExternalId) ? entity.ExternalId : model.ExternalId.Trim();
+        entity.SourceName = string.IsNullOrWhiteSpace(model.SourceName) ? entity.SourceName : model.SourceName.Trim();
+        entity.SourceUrl = string.IsNullOrWhiteSpace(model.SourceUrl) ? entity.SourceUrl : PublicationImportHelpers.NormalizeSourceUrl(model.SourceUrl);
+        entity.SourceDomain = string.IsNullOrWhiteSpace(model.SourceUrl) ? entity.SourceDomain : PublicationImportHelpers.ExtractDomain(model.SourceUrl);
         entity.Type = model.Type.Trim();
         entity.CountryCode = model.CountryCode.Trim();
         entity.CountryLabel = ResolveCountryLabel(model.CountryCode, model.CountryLabel);
@@ -326,12 +584,18 @@ public sealed class PublicationsController : Controller
             : string.IsNullOrWhiteSpace(model.HeroImageUrl) ? entity.HeroImageUrl : model.HeroImageUrl.Trim();
         entity.GalleryJson = ContentImageTextSerializer.Serialize(galleryItems);
         entity.PdfDownloadUrl = string.IsNullOrWhiteSpace(model.PdfDownloadUrl) ? entity.PdfDownloadUrl : model.PdfDownloadUrl.Trim();
-        entity.DetailsJson = string.IsNullOrWhiteSpace(model.DetailsJson) ? entity.DetailsJson : model.DetailsJson.Trim();
         entity.DisplayOrder = model.DisplayOrder;
-        entity.IsPublished = model.IsPublished;
+        entity.IsPublished = PublicationWorkflowStatuses.IsPublishedStatus(model.WorkflowStatus);
+        entity.SourcePublishedAtUtc = string.IsNullOrWhiteSpace(model.SourcePublishedAtUtc)
+            ? entity.SourcePublishedAtUtc
+            : DateTimeOffset.Parse(model.SourcePublishedAtUtc);
         entity.UpdatedAtUtc = DateTimeOffset.UtcNow;
 
-        await ReplaceStructuredDetailsAsync(entity.Id, model);
+        entity.DetailsJson = BuildDetailsJson(entity, model);
+
+        await ReplaceAssignmentsAsync(entity.Id, model.AssignedCountriesText, model.AssignedCategoriesText);
+        var uploadedDocuments = await BuildUploadedPublicationDocumentsAsync(entity.Id, uploadedDocumentFiles);
+        await ReplaceStructuredDetailsAsync(entity.Id, model, uploadedDocuments);
         await _dbContext.SaveChangesAsync();
         await DeleteUnusedMediaAsync(previousUrls.Except(GetPublicationMediaUrls(entity), StringComparer.OrdinalIgnoreCase));
         TempData["AdminSuccess"] = $"Publication updated. Hero: {(string.IsNullOrWhiteSpace(entity.HeroImageUrl) ? "not saved" : entity.HeroImageUrl)}. Gallery items: {galleryItems.Count}.";
@@ -348,6 +612,24 @@ public sealed class PublicationsController : Controller
         _dbContext.PublicationContentItems.Remove(entity);
         await _dbContext.SaveChangesAsync();
         await DeleteUnusedMediaAsync(deletedUrls);
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateStatus(Guid id, string status)
+    {
+        var entity = await _dbContext.PublicationContentItems.FindAsync(id);
+        if (entity is null)
+        {
+            return NotFound();
+        }
+
+        entity.WorkflowStatus = PublicationWorkflowStatuses.Normalize(status);
+        entity.IsPublished = PublicationWorkflowStatuses.IsPublishedStatus(entity.WorkflowStatus);
+        entity.UpdatedAtUtc = DateTimeOffset.UtcNow;
+        await _dbContext.SaveChangesAsync();
+
         return RedirectToAction(nameof(Index));
     }
 
@@ -386,14 +668,26 @@ public sealed class PublicationsController : Controller
 
     private PublicationContentEditViewModel BuildEditViewModel(PublicationContentItem entity)
     {
+        var jsonDetails = DeserializeDetails(entity.DetailsJson);
+        var fallbackDetails = jsonDetails is null
+            ? BuildDefaultDetails(entity)
+            : MergeWithFallback(jsonDetails, BuildDefaultDetails(entity), entity.DetailsJson);
         var details = HasStructuredDetails(entity)
-            ? BuildStructuredDetails(entity, BuildDefaultDetails(entity))
-            : DeserializeDetails(entity.DetailsJson) ?? BuildDefaultDetails(entity);
+            ? BuildStructuredDetails(entity, fallbackDetails)
+            : fallbackDetails;
 
         return new PublicationContentEditViewModel
         {
             Id = entity.Id,
             Slug = entity.Slug,
+            WorkflowStatus = PublicationWorkflowStatuses.Normalize(entity.WorkflowStatus),
+            AvailableStatuses = PublicationWorkflowStatuses.All,
+            RequiresReview = entity.RequiresReview,
+            ExternalId = entity.ExternalId,
+            SourceName = entity.SourceName,
+            SourceUrl = entity.SourceUrl,
+            SourceDomain = entity.SourceDomain,
+            SourcePublishedAtUtc = entity.SourcePublishedAtUtc?.ToString("yyyy-MM-ddTHH:mm:sszzz"),
             Type = entity.Type,
             AvailableTypes = PublicationTopicMapper.CanonicalTypes,
             CountryCode = entity.CountryCode,
@@ -414,11 +708,15 @@ public sealed class PublicationsController : Controller
             HeroVisualClassName = string.IsNullOrWhiteSpace(entity.HeroVisualClassName) ? details.HeroVisualClassName : entity.HeroVisualClassName,
             HeroImageUrl = entity.HeroImageUrl ?? string.Empty,
             PdfDownloadUrl = string.IsNullOrWhiteSpace(entity.PdfDownloadUrl) ? details.PdfDownloadUrl : entity.PdfDownloadUrl,
-            ActionsText = PublicationStructuredDetailParsers.JoinActions(details.Actions),
-            ExecutiveSummaryText = PublicationStructuredDetailParsers.JoinParagraphs(details.ExecutiveSummaryParagraphs),
+            ActionsText = PublicationStructuredDetailParsers.JoinActions(DefaultPublicationActions.Select(label => new PublicationActionItemViewModel { Label = label })),
+            ExecutiveSummaryText = !string.IsNullOrWhiteSpace(details.ExecutiveSummaryHtml)
+                ? details.ExecutiveSummaryHtml
+                : PublicationStructuredDetailParsers.JoinParagraphs(details.ExecutiveSummaryParagraphs),
             ExecutiveHighlightsText = PublicationStructuredDetailParsers.JoinParagraphs(details.ExecutiveHighlights),
             KeyFindingsText = PublicationStructuredDetailParsers.JoinKeyFindings(details.KeyFindings),
             SectionsText = PublicationStructuredDetailParsers.JoinSections(details.Sections),
+            ChartsText = PublicationStructuredDetailParsers.JoinCharts(details.Charts),
+            TableRowsText = PublicationStructuredDetailParsers.JoinTableRows(details.TableRows),
             GalleryText = ContentImageTextSerializer.Serialize(details.GalleryItems.Select(item => new CAFRI.ViewModels.Shared.ContentImageItemViewModel
             {
                 ImageUrl = item.ImageUrl,
@@ -426,7 +724,14 @@ public sealed class PublicationsController : Controller
                 Title = item.Title,
                 Caption = item.Caption
             })),
+            AssignedCountriesText = entity.CountryAssignments.Count == 0
+                ? entity.CountryLabel
+                : string.Join(Environment.NewLine, entity.CountryAssignments.OrderBy(x => x.DisplayOrder).Select(x => x.CountryLabel)),
+            AssignedCategoriesText = entity.CategoryAssignments.Count == 0
+                ? entity.Topic
+                : string.Join(Environment.NewLine, entity.CategoryAssignments.OrderBy(x => x.DisplayOrder).Select(x => x.CategoryName)),
             DocumentsText = PublicationStructuredDetailParsers.JoinDocuments(details.Documents),
+            DocumentUploadMapText = string.Empty,
             RelatedIntelligenceText = PublicationStructuredDetailParsers.JoinRelatedLinks(details.RelatedIntelligence),
             PublicationInfoText = PublicationStructuredDetailParsers.JoinInfo(details.PublicationInfo),
             DisplayOrder = entity.DisplayOrder,
@@ -439,6 +744,14 @@ public sealed class PublicationsController : Controller
         {
             Id = model.Id,
             Slug = model.Slug,
+            WorkflowStatus = string.IsNullOrWhiteSpace(model.WorkflowStatus) ? PublicationWorkflowStatuses.Draft : model.WorkflowStatus,
+            AvailableStatuses = PublicationWorkflowStatuses.All,
+            RequiresReview = model.RequiresReview,
+            ExternalId = model.ExternalId,
+            SourceName = model.SourceName,
+            SourceUrl = model.SourceUrl,
+            SourceDomain = model.SourceDomain,
+            SourcePublishedAtUtc = model.SourcePublishedAtUtc,
             Type = model.Type,
             AvailableTypes = PublicationTopicMapper.CanonicalTypes,
             CountryCode = model.CountryCode,
@@ -468,8 +781,13 @@ public sealed class PublicationsController : Controller
             ExecutiveHighlightsText = model.ExecutiveHighlightsText,
             KeyFindingsText = model.KeyFindingsText,
             SectionsText = model.SectionsText,
+            ChartsText = model.ChartsText,
+            TableRowsText = model.TableRowsText,
             GalleryText = model.GalleryText,
+            AssignedCountriesText = model.AssignedCountriesText,
+            AssignedCategoriesText = model.AssignedCategoriesText,
             DocumentsText = model.DocumentsText,
+            DocumentUploadMapText = model.DocumentUploadMapText,
             RelatedIntelligenceText = model.RelatedIntelligenceText,
             PublicationInfoText = model.PublicationInfoText,
             DisplayOrder = model.DisplayOrder,
@@ -525,6 +843,9 @@ public sealed class PublicationsController : Controller
             DocumentLabel = entity.DocumentLabel,
             HeroVisualClassName = entity.HeroVisualClassName,
             PdfDownloadUrl = entity.PdfDownloadUrl ?? "#",
+            ExecutiveSummaryHtml = summarySection is not null && LooksLikeHtml(summarySection.ParagraphsText)
+                ? summarySection.ParagraphsText
+                : string.Empty,
             Actions = entity.ActionEntries
                 .OrderBy(x => x.DisplayOrder)
                 .Select(x => new PublicationActionItemViewModel { Label = x.Label })
@@ -628,6 +949,103 @@ public sealed class PublicationsController : Controller
         return details;
     }
 
+    private static PublicationDetailsViewModel MergeWithFallback(
+        PublicationDetailsViewModel details,
+        PublicationDetailsViewModel fallback,
+        string? rawJson = null)
+    {
+        var hasExplicitCharts = HasExplicitJsonCollection(rawJson, nameof(PublicationDetailsViewModel.Charts));
+        var hasExplicitTableRows = HasExplicitJsonCollection(rawJson, nameof(PublicationDetailsViewModel.TableRows));
+
+        return new PublicationDetailsViewModel
+        {
+            Title = string.IsNullOrWhiteSpace(details.Title) ? fallback.Title : details.Title,
+            Slug = string.IsNullOrWhiteSpace(details.Slug) ? fallback.Slug : details.Slug,
+            PublicationType = string.IsNullOrWhiteSpace(details.PublicationType) ? fallback.PublicationType : details.PublicationType,
+            Topic = string.IsNullOrWhiteSpace(details.Topic) ? fallback.Topic : details.Topic,
+            CoverageLabel = string.IsNullOrWhiteSpace(details.CoverageLabel) ? fallback.CoverageLabel : details.CoverageLabel,
+            ShortDescription = string.IsNullOrWhiteSpace(details.ShortDescription) ? fallback.ShortDescription : details.ShortDescription,
+            PublishedDate = string.IsNullOrWhiteSpace(details.PublishedDate) ? fallback.PublishedDate : details.PublishedDate,
+            ReadingTime = string.IsNullOrWhiteSpace(details.ReadingTime) ? fallback.ReadingTime : details.ReadingTime,
+            AuthorLabel = string.IsNullOrWhiteSpace(details.AuthorLabel) ? fallback.AuthorLabel : details.AuthorLabel,
+            DocumentLabel = string.IsNullOrWhiteSpace(details.DocumentLabel) ? fallback.DocumentLabel : details.DocumentLabel,
+            HeroVisualClassName = string.IsNullOrWhiteSpace(details.HeroVisualClassName) ? fallback.HeroVisualClassName : details.HeroVisualClassName,
+            HeroImageUrl = string.IsNullOrWhiteSpace(details.HeroImageUrl) ? fallback.HeroImageUrl : details.HeroImageUrl,
+            PdfDownloadUrl = string.IsNullOrWhiteSpace(details.PdfDownloadUrl) ? fallback.PdfDownloadUrl : details.PdfDownloadUrl,
+            ExecutiveSummaryHtml = string.IsNullOrWhiteSpace(details.ExecutiveSummaryHtml) ? fallback.ExecutiveSummaryHtml : details.ExecutiveSummaryHtml,
+            IsPremium = details.IsPremium || fallback.IsPremium,
+            CanAccessFullContent = details.CanAccessFullContent || fallback.CanAccessFullContent,
+            Actions = details.Actions.Count == 0 ? fallback.Actions : details.Actions,
+            Tabs = details.Tabs.Count == 0 ? fallback.Tabs : details.Tabs,
+            Kpis = details.Kpis.Count == 0 ? fallback.Kpis : details.Kpis,
+            ExecutiveSummaryParagraphs = details.ExecutiveSummaryParagraphs.Count == 0 ? fallback.ExecutiveSummaryParagraphs : details.ExecutiveSummaryParagraphs,
+            ExecutiveHighlights = details.ExecutiveHighlights.Count == 0 ? fallback.ExecutiveHighlights : details.ExecutiveHighlights,
+            KeyFindings = details.KeyFindings.Count == 0 ? fallback.KeyFindings : details.KeyFindings,
+            Sections = details.Sections.Count == 0 ? fallback.Sections : details.Sections,
+            Charts = details.Charts.Count == 0 && !hasExplicitCharts ? fallback.Charts : details.Charts,
+            TableRows = details.TableRows.Count == 0 && !hasExplicitTableRows ? fallback.TableRows : details.TableRows,
+            MapRoutes = details.MapRoutes.Count == 0 ? fallback.MapRoutes : details.MapRoutes,
+            GalleryItems = details.GalleryItems.Count == 0 ? fallback.GalleryItems : details.GalleryItems,
+            Documents = details.Documents.Count == 0 ? fallback.Documents : details.Documents,
+            TableOfContents = details.TableOfContents.Count == 0 ? fallback.TableOfContents : details.TableOfContents,
+            KeyTopics = details.KeyTopics.Count == 0 ? fallback.KeyTopics : details.KeyTopics,
+            SidebarDocuments = details.SidebarDocuments.Count == 0 ? fallback.SidebarDocuments : details.SidebarDocuments,
+            RelatedIntelligence = details.RelatedIntelligence.Count == 0 ? fallback.RelatedIntelligence : details.RelatedIntelligence,
+            PublicationInfo = details.PublicationInfo.Count == 0 ? fallback.PublicationInfo : details.PublicationInfo,
+            RelatedPublications = details.RelatedPublications.Count == 0 ? fallback.RelatedPublications : details.RelatedPublications
+        };
+    }
+
+    private static string? BuildDetailsJson(
+        PublicationContentItem entity,
+        PublicationContentEditViewModel model)
+    {
+        var existingDetails = DeserializeDetails(entity.DetailsJson);
+        var baseDetails = existingDetails is null
+            ? BuildDefaultDetails(entity)
+            : MergeWithFallback(existingDetails, BuildDefaultDetails(entity), entity.DetailsJson);
+
+        var details = new PublicationDetailsViewModel
+        {
+            Title = entity.Title,
+            Slug = entity.Slug,
+            PublicationType = entity.Type,
+            Topic = entity.Topic,
+            CoverageLabel = entity.CountryLabel,
+            ShortDescription = entity.Description,
+            PublishedDate = entity.PublishedDate,
+            ReadingTime = entity.ReadingTime,
+            AuthorLabel = entity.AuthorLabel,
+            DocumentLabel = entity.DocumentLabel,
+            HeroVisualClassName = entity.HeroVisualClassName,
+            HeroImageUrl = entity.HeroImageUrl ?? string.Empty,
+            PdfDownloadUrl = entity.PdfDownloadUrl ?? "#",
+            ExecutiveSummaryHtml = baseDetails.ExecutiveSummaryHtml,
+            IsPremium = baseDetails.IsPremium,
+            CanAccessFullContent = baseDetails.CanAccessFullContent,
+            Actions = baseDetails.Actions,
+            Tabs = baseDetails.Tabs,
+            Kpis = baseDetails.Kpis,
+            ExecutiveSummaryParagraphs = baseDetails.ExecutiveSummaryParagraphs,
+            ExecutiveHighlights = baseDetails.ExecutiveHighlights,
+            KeyFindings = baseDetails.KeyFindings,
+            Sections = baseDetails.Sections,
+            Charts = PublicationStructuredDetailParsers.ParseCharts(model.ChartsText),
+            TableRows = PublicationStructuredDetailParsers.ParseTableRows(model.TableRowsText),
+            MapRoutes = baseDetails.MapRoutes,
+            GalleryItems = baseDetails.GalleryItems,
+            Documents = baseDetails.Documents,
+            TableOfContents = baseDetails.TableOfContents,
+            KeyTopics = baseDetails.KeyTopics,
+            SidebarDocuments = baseDetails.SidebarDocuments,
+            RelatedIntelligence = baseDetails.RelatedIntelligence,
+            PublicationInfo = baseDetails.PublicationInfo,
+            RelatedPublications = baseDetails.RelatedPublications
+        };
+
+        return JsonSerializer.Serialize(details, JsonOptions);
+    }
+
     private static PublicationDetailsViewModel BuildDefaultDetails(PublicationContentItem item)
     {
         var publishedDate = string.IsNullOrWhiteSpace(item.PublishedDate) ? item.Meta.Split('|')[0].Trim() : item.PublishedDate;
@@ -647,15 +1065,8 @@ public sealed class PublicationsController : Controller
             DocumentLabel = string.IsNullOrWhiteSpace(item.DocumentLabel) ? "PDF available | 1.2 MB" : item.DocumentLabel,
             HeroVisualClassName = string.IsNullOrWhiteSpace(item.HeroVisualClassName) ? "publication-hero-media--trade-corridors" : item.HeroVisualClassName,
             PdfDownloadUrl = item.PdfDownloadUrl ?? "#",
-            Actions =
-            [
-                new() { Label = "Read Online" },
-                new() { Label = "Download Full Report (PDF)" },
-                new() { Label = "Share" },
-                new() { Label = "Save" },
-                new() { Label = "Cite" },
-                new() { Label = "Print" }
-            ],
+            ExecutiveSummaryHtml = string.Empty,
+            Actions = DefaultPublicationActions.Select(label => new PublicationActionItemViewModel { Label = label }).ToList(),
             Tabs =
             [
                 new() { Label = "Overview", TargetId = "overview", IsActive = true },
@@ -725,7 +1136,25 @@ public sealed class PublicationsController : Controller
         };
     }
 
-    private async Task ReplaceStructuredDetailsAsync(Guid publicationContentItemId, PublicationContentEditViewModel model)
+    private static IReadOnlyList<int> ParseDocumentUploadMap(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return [];
+        }
+
+        return raw
+            .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(value => int.TryParse(value, out var index) ? index : (int?)null)
+            .Where(value => value.HasValue)
+            .Select(value => value!.Value)
+            .ToList();
+    }
+
+    private async Task ReplaceStructuredDetailsAsync(
+        Guid publicationContentItemId,
+        PublicationContentEditViewModel model,
+        IReadOnlyList<UploadedPublicationDocumentFile>? uploadedDocuments = null)
     {
         var existingActions = await _dbContext.PublicationActionEntries.Where(x => x.PublicationContentItemId == publicationContentItemId).ToListAsync();
         var existingHighlights = await _dbContext.PublicationHighlightEntries.Where(x => x.PublicationContentItemId == publicationContentItemId).ToListAsync();
@@ -744,17 +1173,15 @@ public sealed class PublicationsController : Controller
         _dbContext.PublicationInfoEntries.RemoveRange(existingInfo);
 
         _dbContext.PublicationActionEntries.AddRange(
-            PublicationStructuredDetailParsers.ParseLineCollection(model.ActionsText)
-                .Select((label, index) => new PublicationActionEntry
-                {
-                    Id = Guid.NewGuid(),
-                    PublicationContentItemId = publicationContentItemId,
-                    Label = label,
-                    DisplayOrder = index
-                }));
+            DefaultPublicationActions.Select((label, index) => new PublicationActionEntry
+            {
+                Id = Guid.NewGuid(),
+                PublicationContentItemId = publicationContentItemId,
+                Label = label,
+                DisplayOrder = index
+            }));
 
-        var executiveSummary = PublicationStructuredDetailParsers.ParseLineCollection(model.ExecutiveSummaryText);
-        if (executiveSummary.Count != 0)
+        if (!string.IsNullOrWhiteSpace(model.ExecutiveSummaryText))
         {
             _dbContext.PublicationArticleSections.Add(new PublicationArticleSection
             {
@@ -762,7 +1189,7 @@ public sealed class PublicationsController : Controller
                 PublicationContentItemId = publicationContentItemId,
                 SectionKey = "executive-summary",
                 Heading = "Executive Summary",
-                ParagraphsText = string.Join("~~", executiveSummary),
+                ParagraphsText = SanitizeRichTextHtml(model.ExecutiveSummaryText),
                 BulletPointsText = string.Empty,
                 DisplayOrder = 0
             });
@@ -806,16 +1233,58 @@ public sealed class PublicationsController : Controller
         }));
 
         var documentRows = PublicationStructuredDetailParsers.ParsePipeRows(model.DocumentsText, 3);
-        _dbContext.PublicationDocumentEntries.AddRange(documentRows.Select((parts, index) => new PublicationDocumentEntry
+        var uploadMap = ParseDocumentUploadMap(model.DocumentUploadMapText);
+        var uploadsByRowIndex = new Dictionary<int, UploadedPublicationDocumentFile>();
+
+        if (uploadedDocuments is not null && uploadedDocuments.Count != 0)
         {
-            Id = Guid.NewGuid(),
-            PublicationContentItemId = publicationContentItemId,
-            Title = parts[0],
-            Type = parts[1],
-            Meta = parts[2],
-            DownloadUrl = parts.Length > 3 ? string.Join(" | ", parts.Skip(3)) : "#",
-            DisplayOrder = index
-        }));
+            for (var index = 0; index < uploadedDocuments.Count && index < uploadMap.Count; index++)
+            {
+                uploadsByRowIndex[uploadMap[index]] = uploadedDocuments[index];
+            }
+        }
+
+        var savedDocuments = new List<PublicationDocumentEntry>();
+        for (var index = 0; index < documentRows.Count; index++)
+        {
+            var parts = documentRows[index];
+            uploadsByRowIndex.TryGetValue(index, out var uploadedDocument);
+
+            savedDocuments.Add(new PublicationDocumentEntry
+            {
+                Id = Guid.NewGuid(),
+                PublicationContentItemId = publicationContentItemId,
+                Title = string.IsNullOrWhiteSpace(parts[0]) ? uploadedDocument?.Title ?? "Publication document" : parts[0],
+                Type = string.IsNullOrWhiteSpace(parts[1]) ? uploadedDocument?.Type ?? string.Empty : parts[1],
+                Meta = string.IsNullOrWhiteSpace(parts[2]) ? uploadedDocument?.Meta ?? string.Empty : parts[2],
+                DownloadUrl = uploadedDocument?.DownloadUrl ?? (parts.Length > 3 ? string.Join(" | ", parts.Skip(3)) : "#"),
+                DisplayOrder = index
+            });
+        }
+
+        if (uploadedDocuments is not null && uploadedDocuments.Count != 0)
+        {
+            foreach (var item in uploadedDocuments.Select((document, index) => (document, index)))
+            {
+                if (item.index < uploadMap.Count)
+                {
+                    continue;
+                }
+
+                savedDocuments.Add(new PublicationDocumentEntry
+                {
+                    Id = Guid.NewGuid(),
+                    PublicationContentItemId = publicationContentItemId,
+                    Title = item.document.Title,
+                    Type = item.document.Type,
+                    Meta = item.document.Meta,
+                    DownloadUrl = item.document.DownloadUrl,
+                    DisplayOrder = savedDocuments.Count
+                });
+            }
+        }
+
+        _dbContext.PublicationDocumentEntries.AddRange(savedDocuments);
 
         var relatedRows = PublicationStructuredDetailParsers.ParsePipeRows(model.RelatedIntelligenceText, 2);
         _dbContext.PublicationRelatedLinks.AddRange(relatedRows.Select((parts, index) => new PublicationRelatedLink

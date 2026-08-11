@@ -1,7 +1,10 @@
 @model IReadOnlyList<CAFRI.ViewModels.Publications.PublicationGalleryItemViewModel>
 
 @{
-    var featured = Model[0];
+    var galleryItems = Model
+        .Where(item => !string.IsNullOrWhiteSpace(item.ImageUrl))
+        .ToList();
+    var featured = galleryItems.FirstOrDefault() ?? Model[0];
 }
 
 <section class="photo-gallery">
@@ -15,7 +18,7 @@
     </button>
 
     <div class="photo-gallery__thumbs">
-        @foreach (var item in Model)
+        @foreach (var item in galleryItems.Count != 0 ? galleryItems : Model)
         {
             <button class="photo-gallery__thumb" type="button" data-gallery-select data-gallery-image="@item.ImageUrl" data-gallery-class="@item.VisualClassName" data-gallery-caption="@item.Caption" data-gallery-title="@item.Title">
                 @if (!string.IsNullOrWhiteSpace(item.ImageUrl))

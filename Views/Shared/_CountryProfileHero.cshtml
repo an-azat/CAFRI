@@ -39,23 +39,22 @@
 
     @{
         var heroGallery = Model.HeroGallery;
-        var featuredImage = heroGallery.FirstOrDefault();
+        var featuredImage = heroGallery.FirstOrDefault(item => !string.IsNullOrWhiteSpace(item.ImageUrl))
+            ?? heroGallery.FirstOrDefault();
+        var galleryThumbs = heroGallery
+            .Where(item => !string.IsNullOrWhiteSpace(item.ImageUrl))
+            .ToList();
     }
 
     <div class="country-hero-image @Model.Country.HeroClassName">
-        @if (featuredImage is not null)
+        @if (featuredImage is not null && !string.IsNullOrWhiteSpace(featuredImage.ImageUrl))
         {
             <img class="country-hero-image__photo" src="@featuredImage.ImageUrl" alt="@(string.IsNullOrWhiteSpace(featuredImage.Alt) ? Model.Country.Name : featuredImage.Alt)" data-country-hero-main />
             <div class="country-hero-image__overlay country-hero-image__overlay--gallery">
-                <div class="country-hero-image__gallery-copy">
-                    <strong data-country-hero-title>@(string.IsNullOrWhiteSpace(featuredImage.Title) ? $"{Model.Country.Name} gallery" : featuredImage.Title)</strong>
-                    <p data-country-hero-caption>@featuredImage.Caption</p>
-                </div>
-
-                @if (heroGallery.Count > 1)
+                @if (galleryThumbs.Count > 1)
                 {
                     <div class="country-hero-image__thumbs">
-                        @foreach (var image in heroGallery)
+                        @foreach (var image in galleryThumbs)
                         {
                             <button
                                 class="country-hero-image__thumb"

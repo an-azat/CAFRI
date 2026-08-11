@@ -4,6 +4,7 @@ using CAFRI.Infrastructure.Persistence;
 using CAFRI.ViewModels.Countries;
 using CAFRI.ViewModels.Intelligence;
 using CAFRI.ViewModels.Publications;
+using CAFRI.ViewModels.Home;
 
 namespace CAFRI.Infrastructure.Content;
 
@@ -195,6 +196,159 @@ public sealed class ContentSeedService
             }
         }
 
+        if (!_dbContext.HomePageContents.Any())
+        {
+            var now = DateTimeOffset.UtcNow;
+            var featuredPublicationId = _dbContext.PublicationContentItems
+                .Where(x => x.Slug == "tajikistan-banking-sector-outlook")
+                .Select(x => (Guid?)x.Id)
+                .FirstOrDefault();
+
+            _dbContext.HomePageContents.Add(new HomePageContent
+            {
+                Id = Guid.NewGuid(),
+                HeroTitle = "Central Asia Financial & Regulatory Intelligence Initiative",
+                HeroLead = "Your gateway to country profiles, investment climate, regulatory developments, publications and regional intelligence across Central Asia.",
+                HeroPrimaryCtaLabel = "Explore Countries ->",
+                HeroPrimaryCtaUrl = "/countries",
+                HeroSecondaryCtaLabel = "View Intelligence",
+                HeroSecondaryCtaUrl = "/intelligence",
+                IntroTitle = "One regional platform for Central Asia",
+                IntroDescription = "CAFRI brings together structured country information, investment climate context, regulatory intelligence, publications and an interactive regional map in one place. The platform is built for investors, researchers, policy analysts and institutions.",
+                PlatformSectionLabel = "Platform sections",
+                PlatformSectionTitle = "What you can explore",
+                PlatformSectionDescription = "Main entry points of the platform: countries, investment environment, regulatory monitoring, publications and the regional map.",
+                DirectionsText = HomePageContentTextSerializer.JoinDirections(
+                [
+                    new() { Number = "01", Title = "Explore Countries", Description = "Access country-level profiles covering institutions, market environment, regulation and development priorities.", Url = "/countries", LinkLabel = "View country profiles ->" },
+                    new() { Number = "02", Title = "Investment Climate", Description = "Understand investment conditions, sector priorities, infrastructure and regional trade corridors.", Url = "/about", LinkLabel = "Explore investment climate ->" },
+                    new() { Number = "03", Title = "Regulatory Intelligence", Description = "Track regulatory developments, policy changes and institutional updates across Central Asia.", Url = "/intelligence", LinkLabel = "View updates ->" },
+                    new() { Number = "04", Title = "Publications", Description = "Read research reports, policy briefs, country reviews and analytical materials.", Url = "/publications", LinkLabel = "View publications ->" },
+                    new() { Number = "05", Title = "Regional Coverage", Description = "Navigate Central Asia through structured country profiles and explore regulation, investment climate and related publications.", Url = "/countries", LinkLabel = "Open country coverage ->", IsWide = true }
+                ]),
+                CountriesSectionLabel = "Explore countries",
+                CountriesSectionTitle = "Country profiles across Central Asia",
+                CountriesSectionDescription = "Each country page includes overview, institutions, regulation, investment environment, infrastructure and related publications.",
+                CountriesVisualTitle = "Regional Country Coverage",
+                CountriesVisualDescription = "A structured entry point to Central Asia. Open a country profile to access its regulatory environment, investment climate and publications.",
+                FeaturesSectionLabel = "Core themes",
+                FeaturesSectionTitle = "Investment climate, regulation and research",
+                FeaturesSectionDescription = "Three core content pillars help users understand the region through a clear, structured and institutional-grade interface.",
+                FeatureCardsText = HomePageContentTextSerializer.JoinFeatureCards(
+                [
+                    new() { Title = "Investment Climate", Description = "Market conditions, sectors, infrastructure, business environment and regional corridors.", Url = "/about", CssClassName = "home-v2-feature-card--investment" },
+                    new() { Title = "Regulatory Intelligence", Description = "Policy changes, institutional updates and regulation-focused monitoring.", Url = "/intelligence", CssClassName = "home-v2-feature-card--regulatory" },
+                    new() { Title = "Publications", Description = "Reports, research notes, country reviews and analytical materials.", Url = "/publications", CssClassName = "home-v2-feature-card--publications" }
+                ]),
+                LatestSectionLabel = "Latest materials",
+                LatestSectionTitle = "Latest intelligence and publications",
+                LatestSectionDescription = "The latest updates added through CAFRI content workflows: intelligence items, reports, briefs and regional analytical materials.",
+                FeaturedPublicationEyebrow = "Featured Publication",
+                LatestFeaturedLinkLabel = "Read more ->",
+                LatestIntelligenceLinkLabel = "Read more ->",
+                FeaturedPublicationId = featuredPublicationId,
+                AboutTitle = "About CAFRI",
+                AboutDescription = "CAFRI is designed as a regional intelligence initiative focused on Central Asia. The platform helps users explore country profiles, investment climate, regulatory environment, publications and regional context through a clean, structured interface.",
+                CoverageAreasText = HomePageContentTextSerializer.JoinCoverageAreas(
+                [
+                    new() { Icon = "institution", Title = "Financial Regulation", Description = "Monitoring regulatory developments from central banks, financial supervisors, and government institutions." },
+                    new() { Icon = "institution", Title = "Banking Intelligence", Description = "Analysis of monetary policy, banking sector performance, licensing, and supervisory actions." },
+                    new() { Icon = "shield", Title = "Sanctions & Compliance", Description = "Tracking domestic and international sanctions, AML/CFT frameworks, and compliance requirements." },
+                    new() { Icon = "truck", Title = "Trade & Logistics", Description = "Monitoring trade corridors, customs, infrastructure, and cross-border logistics developments." },
+                    new() { Icon = "chart", Title = "Macroeconomics", Description = "Key economic indicators, forecasts, fiscal policy, and structural economic trends." },
+                    new() { Icon = "globe", Title = "Geopolitical Risk", Description = "Analysis of political risk, regional dynamics, and their impact on financial and trade stability." }
+                ]),
+                CreatedAtUtc = now,
+                UpdatedAtUtc = now
+            });
+        }
+        else
+        {
+            var homePage = _dbContext.HomePageContents.OrderByDescending(x => x.UpdatedAtUtc).First();
+            var hasChanges = false;
+            var featuredPublicationId = _dbContext.PublicationContentItems
+                .Where(x => x.Slug == "tajikistan-banking-sector-outlook")
+                .Select(x => (Guid?)x.Id)
+                .FirstOrDefault();
+
+            hasChanges |= FillIfEmpty(() => homePage.HeroTitle, value => homePage.HeroTitle = value, "Central Asia Financial & Regulatory Intelligence Initiative");
+            hasChanges |= FillIfEmpty(() => homePage.HeroLead, value => homePage.HeroLead = value, "Your gateway to country profiles, investment climate, regulatory developments, publications and regional intelligence across Central Asia.");
+            hasChanges |= FillIfEmpty(() => homePage.HeroPrimaryCtaLabel, value => homePage.HeroPrimaryCtaLabel = value, "Explore Countries ->");
+            hasChanges |= FillIfEmpty(() => homePage.HeroPrimaryCtaUrl, value => homePage.HeroPrimaryCtaUrl = value, "/countries");
+            hasChanges |= FillIfEmpty(() => homePage.HeroSecondaryCtaLabel, value => homePage.HeroSecondaryCtaLabel = value, "View Intelligence");
+            hasChanges |= FillIfEmpty(() => homePage.HeroSecondaryCtaUrl, value => homePage.HeroSecondaryCtaUrl = value, "/intelligence");
+            hasChanges |= FillIfEmpty(() => homePage.IntroTitle, value => homePage.IntroTitle = value, "One regional platform for Central Asia");
+            hasChanges |= FillIfEmpty(() => homePage.IntroDescription, value => homePage.IntroDescription = value, "CAFRI brings together structured country information, investment climate context, regulatory intelligence, publications and an interactive regional map in one place. The platform is built for investors, researchers, policy analysts and institutions.");
+            hasChanges |= FillIfEmpty(() => homePage.PlatformSectionLabel, value => homePage.PlatformSectionLabel = value, "Platform sections");
+            hasChanges |= FillIfEmpty(() => homePage.PlatformSectionTitle, value => homePage.PlatformSectionTitle = value, "What you can explore");
+            hasChanges |= FillIfEmpty(() => homePage.PlatformSectionDescription, value => homePage.PlatformSectionDescription = value, "Main entry points of the platform: countries, investment environment, regulatory monitoring, publications and the regional map.");
+            hasChanges |= FillIfEmpty(() => homePage.CountriesSectionLabel, value => homePage.CountriesSectionLabel = value, "Explore countries");
+            hasChanges |= FillIfEmpty(() => homePage.CountriesSectionTitle, value => homePage.CountriesSectionTitle = value, "Country profiles across Central Asia");
+            hasChanges |= FillIfEmpty(() => homePage.CountriesSectionDescription, value => homePage.CountriesSectionDescription = value, "Each country page includes overview, institutions, regulation, investment environment, infrastructure and related publications.");
+            hasChanges |= FillIfEmpty(() => homePage.CountriesVisualTitle, value => homePage.CountriesVisualTitle = value, "Regional Country Coverage");
+            hasChanges |= FillIfEmpty(() => homePage.CountriesVisualDescription, value => homePage.CountriesVisualDescription = value, "A structured entry point to Central Asia. Open a country profile to access its regulatory environment, investment climate and publications.");
+            hasChanges |= FillIfEmpty(() => homePage.FeaturesSectionLabel, value => homePage.FeaturesSectionLabel = value, "Core themes");
+            hasChanges |= FillIfEmpty(() => homePage.FeaturesSectionTitle, value => homePage.FeaturesSectionTitle = value, "Investment climate, regulation and research");
+            hasChanges |= FillIfEmpty(() => homePage.FeaturesSectionDescription, value => homePage.FeaturesSectionDescription = value, "Three core content pillars help users understand the region through a clear, structured and institutional-grade interface.");
+            hasChanges |= FillIfEmpty(() => homePage.LatestSectionLabel, value => homePage.LatestSectionLabel = value, "Latest materials");
+            hasChanges |= FillIfEmpty(() => homePage.LatestSectionTitle, value => homePage.LatestSectionTitle = value, "Latest intelligence and publications");
+            hasChanges |= FillIfEmpty(() => homePage.LatestSectionDescription, value => homePage.LatestSectionDescription = value, "The latest updates added through CAFRI content workflows: intelligence items, reports, briefs and regional analytical materials.");
+            hasChanges |= FillIfEmpty(() => homePage.FeaturedPublicationEyebrow, value => homePage.FeaturedPublicationEyebrow = value, "Featured Publication");
+            hasChanges |= FillIfEmpty(() => homePage.LatestFeaturedLinkLabel, value => homePage.LatestFeaturedLinkLabel = value, "Read more ->");
+            hasChanges |= FillIfEmpty(() => homePage.LatestIntelligenceLinkLabel, value => homePage.LatestIntelligenceLinkLabel = value, "Read more ->");
+            hasChanges |= FillIfEmpty(() => homePage.AboutTitle, value => homePage.AboutTitle = value, "About CAFRI");
+            hasChanges |= FillIfEmpty(() => homePage.AboutDescription, value => homePage.AboutDescription = value, "CAFRI is designed as a regional intelligence initiative focused on Central Asia. The platform helps users explore country profiles, investment climate, regulatory environment, publications and regional context through a clean, structured interface.");
+
+            if (!homePage.FeaturedPublicationId.HasValue && featuredPublicationId.HasValue)
+            {
+                homePage.FeaturedPublicationId = featuredPublicationId;
+                hasChanges = true;
+            }
+
+            if (string.IsNullOrWhiteSpace(homePage.DirectionsText))
+            {
+                homePage.DirectionsText = HomePageContentTextSerializer.JoinDirections(
+                [
+                    new() { Number = "01", Title = "Explore Countries", Description = "Access country-level profiles covering institutions, market environment, regulation and development priorities.", Url = "/countries", LinkLabel = "View country profiles ->" },
+                    new() { Number = "02", Title = "Investment Climate", Description = "Understand investment conditions, sector priorities, infrastructure and regional trade corridors.", Url = "/about", LinkLabel = "Explore investment climate ->" },
+                    new() { Number = "03", Title = "Regulatory Intelligence", Description = "Track regulatory developments, policy changes and institutional updates across Central Asia.", Url = "/intelligence", LinkLabel = "View updates ->" },
+                    new() { Number = "04", Title = "Publications", Description = "Read research reports, policy briefs, country reviews and analytical materials.", Url = "/publications", LinkLabel = "View publications ->" },
+                    new() { Number = "05", Title = "Regional Coverage", Description = "Navigate Central Asia through structured country profiles and explore regulation, investment climate and related publications.", Url = "/countries", LinkLabel = "Open country coverage ->", IsWide = true }
+                ]);
+                hasChanges = true;
+            }
+
+            if (string.IsNullOrWhiteSpace(homePage.FeatureCardsText))
+            {
+                homePage.FeatureCardsText = HomePageContentTextSerializer.JoinFeatureCards(
+                [
+                    new() { Title = "Investment Climate", Description = "Market conditions, sectors, infrastructure, business environment and regional corridors.", Url = "/about", CssClassName = "home-v2-feature-card--investment" },
+                    new() { Title = "Regulatory Intelligence", Description = "Policy changes, institutional updates and regulation-focused monitoring.", Url = "/intelligence", CssClassName = "home-v2-feature-card--regulatory" },
+                    new() { Title = "Publications", Description = "Reports, research notes, country reviews and analytical materials.", Url = "/publications", CssClassName = "home-v2-feature-card--publications" }
+                ]);
+                hasChanges = true;
+            }
+
+            if (string.IsNullOrWhiteSpace(homePage.CoverageAreasText))
+            {
+                homePage.CoverageAreasText = HomePageContentTextSerializer.JoinCoverageAreas(
+                [
+                    new() { Icon = "institution", Title = "Financial Regulation", Description = "Monitoring regulatory developments from central banks, financial supervisors, and government institutions." },
+                    new() { Icon = "institution", Title = "Banking Intelligence", Description = "Analysis of monetary policy, banking sector performance, licensing, and supervisory actions." },
+                    new() { Icon = "shield", Title = "Sanctions & Compliance", Description = "Tracking domestic and international sanctions, AML/CFT frameworks, and compliance requirements." },
+                    new() { Icon = "truck", Title = "Trade & Logistics", Description = "Monitoring trade corridors, customs, infrastructure, and cross-border logistics developments." },
+                    new() { Icon = "chart", Title = "Macroeconomics", Description = "Key economic indicators, forecasts, fiscal policy, and structural economic trends." },
+                    new() { Icon = "globe", Title = "Geopolitical Risk", Description = "Analysis of political risk, regional dynamics, and their impact on financial and trade stability." }
+                ]);
+                hasChanges = true;
+            }
+
+            if (hasChanges)
+            {
+                homePage.UpdatedAtUtc = DateTimeOffset.UtcNow;
+            }
+        }
+
         if (_dbContext.ChangeTracker.HasChanges())
         {
             await _dbContext.SaveChangesAsync();
@@ -270,4 +424,15 @@ public sealed class ContentSeedService
         ("TJ", "Inflation", "tj-inflation", "Macroeconomics", "%", "6.1", "2025", "World Bank Data", "Average annual CPI estimate."),
         ("TM", "GDP (Nominal)", "tm-gdp-nominal", "Macroeconomics", "USD B", "45.9", "2025", "World Bank Data", "Nominal GDP estimate.")
     ];
+
+    private static bool FillIfEmpty(Func<string> getter, Action<string> setter, string fallback)
+    {
+        if (!string.IsNullOrWhiteSpace(getter()))
+        {
+            return false;
+        }
+
+        setter(fallback);
+        return true;
+    }
 }

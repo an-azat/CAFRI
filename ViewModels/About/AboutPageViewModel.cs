@@ -8,6 +8,8 @@ public sealed class AboutPageViewModel
 
     public string DescriptionSecondary { get; init; } = string.Empty;
 
+    public string AuthorDescription { get; init; } = string.Empty;
+
     public IReadOnlyList<AboutFeatureItemViewModel> HeroFeatures { get; init; } = [];
 
     public required AboutSectionCardViewModel MissionCard { get; init; }

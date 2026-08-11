@@ -60,9 +60,18 @@
 
                 <section class="article-section" id="overview" data-section>
                     <h2>Executive Summary</h2>
-                    @foreach (var paragraph in Model.ExecutiveSummaryParagraphs)
+                    @if (!string.IsNullOrWhiteSpace(Model.ExecutiveSummaryHtml))
                     {
-                        <p>@paragraph</p>
+                        <div class="article-richtext">
+                            @Html.Raw(Model.ExecutiveSummaryHtml)
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var paragraph in Model.ExecutiveSummaryParagraphs)
+                        {
+                            <p>@paragraph</p>
+                        }
                     }
 
                     <ul class="publication-highlight-list">
@@ -197,10 +206,45 @@
     }
 </div>
 
+@if (Model.Documents.Any(x => x.IsDownloadable))
+{
+    <div class="content-download-modal" data-download-modal hidden>
+        <div class="content-download-modal__backdrop" data-download-close></div>
+        <div class="content-download-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="publication-download-modal-title">
+            <div class="content-download-modal__header">
+                <div>
+                    <div class="content-download-modal__eyebrow">Available Formats</div>
+                    <h2 id="publication-download-modal-title">Download Full Report</h2>
+                </div>
+                <button type="button" class="content-download-modal__close" data-download-close aria-label="Close">×</button>
+            </div>
+            <div class="content-download-modal__body">
+                @foreach (var item in Model.Documents.Where(x => x.IsDownloadable))
+                {
+                    var optionId = $"publication-download-{item.Title.GetHashCode()}";
+                    <label class="content-download-modal__option" for="@optionId">
+                        <input id="@optionId" type="radio" name="publication-download-option" value="@item.DownloadUrl" @(item == Model.Documents.First(x => x.IsDownloadable) ? "checked" : null) />
+                        <span class="content-download-modal__option-copy">
+                            <strong>@item.Title</strong>
+                            <span>@item.Type</span>
+                            <small>@item.Meta</small>
+                        </span>
+                    </label>
+                }
+            </div>
+            <div class="content-download-modal__footer">
+                <button type="button" class="home-v2-button home-v2-button--ghost" data-download-close>Cancel</button>
+                <button type="button" class="home-v2-button home-v2-button--primary" data-download-confirm>Download Selected File</button>
+            </div>
+        </div>
+    </div>
+}
+
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script src="~/js/publication-charts.js" asp-append-version="true"></script>
     <script src="~/js/publication-gallery.js" asp-append-version="true"></script>
     <script src="~/js/publication-toc.js" asp-append-version="true"></script>
     <script src="~/js/publication-cards.js" asp-append-version="true"></script>
+    <script src="~/js/article-actions.js" asp-append-version="true"></script>
 }

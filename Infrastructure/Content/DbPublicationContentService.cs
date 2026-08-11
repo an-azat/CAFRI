@@ -1,5 +1,7 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using CAFRI.Application.Abstractions.Services;
+using CAFRI.Domain.Content;
 using CAFRI.Infrastructure.Persistence;
 using CAFRI.ViewModels.Publications;
 using Microsoft.EntityFrameworkCore;
@@ -8,12 +10,62 @@ namespace CAFRI.Infrastructure.Content;
 
 public sealed class DbPublicationContentService : IPublicationContentService
 {
+    private static readonly IReadOnlyList<PublicationActionItemViewModel> DefaultActions =
+    [
+        new() { Label = "Download Full Report" },
+        new() { Label = "Share" },
+        new() { Label = "Print" }
+    ];
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
     };
 
     private readonly AppDbContext _dbContext;
+
+    private static bool LooksLikeHtml(string? value) =>
+        !string.IsNullOrWhiteSpace(value) &&
+        value.Contains('<', StringComparison.Ordinal) &&
+        value.Contains('>', StringComparison.Ordinal);
+
+    private static bool HasExplicitJsonCollection(string? rawJson, string propertyName)
+    {
+        if (string.IsNullOrWhiteSpace(rawJson))
+        {
+            return false;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(rawJson);
+            return document.RootElement.TryGetProperty(propertyName, out var property) &&
+                   property.ValueKind == JsonValueKind.Array;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static string SanitizeRichTextHtml(string? html)
+    {
+        if (string.IsNullOrWhiteSpace(html))
+        {
+            return string.Empty;
+        }
+
+        var sanitized = html.Trim();
+        sanitized = Regex.Replace(sanitized, @"<(script|style)\b[^>]*>.*?</\1>", string.Empty, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        sanitized = Regex.Replace(sanitized, @"\scontenteditable\s*=\s*(""[^""]*""|'[^']*'|[^\s>]+)", string.Empty, RegexOptions.IgnoreCase);
+        sanitized = Regex.Replace(sanitized, @"\sspellcheck\s*=\s*(""[^""]*""|'[^']*'|[^\s>]+)", string.Empty, RegexOptions.IgnoreCase);
+        sanitized = Regex.Replace(sanitized, @"\s(?:data|aria)-[\w:-]+\s*=\s*(""[^""]*""|'[^']*'|[^\s>]+)", string.Empty, RegexOptions.IgnoreCase);
+        sanitized = Regex.Replace(sanitized, @"\s(?:role|tabindex|autocorrect|autocapitalize)\s*=\s*(""[^""]*""|'[^']*'|[^\s>]+)", string.Empty, RegexOptions.IgnoreCase);
+        sanitized = Regex.Replace(sanitized, @"\sclass\s*=\s*(""[^""]*\bql-[^""]*""|'[^']*\bql-[^']*')", string.Empty, RegexOptions.IgnoreCase);
+        sanitized = Regex.Replace(sanitized, @"\sstyle\s*=\s*(""[^""]*""|'[^']*')", string.Empty, RegexOptions.IgnoreCase);
+
+        return sanitized.Trim();
+    }
 
     public DbPublicationContentService(AppDbContext dbContext)
     {
@@ -94,7 +146,9 @@ public sealed class DbPublicationContentService : IPublicationContentService
 
         var publicationsQuery = _dbContext.PublicationContentItems
             .AsNoTracking()
-            .Where(x => x.IsPublished)
+            .Include(x => x.CountryAssignments)
+            .Include(x => x.CategoryAssignments)
+            .Where(x => x.WorkflowStatus == PublicationWorkflowStatuses.Published)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(query))
@@ -116,13 +170,26 @@ public sealed class DbPublicationContentService : IPublicationContentService
         if (!string.Equals(selectedCountry, "All Countries", StringComparison.OrdinalIgnoreCase))
         {
             publicationsQuery = selectedCountry == "Regional"
-                ? publicationsQuery.Where(x => x.CountryLabel == "Regional")
-                : publicationsQuery.Where(x => x.CountryLabel == selectedCountry);
+                ? publicationsQuery.Where(x => x.CountryLabel == "Regional" || x.CountryAssignments.Any(item => item.CountryCode == "RG" || item.CountryLabel == "Regional"))
+                : publicationsQuery.Where(x => x.CountryLabel == selectedCountry || x.CountryAssignments.Any(item => item.CountryLabel == selectedCountry));
         }
 
         if (!string.Equals(selectedTopic, "All Topics", StringComparison.OrdinalIgnoreCase))
         {
-            publicationsQuery = ApplyTopicFilter(publicationsQuery, selectedTopic);
+            if (string.Equals(selectedTopic, "Trade & Logistics", StringComparison.OrdinalIgnoreCase))
+            {
+                publicationsQuery = publicationsQuery.Where(x =>
+                    EF.Functions.ILike(x.Topic, selectedTopic) ||
+                    x.Type == "REPORT" ||
+                    x.CategoryAssignments.Any(item => item.CategoryName == selectedTopic || item.CategorySlug == "trade-logistics"));
+            }
+            else
+            {
+                publicationsQuery = publicationsQuery.Where(x =>
+                    EF.Functions.ILike(x.Topic, selectedTopic) ||
+                    EF.Functions.ILike(x.Type, selectedTopic) ||
+                    x.CategoryAssignments.Any(item => item.CategoryName == selectedTopic || item.CategorySlug == selectedTopic));
+            }
         }
 
         publicationsQuery = selectedTab switch
@@ -154,7 +221,9 @@ public sealed class DbPublicationContentService : IPublicationContentService
 
         var allPublishedPublications = _dbContext.PublicationContentItems
             .AsNoTracking()
-            .Where(x => x.IsPublished)
+            .Include(x => x.CountryAssignments)
+            .Include(x => x.CategoryAssignments)
+            .Where(x => x.WorkflowStatus == PublicationWorkflowStatuses.Published)
             .ToList();
 
         return new PublicationsPageViewModel
@@ -288,7 +357,7 @@ public sealed class DbPublicationContentService : IPublicationContentService
             .Include(x => x.DocumentEntries)
             .Include(x => x.RelatedLinks)
             .Include(x => x.InfoEntries)
-            .FirstOrDefault(x => x.IsPublished && x.Slug == slug);
+            .FirstOrDefault(x => x.WorkflowStatus == PublicationWorkflowStatuses.Published && x.Slug == slug);
 
         if (entity is null)
         {
@@ -297,7 +366,7 @@ public sealed class DbPublicationContentService : IPublicationContentService
 
         var relatedCards = _dbContext.PublicationContentItems
             .AsNoTracking()
-            .Where(x => x.IsPublished && x.Slug != slug)
+            .Where(x => x.WorkflowStatus == PublicationWorkflowStatuses.Published && x.Slug != slug)
             .OrderBy(x => x.DisplayOrder)
             .Take(4)
             .Select(x => new PublicationCardViewModel
@@ -313,21 +382,23 @@ public sealed class DbPublicationContentService : IPublicationContentService
             .ToList();
 
         var fallback = BuildFallbackDetails(entity, relatedCards);
+        var jsonDetails = string.IsNullOrWhiteSpace(entity.DetailsJson)
+            ? null
+            : JsonSerializer.Deserialize<PublicationDetailsViewModel>(entity.DetailsJson, JsonOptions);
+        var detailsFallback = jsonDetails is null
+            ? fallback
+            : MergeWithFallback(jsonDetails, fallback, entity.DetailsJson);
 
         if (HasStructuredDetails(entity))
         {
-            return BuildStructuredDetails(entity, fallback);
+            return BuildStructuredDetails(entity, detailsFallback);
         }
 
-        if (!string.IsNullOrWhiteSpace(entity.DetailsJson))
+        if (jsonDetails is not null)
         {
-            var details = JsonSerializer.Deserialize<PublicationDetailsViewModel>(entity.DetailsJson, JsonOptions);
-            if (details is not null)
-            {
-                var merged = MergeWithFallback(details, fallback);
-                merged.HeroImageUrl = entity.HeroImageUrl ?? merged.HeroImageUrl;
-                return merged;
-            }
+            var merged = detailsFallback;
+            merged.HeroImageUrl = entity.HeroImageUrl ?? merged.HeroImageUrl;
+            return merged;
         }
 
         return fallback;
@@ -366,11 +437,11 @@ public sealed class DbPublicationContentService : IPublicationContentService
             HeroVisualClassName = string.IsNullOrWhiteSpace(item.HeroVisualClassName) ? fallback.HeroVisualClassName : item.HeroVisualClassName,
             HeroImageUrl = item.HeroImageUrl ?? string.Empty,
             PdfDownloadUrl = string.IsNullOrWhiteSpace(item.PdfDownloadUrl) ? fallback.PdfDownloadUrl : item.PdfDownloadUrl,
+            ExecutiveSummaryHtml = summarySection is not null && LooksLikeHtml(summarySection.ParagraphsText)
+                ? SanitizeRichTextHtml(summarySection.ParagraphsText)
+                : string.Empty,
             IsPremium = fallback.IsPremium,
-            Actions = item.ActionEntries
-                .OrderBy(x => x.DisplayOrder)
-                .Select(x => new PublicationActionItemViewModel { Label = x.Label })
-                .ToList(),
+            Actions = DefaultActions.ToList(),
             Tabs = fallback.Tabs,
             Kpis = fallback.Kpis,
             ExecutiveSummaryParagraphs = summarySection is null
@@ -482,8 +553,12 @@ public sealed class DbPublicationContentService : IPublicationContentService
 
     private static PublicationDetailsViewModel MergeWithFallback(
         PublicationDetailsViewModel details,
-        PublicationDetailsViewModel fallback)
+        PublicationDetailsViewModel fallback,
+        string? rawJson = null)
     {
+        var hasExplicitCharts = HasExplicitJsonCollection(rawJson, nameof(PublicationDetailsViewModel.Charts));
+        var hasExplicitTableRows = HasExplicitJsonCollection(rawJson, nameof(PublicationDetailsViewModel.TableRows));
+
         return new PublicationDetailsViewModel
         {
             Title = string.IsNullOrWhiteSpace(details.Title) ? fallback.Title : details.Title,
@@ -499,6 +574,7 @@ public sealed class DbPublicationContentService : IPublicationContentService
             HeroVisualClassName = string.IsNullOrWhiteSpace(details.HeroVisualClassName) ? fallback.HeroVisualClassName : details.HeroVisualClassName,
             HeroImageUrl = string.IsNullOrWhiteSpace(details.HeroImageUrl) ? fallback.HeroImageUrl : details.HeroImageUrl,
             PdfDownloadUrl = string.IsNullOrWhiteSpace(details.PdfDownloadUrl) ? fallback.PdfDownloadUrl : details.PdfDownloadUrl,
+            ExecutiveSummaryHtml = string.IsNullOrWhiteSpace(details.ExecutiveSummaryHtml) ? fallback.ExecutiveSummaryHtml : SanitizeRichTextHtml(details.ExecutiveSummaryHtml),
             IsPremium = details.IsPremium || fallback.IsPremium,
             Actions = details.Actions.Count == 0 ? fallback.Actions : details.Actions,
             Tabs = details.Tabs.Count == 0 ? fallback.Tabs : details.Tabs,
@@ -507,8 +583,8 @@ public sealed class DbPublicationContentService : IPublicationContentService
             ExecutiveHighlights = details.ExecutiveHighlights.Count == 0 ? fallback.ExecutiveHighlights : details.ExecutiveHighlights,
             KeyFindings = details.KeyFindings.Count == 0 ? fallback.KeyFindings : details.KeyFindings,
             Sections = details.Sections.Count == 0 ? fallback.Sections : details.Sections,
-            Charts = details.Charts.Count == 0 ? fallback.Charts : details.Charts,
-            TableRows = details.TableRows.Count == 0 ? fallback.TableRows : details.TableRows,
+            Charts = details.Charts.Count == 0 && !hasExplicitCharts ? fallback.Charts : details.Charts,
+            TableRows = details.TableRows.Count == 0 && !hasExplicitTableRows ? fallback.TableRows : details.TableRows,
             MapRoutes = details.MapRoutes.Count == 0 ? fallback.MapRoutes : details.MapRoutes,
             GalleryItems = details.GalleryItems.Count == 0 ? fallback.GalleryItems : details.GalleryItems,
             Documents = details.Documents.Count == 0 ? fallback.Documents : details.Documents,
@@ -541,7 +617,8 @@ public sealed class DbPublicationContentService : IPublicationContentService
             HeroImageUrl = item.HeroImageUrl ?? string.Empty,
             PdfDownloadUrl = item.PdfDownloadUrl ?? "#",
             IsPremium = true,
-            Actions = [ new() { Label = "Read Online" }, new() { Label = "Download Full Report (PDF)" }, new() { Label = "Share" }, new() { Label = "Save" }, new() { Label = "Cite" }, new() { Label = "Print" } ],
+            ExecutiveSummaryHtml = string.Empty,
+            Actions = DefaultActions.ToList(),
             Tabs = [ new() { Label = "Overview", TargetId = "overview", IsActive = true }, new() { Label = "Key Findings", TargetId = "key-findings" }, new() { Label = "Data & Charts", TargetId = "data-charts" }, new() { Label = "Documents", TargetId = "related-documents" }, new() { Label = "Related Publications", TargetId = "related-publications" } ],
             Kpis = [ new() { Label = "Coverage", Value = item.CountryLabel, Detail = "Primary focus", Tone = "accent" }, new() { Label = "Publication Type", Value = item.Type, Detail = "Research format", Tone = "neutral" }, new() { Label = "Reading Time", Value = string.IsNullOrWhiteSpace(item.ReadingTime) ? (item.Meta.Contains('|', StringComparison.Ordinal) ? item.Meta.Split('|')[1].Trim() : "12 min") : item.ReadingTime, Detail = "Estimated duration", Tone = "neutral" }, new() { Label = "Update Cycle", Value = "Monthly", Detail = "Monitoring cadence", Tone = "positive" }, new() { Label = "Access Level", Value = "Public", Detail = "Web article available", Tone = "accent" } ],
             ExecutiveSummaryParagraphs = [ $"{item.Title} provides a structured analytical overview of current developments relevant to {item.CountryLabel}. The page is designed as an online publication rather than a simple download screen, with summary findings, embedded data blocks, and related materials presented directly on the platform.", "This fallback detail layout is now generated from database content, so the page remains usable even before a full custom detail JSON has been authored in the admin panel." ],

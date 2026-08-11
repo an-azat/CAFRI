@@ -9,4 +9,6 @@ public sealed class IntelligenceOfficialDocumentViewModel
     public required string Meta { get; init; }
 
     public string DownloadUrl { get; init; } = "#";
+
+    public bool IsDownloadable => !string.IsNullOrWhiteSpace(DownloadUrl) && DownloadUrl != "#";
 }

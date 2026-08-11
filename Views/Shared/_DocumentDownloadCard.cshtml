@@ -9,10 +9,10 @@
     </div>
     @if (string.IsNullOrWhiteSpace(Model.DownloadUrl) || Model.DownloadUrl == "#")
     {
-        <span class="btn btn-outline-light document-download-card__button-disabled" aria-disabled="true">Unavailable</span>
+        <span class="home-v2-button home-v2-button--ghost document-download-card__button-disabled" aria-disabled="true">Unavailable</span>
     }
     else
     {
-        <a class="btn btn-primary" href="@Model.DownloadUrl">Download PDF</a>
+        <a class="home-v2-button home-v2-button--primary" href="@Model.DownloadUrl">Download PDF</a>
     }
 </article>

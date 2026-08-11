@@ -48,6 +48,8 @@ public sealed class IntelligenceDetailsViewModel
 
     public required IntelligenceOfficialDocumentViewModel OfficialDocument { get; init; }
 
+    public IReadOnlyList<IntelligenceOfficialDocumentViewModel> AvailableDownloads { get; init; } = [];
+
     public IReadOnlyList<IntelligenceDocumentInfoRowViewModel> DocumentInformation { get; init; } = [];
 
     public IReadOnlyList<string> KeyHighlights { get; init; } = [];

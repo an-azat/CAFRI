@@ -86,14 +86,12 @@ public sealed class JsonPublicationContentService : IPublicationContentService
             DocumentLabel = "PDF available | 1.2 MB",
             HeroVisualClassName = "publication-hero-media--trade-corridors",
             PdfDownloadUrl = "#",
+            ExecutiveSummaryHtml = string.Empty,
             IsPremium = true,
             Actions =
             [
-                new() { Label = "Read Online" },
-                new() { Label = "Download Full Report (PDF)" },
+                new() { Label = "Download Full Report" },
                 new() { Label = "Share" },
-                new() { Label = "Save" },
-                new() { Label = "Cite" },
                 new() { Label = "Print" }
             ],
             Tabs =

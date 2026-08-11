@@ -149,6 +149,21 @@
                         <input asp-for="DocumentDownloadUrl" class="form-control" />
                     </div>
                     <div class="col-12">
+                        <label asp-for="DocumentsText" class="form-label">Available Download Files</label>
+                        <textarea asp-for="DocumentsText" class="form-control font-monospace d-none" rows="5" data-intelligence-documents-raw></textarea>
+                        <div class="intelligence-official-editor" data-intelligence-documents-editor>
+                            <div class="intelligence-official-editor__list" data-intelligence-documents-list></div>
+                            <button type="button" class="admin-chip intelligence-official-editor__add" data-intelligence-documents-add>Add Download File</button>
+                        </div>
+                        <div class="form-text">Manage available files in the `Title | Subtitle | Meta | DownloadUrl` format. The first row becomes the main official document card.</div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="DocumentFiles" class="form-label">Upload Download Files</label>
+                        <input asp-for="DocumentFiles" type="file" class="form-control" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt" />
+                        <span asp-validation-for="DocumentFiles" class="field-validation-error"></span>
+                        <div class="form-text">Upload multiple files and they will appear in the download selector for this intelligence item.</div>
+                    </div>
+                    <div class="col-12">
                         <label asp-for="KeyChangesText" class="form-label"></label>
                         <textarea asp-for="KeyChangesText" class="form-control font-monospace d-none" rows="6" data-intelligence-keychanges-raw></textarea>
                         <div class="intelligence-keychanges-editor" data-intelligence-keychanges-editor>
@@ -248,6 +263,9 @@
             const officialRaw = document.querySelector("[data-intelligence-official-raw]");
             const officialList = document.querySelector("[data-intelligence-official-list]");
             const officialAddButton = document.querySelector("[data-intelligence-official-add]");
+            const documentsRaw = document.querySelector("[data-intelligence-documents-raw]");
+            const documentsList = document.querySelector("[data-intelligence-documents-list]");
+            const documentsAddButton = document.querySelector("[data-intelligence-documents-add]");
             const relatedRaw = document.querySelector("[data-intelligence-related-raw]");
             const relatedList = document.querySelector("[data-intelligence-related-list]");
             const relatedAddButton = document.querySelector("[data-intelligence-related-add]");
@@ -638,6 +656,105 @@
 
                 officialRaw.form?.addEventListener("submit", serializeOfficialRows);
                 serializeOfficialRows();
+            }
+
+            const parseDocumentRows = (value) => {
+                if (!value || !value.trim()) {
+                    return [];
+                }
+
+                return value
+                    .split(/\r?\n/)
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .map((line) => {
+                        const parts = line.split("|").map((part) => part.trim());
+                        return {
+                            title: parts[0] || "",
+                            subtitle: parts[1] || "",
+                            meta: parts[2] || "",
+                            url: parts.slice(3).join(" | ") || ""
+                        };
+                    });
+            };
+
+            const serializeDocumentRows = () => {
+                if (!documentsRaw || !documentsList) {
+                    return;
+                }
+
+                const rows = Array.from(documentsList.querySelectorAll("[data-document-row]"))
+                    .map((row) => {
+                        const title = row.querySelector("[data-document-field='title']")?.value?.trim() || "";
+                        const subtitle = row.querySelector("[data-document-field='subtitle']")?.value?.trim() || "";
+                        const meta = row.querySelector("[data-document-field='meta']")?.value?.trim() || "";
+                        const url = row.querySelector("[data-document-field='url']")?.value?.trim() || "";
+                        if (!title && !subtitle && !meta && !url) {
+                            return null;
+                        }
+
+                        return `${title} | ${subtitle} | ${meta} | ${url}`;
+                    })
+                    .filter(Boolean);
+
+                documentsRaw.value = rows.join("\n");
+            };
+
+            const buildDocumentRow = (item = {}) => {
+                const row = document.createElement("div");
+                row.className = "intelligence-official-row";
+                row.setAttribute("data-document-row", "");
+                row.innerHTML = `
+                    <div class="intelligence-official-row__grid">
+                        <div>
+                            <label class="form-label">Title</label>
+                            <input type="text" class="form-control" data-document-field="title" value="${escapeValue(item.title)}">
+                        </div>
+                        <div>
+                            <label class="form-label">Subtitle</label>
+                            <input type="text" class="form-control" data-document-field="subtitle" value="${escapeValue(item.subtitle)}">
+                        </div>
+                        <div>
+                            <label class="form-label">Meta</label>
+                            <input type="text" class="form-control" data-document-field="meta" value="${escapeValue(item.meta)}">
+                        </div>
+                        <div class="intelligence-official-row__url">
+                            <label class="form-label">Download URL</label>
+                            <input type="text" class="form-control" data-document-field="url" value="${escapeValue(item.url)}">
+                        </div>
+                    </div>
+                    <div class="intelligence-official-row__actions">
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-document-remove>Remove</button>
+                    </div>
+                `;
+
+                row.querySelectorAll("input").forEach((input) => {
+                    input.addEventListener("input", serializeDocumentRows);
+                });
+
+                row.querySelector("[data-document-remove]")?.addEventListener("click", () => {
+                    row.remove();
+                    serializeDocumentRows();
+                });
+
+                return row;
+            };
+
+            if (documentsRaw && documentsList && documentsAddButton) {
+                const initialDocumentRows = parseDocumentRows(documentsRaw.value);
+                if (initialDocumentRows.length === 0) {
+                    documentsList.appendChild(buildDocumentRow({}));
+                } else {
+                    initialDocumentRows.forEach((item) => documentsList.appendChild(buildDocumentRow(item)));
+                }
+
+                documentsAddButton.addEventListener("click", () => {
+                    documentsList.appendChild(buildDocumentRow({}));
+                    serializeDocumentRows();
+                });
+
+                documentsRaw.form?.addEventListener("submit", serializeDocumentRows);
+                serializeDocumentRows();
             }
 
             const parseRelatedRows = (value) => {

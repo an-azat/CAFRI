@@ -6,6 +6,8 @@ public sealed class PublicationIndexViewModel
 {
     public required IReadOnlyList<PublicationContentItem> Items { get; init; }
 
+    public required IReadOnlyList<PublicationContentItem> ReviewQueue { get; init; }
+
     public required IReadOnlyList<AdminSummaryCardViewModel> SummaryCards { get; init; }
 
     public required IReadOnlyList<string> AvailableTypes { get; init; }
@@ -13,6 +15,8 @@ public sealed class PublicationIndexViewModel
     public required IReadOnlyList<string> AvailableCountries { get; init; }
 
     public required IReadOnlyList<string> AvailableTopics { get; init; }
+
+    public required IReadOnlyList<string> AvailableSources { get; init; }
 
     public string? Search { get; init; }
 
@@ -22,7 +26,19 @@ public sealed class PublicationIndexViewModel
 
     public string? Topic { get; init; }
 
+    public string? Source { get; init; }
+
     public string? Status { get; init; }
+
+    public string? DateFrom { get; init; }
+
+    public string? DateTo { get; init; }
+
+    public int ImportedDraftCount { get; init; }
+
+    public int ReviewRequiredCount { get; init; }
+
+    public int ImportedTodayCount { get; init; }
 }
 
 public sealed class IntelligenceIndexViewModel

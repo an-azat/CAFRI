@@ -1,4 +1,20 @@
 @model CAFRI.Areas.Admin.ViewModels.Content.CountryContentEditViewModel
+@using System.Linq
+
+@{
+    var savedHeroGallery = (Model.HeroGalleryText ?? string.Empty)
+        .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .Select(line => line.Split('|', StringSplitOptions.TrimEntries))
+        .Where(parts => parts.Length != 0 && !string.IsNullOrWhiteSpace(parts[0]))
+        .Select(parts => new
+        {
+            ImageUrl = parts[0],
+            Alt = parts.Length > 1 ? parts[1] : string.Empty,
+            Title = parts.Length > 2 ? parts[2] : string.Empty,
+            Caption = parts.Length > 3 ? string.Join(" | ", parts.Skip(3)) : string.Empty
+        })
+        .ToList();
+}
 
 <section class="admin-page">
     <div class="admin-page__hero">
@@ -62,6 +78,30 @@
                         </div>
                         <div class="form-text">Manage gallery items visually. Data is still stored in the compatible `ImageUrl | Alt | Title | Caption` format.</div>
                     </div>
+                    @if (savedHeroGallery.Count != 0)
+                    {
+                        <div class="col-12">
+                            <section class="admin-saved-media">
+                                <div class="admin-panel__eyebrow">Currently Saved Hero Photos</div>
+                                <div class="admin-saved-media__gallery">
+                                    @foreach (var item in savedHeroGallery)
+                                    {
+                                        <article class="admin-saved-media__gallery-item">
+                                            <img src="@item.ImageUrl" alt="@(string.IsNullOrWhiteSpace(item.Alt) ? Model.Name : item.Alt)" />
+                                            <div class="admin-saved-media__gallery-copy">
+                                                <strong>@(string.IsNullOrWhiteSpace(item.Title) ? "Hero image" : item.Title)</strong>
+                                                @if (!string.IsNullOrWhiteSpace(item.Caption))
+                                                {
+                                                    <p>@item.Caption</p>
+                                                }
+                                                <span>@item.ImageUrl</span>
+                                            </div>
+                                        </article>
+                                    }
+                                </div>
+                            </section>
+                        </div>
+                    }
                     <div class="col-md-2">
                         <label asp-for="DisplayOrder" class="form-label"></label>
                         <input asp-for="DisplayOrder" class="form-control" />

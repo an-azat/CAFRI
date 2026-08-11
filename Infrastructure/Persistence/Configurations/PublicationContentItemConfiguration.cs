@@ -11,6 +11,11 @@ public sealed class PublicationContentItemConfiguration : IEntityTypeConfigurati
         builder.ToTable("PublicationContentItems");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Slug).HasMaxLength(180).IsRequired();
+        builder.Property(x => x.WorkflowStatus).HasMaxLength(40).IsRequired();
+        builder.Property(x => x.ExternalId).HasMaxLength(300);
+        builder.Property(x => x.SourceName).HasMaxLength(220);
+        builder.Property(x => x.SourceUrl).HasMaxLength(1000);
+        builder.Property(x => x.SourceDomain).HasMaxLength(220);
         builder.Property(x => x.Type).HasMaxLength(120).IsRequired();
         builder.Property(x => x.CountryCode).HasMaxLength(10).IsRequired();
         builder.Property(x => x.CountryLabel).HasMaxLength(120).IsRequired();
@@ -29,7 +34,15 @@ public sealed class PublicationContentItemConfiguration : IEntityTypeConfigurati
         builder.Property(x => x.DetailsJson).HasColumnType("text");
         builder.HasIndex(x => x.Slug).IsUnique();
         builder.HasIndex(x => new { x.IsPublished, x.DisplayOrder });
+        builder.HasIndex(x => x.WorkflowStatus);
+        builder.HasIndex(x => x.RequiresReview);
+        builder.HasIndex(x => x.ExternalId);
+        builder.HasIndex(x => x.SourceUrl);
+        builder.HasIndex(x => x.SourceDomain);
+        builder.HasIndex(x => x.SourcePublishedAtUtc);
 
+        builder.HasMany(x => x.CountryAssignments).WithOne(x => x.PublicationContentItem).HasForeignKey(x => x.PublicationContentItemId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasMany(x => x.CategoryAssignments).WithOne(x => x.PublicationContentItem).HasForeignKey(x => x.PublicationContentItemId).OnDelete(DeleteBehavior.Cascade);
         builder.HasMany(x => x.ActionEntries).WithOne(x => x.PublicationContentItem).HasForeignKey(x => x.PublicationContentItemId).OnDelete(DeleteBehavior.Cascade);
         builder.HasMany(x => x.HighlightEntries).WithOne(x => x.PublicationContentItem).HasForeignKey(x => x.PublicationContentItemId).OnDelete(DeleteBehavior.Cascade);
         builder.HasMany(x => x.FindingEntries).WithOne(x => x.PublicationContentItem).HasForeignKey(x => x.PublicationContentItemId).OnDelete(DeleteBehavior.Cascade);

@@ -2,6 +2,19 @@
     var pageTitle = ViewData["Title"] as string ?? "CAFRI Admin";
     var activeNav = (ViewData["AdminNav"] as string ?? string.Empty).ToLowerInvariant();
     var userName = User.Identity?.Name ?? "Admin User";
+    var sectionLabel = activeNav switch
+    {
+        "dashboard" => "Overview",
+        "publications" => "Publications",
+        "intelligence" => "Intelligence",
+        "countries" => "Countries",
+        "sources" => "Sources",
+        "indicators" => "Indicators",
+        "categories" => "Categories",
+        "media" => "Media Library",
+        "access" => "Professional Access",
+        _ => "Content Workspace"
+    };
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -13,8 +26,9 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/CAFRI.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Head", required: false)
 </head>
-<body class="app-body theme-dark admin-body">
+<body class="app-body theme-home admin-body admin-theme-editorial">
     <div class="admin-shell">
         <aside class="admin-sidebar" data-admin-sidebar>
             <div class="admin-sidebar__brand">
@@ -30,6 +44,8 @@
                 <a href="@Url.Action("Index", "Publications", new { area = "Admin" })" class="admin-nav-link @(activeNav == "publications" ? "is-active" : null)">Publications</a>
                 <a href="@Url.Action("Index", "Intelligence", new { area = "Admin" })" class="admin-nav-link @(activeNav == "intelligence" ? "is-active" : null)">Intelligence</a>
                 <a href="@Url.Action("Index", "Countries", new { area = "Admin" })" class="admin-nav-link @(activeNav == "countries" ? "is-active" : null)">Countries</a>
+                <div class="admin-sidebar__section">Pages</div>
+                <a href="@Url.Action("Home", "Pages", new { area = "Admin" })" class="admin-nav-link @(activeNav == "pages-home" ? "is-active" : null)">Home</a>
                 <a href="@Url.Action("Index", "Sources", new { area = "Admin" })" class="admin-nav-link @(activeNav == "sources" ? "is-active" : null)">Sources</a>
                 <a href="@Url.Action("Index", "Indicators", new { area = "Admin" })" class="admin-nav-link @(activeNav == "indicators" ? "is-active" : null)">Indicators</a>
                 <a href="@Url.Action("Index", "Categories", new { area = "Admin" })" class="admin-nav-link @(activeNav == "categories" ? "is-active" : null)">Categories</a>
@@ -52,17 +68,17 @@
                     <span></span><span></span><span></span>
                 </button>
 
-                <form class="admin-search" role="search">
-                    <span class="admin-search__icon">Search</span>
-                    <input type="search" value="" placeholder="Search admin content..." aria-label="Search admin content" />
-                </form>
+                <div class="admin-topbar__meta">
+                    <div class="admin-topbar__eyebrow">CAFRI Admin</div>
+                    <div class="admin-topbar__title">@sectionLabel</div>
+                    <div class="admin-topbar__subtitle">@pageTitle</div>
+                </div>
 
                 <div class="admin-topbar__actions">
-                    <a href="@Url.Action("Index", "Home", new { area = "" })" class="admin-chip">View Website</a>
-                    <span class="admin-chip">Notifications</span>
+                    <a href="@Url.Action("Index", "Home", new { area = "" })" class="admin-chip admin-chip--ghost">View Website</a>
                     <span class="admin-chip admin-chip--user">@userName</span>
                     <details class="admin-new-content">
-                        <summary class="admin-primary-button">New Content</summary>
+                        <summary class="admin-primary-button">Create</summary>
                         <div class="admin-new-content__menu">
                             <a href="@Url.Action("Create", "Publications", new { area = "Admin" })">New Publication</a>
                             <a href="@Url.Action("Create", "Intelligence", new { area = "Admin" })">New Intelligence</a>

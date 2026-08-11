@@ -1,13 +1,33 @@
-<section class="page-shell">
-    <div class="content-card">
-        <div class="eyebrow">Restricted</div>
-        <h1 class="page-title">Access denied</h1>
-        <p class="page-lead">
-            Your account is signed in, but it does not currently have permission to open this area of CAFRI.
-        </p>
-        <div class="form-actions">
-            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-light">Return home</a>
-            <a asp-controller="Access" asp-action="Request" class="btn btn-primary">Request professional access</a>
+@{
+    ViewData["Title"] = "Access Denied";
+    ViewData["PageTheme"] = "theme-home";
+}
+
+<div class="access-shell">
+    <section class="access-shell__hero">
+        <div class="access-shell__copy">
+            <span class="home-v2-section__label">Restricted</span>
+            <h1 class="page-title">Access denied</h1>
+            <p class="page-lead">
+                Your account is signed in, but it does not currently have permission to open this area of CAFRI.
+            </p>
         </div>
-    </div>
-</section>
+
+        <div class="access-shell__summary">
+            <article class="access-shell__summary-card">
+                <span>Status</span>
+                <strong>Signed in without access</strong>
+                <p>This area is available only to approved professional accounts or administrators.</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="access-shell__layout access-shell__layout--compact">
+        <div class="access-shell__panel">
+            <div class="form-actions">
+                <a asp-controller="Home" asp-action="Index" class="home-v2-button home-v2-button--ghost">Return home</a>
+                <a asp-controller="Access" asp-action="Request" class="home-v2-button home-v2-button--primary">Request professional access</a>
+            </div>
+        </div>
+    </section>
+</div>

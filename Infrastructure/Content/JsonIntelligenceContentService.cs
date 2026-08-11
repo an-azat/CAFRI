@@ -139,6 +139,7 @@ public sealed class JsonIntelligenceContentService : IIntelligenceContentService
                 Subtitle = item.Source,
                 Meta = $"{item.PublishedLabel} | Source-based item"
             },
+            AvailableDownloads = [],
             DocumentInformation =
             [
                 new() { Label = "Category", Value = item.Category },

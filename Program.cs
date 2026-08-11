@@ -26,6 +26,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.Configure<AdminSeedOptions>(
     builder.Configuration.GetSection(AdminSeedOptions.SectionName));
+builder.Services.Configure<PublicationImportApiOptions>(
+    builder.Configuration.GetSection(PublicationImportApiOptions.SectionName));
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
@@ -47,11 +49,10 @@ builder.Services.AddScoped<ContentSeedService>();
 builder.Services.AddScoped<IAuthorizationHandler, ProfessionalAccessHandler>();
 builder.Services.AddSingleton<JsonContentFileLoader>();
 builder.Services.AddScoped<ContentMediaStorageService>();
-builder.Services.AddSingleton<IHomeContentService, JsonHomeContentService>();
+builder.Services.AddScoped<IHomeContentService, DbHomeContentService>();
 builder.Services.AddScoped<IIntelligenceContentService, DbIntelligenceContentService>();
 builder.Services.AddScoped<IPublicationContentService, DbPublicationContentService>();
 builder.Services.AddScoped<ICountryContentService, DbCountryContentService>();
-builder.Services.AddScoped<IMapContentService, DbMapContentService>();
 
 var app = builder.Build();
 

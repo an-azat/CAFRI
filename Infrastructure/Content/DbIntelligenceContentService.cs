@@ -355,6 +355,16 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
                 })
                 .ToList(),
             OfficialDocument = officialDocument,
+            AvailableDownloads = item.OfficialDocuments
+                .OrderBy(x => x.DisplayOrder)
+                .Select(x => new IntelligenceOfficialDocumentViewModel
+                {
+                    Title = x.Title,
+                    Subtitle = x.Subtitle,
+                    Meta = x.Meta,
+                    DownloadUrl = x.DownloadUrl ?? "#"
+                })
+                .ToList(),
             DocumentInformation = item.DocumentInfoEntries
                 .OrderBy(x => x.DisplayOrder)
                 .Select(x => new IntelligenceDocumentInfoRowViewModel
@@ -431,6 +441,7 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
             ImpactAnalysis = [ new() { Title = "Editors", Description = "Content can now be maintained through the admin panel.", ImpactLabel = "Impact: Positive", ImpactTone = "impact-positive" }, new() { Title = "Platform", Description = "The public layer now reads this item from the database at runtime.", ImpactLabel = "Impact: High", ImpactTone = "impact-high" }, new() { Title = "Users", Description = "Users get a stable detail page even when a custom deep-dive has not been authored yet.", ImpactLabel = "Impact: Medium", ImpactTone = "impact-medium" } ],
             TimelineItems = [ new() { DateLabel = item.PublishedLabel, Description = "Intelligence item published", Stage = "past" }, new() { DateLabel = "Current", Description = "Content monitored in CAFRI", Stage = "current" }, new() { DateLabel = "Next update", Description = "Full detail can be expanded from the admin editor", Stage = "future" } ],
             OfficialDocument = new IntelligenceOfficialDocumentViewModel { Title = "Official document or source reference", Subtitle = item.Source, Meta = $"{item.PublishedLabel} | Source-based item" },
+            AvailableDownloads = [],
             DocumentInformation = [ new() { Label = "Category", Value = item.Category }, new() { Label = "Country", Value = item.CountryName }, new() { Label = "Published", Value = item.PublishedLabel }, new() { Label = "Source", Value = item.Source }, new() { Label = "Status", Value = "Monitoring" } ],
             KeyHighlights = [ "Database-backed content source in place", "Fallback detail view available for unpublished deep dives", "Ready for progressive enrichment by editors" ],
             RelatedOfficialSources = [ new() { Title = item.Source, Subtitle = "Primary source reference" } ],

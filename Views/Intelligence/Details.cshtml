@@ -95,7 +95,22 @@
                     }
                     else
                     {
-                        <partial name="_DocumentDownloadCard" model="Model.OfficialDocument" />
+                        <article class="document-download-card">
+                            <div class="document-download-card__icon">DOC</div>
+                            <div class="document-download-card__content">
+                                <h3>@Model.OfficialDocument.Title</h3>
+                                <p>@Model.OfficialDocument.Subtitle</p>
+                                <div class="document-download-card__meta">@Model.OfficialDocument.Meta</div>
+                            </div>
+                            @if (Model.AvailableDownloads.Count == 0 || Model.AvailableDownloads.All(x => !x.IsDownloadable))
+                            {
+                                <span class="home-v2-button home-v2-button--ghost document-download-card__button-disabled" aria-disabled="true">Unavailable</span>
+                            }
+                            else
+                            {
+                                <button type="button" class="home-v2-button home-v2-button--primary" data-download-trigger="true" data-content-action="download" data-content-title="@Model.Title">Download Files</button>
+                            }
+                        </article>
                     }
                 </section>
 
@@ -159,6 +174,40 @@
         </div>
     }
 </div>
+
+@if (Model.AvailableDownloads.Count != 0 && Model.AvailableDownloads.Any(x => x.IsDownloadable))
+{
+    <div class="content-download-modal" data-download-modal hidden>
+        <div class="content-download-modal__backdrop" data-download-close></div>
+        <div class="content-download-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="intelligence-download-modal-title">
+            <div class="content-download-modal__header">
+                <div>
+                    <div class="content-download-modal__eyebrow">Available Formats</div>
+                    <h2 id="intelligence-download-modal-title">Download Documents</h2>
+                </div>
+                <button type="button" class="content-download-modal__close" data-download-close aria-label="Close">×</button>
+            </div>
+            <div class="content-download-modal__body">
+                @foreach (var item in Model.AvailableDownloads.Where(x => x.IsDownloadable))
+                {
+                    var optionId = $"intelligence-download-{item.Title.GetHashCode()}";
+                    <label class="content-download-modal__option" for="@optionId">
+                        <input id="@optionId" type="radio" name="intelligence-download-option" value="@item.DownloadUrl" @(item == Model.AvailableDownloads.First(x => x.IsDownloadable) ? "checked" : null) />
+                        <span class="content-download-modal__option-copy">
+                            <strong>@item.Title</strong>
+                            <span>@item.Subtitle</span>
+                            <small>@item.Meta</small>
+                        </span>
+                    </label>
+                }
+            </div>
+            <div class="content-download-modal__footer">
+                <button type="button" class="home-v2-button home-v2-button--ghost" data-download-close>Cancel</button>
+                <button type="button" class="home-v2-button home-v2-button--primary" data-download-confirm>Download Selected File</button>
+            </div>
+        </div>
+    </div>
+}
 
 @section Scripts {
     <script src="~/js/article-tabs.js" asp-append-version="true"></script>

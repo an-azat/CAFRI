@@ -7,7 +7,7 @@ namespace CAFRI.Infrastructure.Content;
 
 public sealed class ContentMediaStorageService
 {
-    private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> AllowedImageExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
         ".jpg",
         ".jpeg",
@@ -17,6 +17,19 @@ public sealed class ContentMediaStorageService
         ".webp",
         ".gif",
         ".avif"
+    };
+
+    private static readonly HashSet<string> AllowedDocumentExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".pdf",
+        ".doc",
+        ".docx",
+        ".xls",
+        ".xlsx",
+        ".ppt",
+        ".pptx",
+        ".csv",
+        ".txt"
     };
 
     private readonly IWebHostEnvironment _environment;
@@ -38,22 +51,7 @@ public sealed class ContentMediaStorageService
             return null;
         }
 
-        var extension = Path.GetExtension(file.FileName);
-
-        var rootPath = string.IsNullOrWhiteSpace(_environment.WebRootPath)
-            ? Path.Combine(_environment.ContentRootPath, "wwwroot")
-            : _environment.WebRootPath;
-
-        var folderPath = Path.Combine(rootPath, "uploads", "content", section);
-        Directory.CreateDirectory(folderPath);
-
-        var fileName = $"{DateTimeOffset.UtcNow:yyyyMMddHHmmss}_{Guid.NewGuid():N}{extension.ToLowerInvariant()}";
-        var filePath = Path.Combine(folderPath, fileName);
-
-        await using var stream = new FileStream(filePath, FileMode.Create);
-        await file.CopyToAsync(stream, cancellationToken);
-
-        return $"/uploads/content/{section}/{fileName}";
+        return await SaveFileAsync(file, section, "images", cancellationToken);
     }
 
     public async Task<IReadOnlyList<ContentImageItemViewModel>> SaveImagesAsync(
@@ -96,13 +94,46 @@ public sealed class ContentMediaStorageService
         }
 
         var extension = Path.GetExtension(file.FileName);
-        return !string.IsNullOrWhiteSpace(extension) && AllowedExtensions.Contains(extension);
+        return !string.IsNullOrWhiteSpace(extension) && AllowedImageExtensions.Contains(extension);
+    }
+
+    public bool IsSupportedDocument(IFormFile? file)
+    {
+        if (file is null || file.Length == 0)
+        {
+            return false;
+        }
+
+        var extension = Path.GetExtension(file.FileName);
+        return !string.IsNullOrWhiteSpace(extension) && AllowedDocumentExtensions.Contains(extension);
+    }
+
+    public async Task<string?> SaveDocumentAsync(IFormFile? file, string section, CancellationToken cancellationToken = default)
+    {
+        if (file is null || file.Length == 0)
+        {
+            return null;
+        }
+
+        if (!IsSupportedDocument(file))
+        {
+            return null;
+        }
+
+        return await SaveFileAsync(file, section, "documents", cancellationToken);
     }
 
     public string GetAllowedExtensionsLabel() =>
-        string.Join(", ", AllowedExtensions.OrderBy(x => x));
+        string.Join(", ", AllowedImageExtensions.OrderBy(x => x));
 
-    public void DeleteImage(string? url)
+    public string GetAllowedDocumentExtensionsLabel() =>
+        string.Join(", ", AllowedDocumentExtensions.OrderBy(x => x));
+
+    public void DeleteImage(string? url) => DeleteStoredFile(url, AllowedImageExtensions);
+
+    public void DeleteDocument(string? url) => DeleteStoredFile(url, AllowedDocumentExtensions);
+
+    private void DeleteStoredFile(string? url, IReadOnlySet<string> allowedExtensions)
     {
         if (string.IsNullOrWhiteSpace(url) ||
             !url.StartsWith("/uploads/content/", StringComparison.OrdinalIgnoreCase))
@@ -124,6 +155,12 @@ public sealed class ContentMediaStorageService
 
         if (File.Exists(fullPath))
         {
+            var extension = Path.GetExtension(fullPath);
+            if (!string.IsNullOrWhiteSpace(extension) && !allowedExtensions.Contains(extension))
+            {
+                return;
+            }
+
             File.Delete(fullPath);
         }
     }
@@ -140,7 +177,7 @@ public sealed class ContentMediaStorageService
         }
 
         return Directory.GetFiles(uploadsRoot, "*.*", SearchOption.AllDirectories)
-            .Where(filePath => AllowedExtensions.Contains(Path.GetExtension(filePath)))
+            .Where(filePath => AllowedImageExtensions.Contains(Path.GetExtension(filePath)))
             .Select(filePath =>
             {
                 var fileInfo = new FileInfo(filePath);
@@ -161,5 +198,29 @@ public sealed class ContentMediaStorageService
             .OrderByDescending(item => item.UpdatedAtUtc)
             .ThenBy(item => item.FileName)
             .ToList();
+    }
+
+    private async Task<string?> SaveFileAsync(
+        IFormFile file,
+        string section,
+        string contentTypeFolder,
+        CancellationToken cancellationToken)
+    {
+        var extension = Path.GetExtension(file.FileName);
+
+        var rootPath = string.IsNullOrWhiteSpace(_environment.WebRootPath)
+            ? Path.Combine(_environment.ContentRootPath, "wwwroot")
+            : _environment.WebRootPath;
+
+        var folderPath = Path.Combine(rootPath, "uploads", "content", section, contentTypeFolder);
+        Directory.CreateDirectory(folderPath);
+
+        var fileName = $"{DateTimeOffset.UtcNow:yyyyMMddHHmmss}_{Guid.NewGuid():N}{extension.ToLowerInvariant()}";
+        var filePath = Path.Combine(folderPath, fileName);
+
+        await using var stream = new FileStream(filePath, FileMode.Create);
+        await file.CopyToAsync(stream, cancellationToken);
+
+        return $"/uploads/content/{section}/{contentTypeFolder}/{fileName}";
     }
 }

@@ -2,6 +2,10 @@
 
 <article class="country-card">
     <a class="country-card__image @Model.HeroClassName" href="@Model.Url" aria-label="Open @Model.Name profile">
+        @if (!string.IsNullOrWhiteSpace(Model.HeroImageUrl))
+        {
+            <img class="country-card__image-photo" src="@Model.HeroImageUrl" alt="@Model.Name" />
+        }
         <span class="country-card__image-overlay"></span>
     </a>
 

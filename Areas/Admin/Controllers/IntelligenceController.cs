@@ -29,6 +29,82 @@ public sealed class IntelligenceController : Controller
         requestFile is not null && requestFile.Length > 0 ? requestFile :
         null;
 
+    private static IReadOnlyList<IFormFile> ResolveFiles(IFormFile[]? modelFiles, IReadOnlyList<IFormFile>? requestFiles)
+    {
+        var files = (modelFiles ?? Array.Empty<IFormFile>())
+            .Where(file => file is not null && file.Length > 0)
+            .ToList();
+
+        if (files.Count != 0)
+        {
+            return files;
+        }
+
+        return (requestFiles ?? Array.Empty<IFormFile>())
+            .Where(file => file is not null && file.Length > 0)
+            .ToList();
+    }
+
+    private static string FormatFileSize(long bytes)
+    {
+        if (bytes >= 1024 * 1024)
+        {
+            return $"{bytes / (1024d * 1024d):0.#} MB";
+        }
+
+        if (bytes >= 1024)
+        {
+            return $"{bytes / 1024d:0.#} KB";
+        }
+
+        return $"{bytes} B";
+    }
+
+    private static string BuildDocumentTypeFromExtension(string fileName)
+    {
+        var extension = Path.GetExtension(fileName).TrimStart('.').ToUpperInvariant();
+        return string.IsNullOrWhiteSpace(extension) ? "FILE" : extension;
+    }
+
+    private async Task<IReadOnlyList<IntelligenceOfficialDocumentEntry>> BuildUploadedIntelligenceDocumentsAsync(
+        Guid intelligenceId,
+        IReadOnlyList<IFormFile> files)
+    {
+        if (files.Count == 0)
+        {
+            return [];
+        }
+
+        var items = new List<IntelligenceOfficialDocumentEntry>();
+        foreach (var file in files)
+        {
+            var url = await _mediaStorage.SaveDocumentAsync(file, "intelligence", HttpContext.RequestAborted);
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                continue;
+            }
+
+            var title = Path.GetFileNameWithoutExtension(file.FileName)
+                .Replace('_', ' ')
+                .Replace('-', ' ')
+                .Trim();
+            var type = BuildDocumentTypeFromExtension(file.FileName);
+
+            items.Add(new IntelligenceOfficialDocumentEntry
+            {
+                Id = Guid.NewGuid(),
+                IntelligenceContentItemId = intelligenceId,
+                Title = string.IsNullOrWhiteSpace(title) ? "Official document" : title,
+                Subtitle = "Uploaded file",
+                Meta = $"{type} | {FormatFileSize(file.Length)}",
+                DownloadUrl = url,
+                DisplayOrder = items.Count
+            });
+        }
+
+        return items;
+    }
+
     [HttpGet]
     public async Task<IActionResult> Index(string? search, string? category, string? country, string? status)
     {
@@ -110,6 +186,12 @@ public sealed class IntelligenceController : Controller
             ModelState.AddModelError(nameof(model.HeroImageFile), $"Unsupported hero image format. Allowed: {_mediaStorage.GetAllowedExtensionsLabel()}");
         }
 
+        var uploadedDocumentFiles = ResolveFiles(model.DocumentFiles, Request.Form.Files.GetFiles(nameof(model.DocumentFiles)));
+        if (uploadedDocumentFiles.Any(file => !_mediaStorage.IsSupportedDocument(file)))
+        {
+            ModelState.AddModelError(nameof(model.DocumentFiles), $"One or more document files use an unsupported format. Allowed: {_mediaStorage.GetAllowedDocumentExtensionsLabel()}");
+        }
+
         if (!ModelState.IsValid) return View("Edit", BuildEditViewModel(model));
         var heroImageUrl = string.IsNullOrWhiteSpace(model.HeroImageUrl)
             ? await _mediaStorage.SaveImageAsync(uploadedHeroFile, "intelligence", HttpContext.RequestAborted)
@@ -133,7 +215,8 @@ public sealed class IntelligenceController : Controller
         };
         _dbContext.IntelligenceContentItems.Add(entity);
         await _dbContext.SaveChangesAsync();
-        await ReplaceStructuredDetailsAsync(entity.Id, model);
+        var uploadedDocuments = await BuildUploadedIntelligenceDocumentsAsync(entity.Id, uploadedDocumentFiles);
+        await ReplaceStructuredDetailsAsync(entity.Id, model, uploadedDocuments);
         await _dbContext.SaveChangesAsync();
         TempData["AdminSuccess"] = $"Intelligence item saved. Hero: {(string.IsNullOrWhiteSpace(entity.HeroImageUrl) ? "not saved" : entity.HeroImageUrl)}.";
         return RedirectToAction(nameof(Edit), new { id = entity.Id });
@@ -169,6 +252,12 @@ public sealed class IntelligenceController : Controller
             ModelState.AddModelError(nameof(model.HeroImageFile), $"Unsupported hero image format. Allowed: {_mediaStorage.GetAllowedExtensionsLabel()}");
         }
 
+        var uploadedDocumentFiles = ResolveFiles(model.DocumentFiles, Request.Form.Files.GetFiles(nameof(model.DocumentFiles)));
+        if (uploadedDocumentFiles.Any(file => !_mediaStorage.IsSupportedDocument(file)))
+        {
+            ModelState.AddModelError(nameof(model.DocumentFiles), $"One or more document files use an unsupported format. Allowed: {_mediaStorage.GetAllowedDocumentExtensionsLabel()}");
+        }
+
         if (!ModelState.IsValid) return View(BuildEditViewModel(model));
         var entity = await _dbContext.IntelligenceContentItems.FindAsync(id);
         if (entity is null) return NotFound();
@@ -190,7 +279,8 @@ public sealed class IntelligenceController : Controller
         entity.IsPublished = model.IsPublished;
         entity.UpdatedAtUtc = DateTimeOffset.UtcNow;
 
-        await ReplaceStructuredDetailsAsync(entity.Id, model);
+        var uploadedDocuments = await BuildUploadedIntelligenceDocumentsAsync(entity.Id, uploadedDocumentFiles);
+        await ReplaceStructuredDetailsAsync(entity.Id, model, uploadedDocuments);
         await _dbContext.SaveChangesAsync();
         await DeleteUnusedMediaAsync(previousHeroImageUrl, entity.HeroImageUrl);
         TempData["AdminSuccess"] = $"Intelligence item updated. Hero: {(string.IsNullOrWhiteSpace(entity.HeroImageUrl) ? "not saved" : entity.HeroImageUrl)}.";
@@ -267,6 +357,9 @@ public sealed class IntelligenceController : Controller
             DocumentSubtitle = entity.OfficialDocuments.OrderBy(x => x.DisplayOrder).FirstOrDefault()?.Subtitle ?? details?.OfficialDocument.Subtitle ?? string.Empty,
             DocumentMeta = entity.OfficialDocuments.OrderBy(x => x.DisplayOrder).FirstOrDefault()?.Meta ?? details?.OfficialDocument.Meta ?? string.Empty,
             DocumentDownloadUrl = entity.OfficialDocuments.OrderBy(x => x.DisplayOrder).FirstOrDefault()?.DownloadUrl ?? details?.OfficialDocument.DownloadUrl ?? string.Empty,
+            DocumentsText = entity.OfficialDocuments.Count != 0
+                ? string.Join(Environment.NewLine, entity.OfficialDocuments.OrderBy(x => x.DisplayOrder).Select(x => $"{x.Title} | {x.Subtitle} | {x.Meta} | {x.DownloadUrl}"))
+                : string.Empty,
             KeyChangesText = entity.KeyChangeEntries.Count != 0
                 ? string.Join(Environment.NewLine, entity.KeyChangeEntries.OrderBy(x => x.DisplayOrder).Select(x => $"{x.Number} | {x.Title} | {x.Description}"))
                 : details is null ? string.Empty : IntelligenceStructuredDetailParsers.JoinKeyChanges(details.KeyChanges),
@@ -316,6 +409,7 @@ public sealed class IntelligenceController : Controller
             DocumentSubtitle = model.DocumentSubtitle,
             DocumentMeta = model.DocumentMeta,
             DocumentDownloadUrl = model.DocumentDownloadUrl,
+            DocumentsText = model.DocumentsText,
             KeyChangesText = model.KeyChangesText,
             ImpactAnalysisText = model.ImpactAnalysisText,
             TimelineText = model.TimelineText,
@@ -348,7 +442,10 @@ public sealed class IntelligenceController : Controller
         }
     }
 
-    private async Task ReplaceStructuredDetailsAsync(Guid intelligenceContentItemId, IntelligenceContentEditViewModel model)
+    private async Task ReplaceStructuredDetailsAsync(
+        Guid intelligenceContentItemId,
+        IntelligenceContentEditViewModel model,
+        IReadOnlyList<IntelligenceOfficialDocumentEntry>? uploadedDocuments = null)
     {
         var existingSections = await _dbContext.IntelligenceArticleSections.Where(x => x.IntelligenceContentItemId == intelligenceContentItemId).ToListAsync();
         var existingKeyChanges = await _dbContext.IntelligenceKeyChangeEntries.Where(x => x.IntelligenceContentItemId == intelligenceContentItemId).ToListAsync();
@@ -453,18 +550,37 @@ public sealed class IntelligenceController : Controller
             DisplayOrder = index
         }));
 
-        if (!string.IsNullOrWhiteSpace(model.DocumentTitle))
+        var documentRows = IntelligenceStructuredDetailParsers.ParsePipeRows(model.DocumentsText, 3).ToList();
+        if (documentRows.Count == 0 && !string.IsNullOrWhiteSpace(model.DocumentTitle))
         {
-            _dbContext.IntelligenceOfficialDocumentEntries.Add(new IntelligenceOfficialDocumentEntry
+            documentRows.Add(
+            [
+                model.DocumentTitle.Trim(),
+                model.DocumentSubtitle.Trim(),
+                model.DocumentMeta.Trim(),
+                string.IsNullOrWhiteSpace(model.DocumentDownloadUrl) ? "#" : model.DocumentDownloadUrl.Trim()
+            ]);
+        }
+
+        _dbContext.IntelligenceOfficialDocumentEntries.AddRange(documentRows.Select((parts, index) => new IntelligenceOfficialDocumentEntry
+        {
+            Id = Guid.NewGuid(),
+            IntelligenceContentItemId = intelligenceContentItemId,
+            Title = parts[0],
+            Subtitle = parts[1],
+            Meta = parts[2],
+            DownloadUrl = parts.Length > 3 ? string.Join(" | ", parts.Skip(3)) : "#",
+            DisplayOrder = index
+        }));
+
+        if (uploadedDocuments is not null && uploadedDocuments.Count != 0)
+        {
+            foreach (var item in uploadedDocuments.Select((document, index) => (document, index)))
             {
-                Id = Guid.NewGuid(),
-                IntelligenceContentItemId = intelligenceContentItemId,
-                Title = model.DocumentTitle.Trim(),
-                Subtitle = model.DocumentSubtitle.Trim(),
-                Meta = model.DocumentMeta.Trim(),
-                DownloadUrl = string.IsNullOrWhiteSpace(model.DocumentDownloadUrl) ? null : model.DocumentDownloadUrl.Trim(),
-                DisplayOrder = 0
-            });
+                item.document.DisplayOrder = documentRows.Count + item.index;
+            }
+
+            _dbContext.IntelligenceOfficialDocumentEntries.AddRange(uploadedDocuments);
         }
 
         var highlightRows = model.KeyHighlightsText

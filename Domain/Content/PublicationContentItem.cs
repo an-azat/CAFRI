@@ -4,6 +4,12 @@ public sealed class PublicationContentItem
 {
     public Guid Id { get; set; }
     public string Slug { get; set; } = string.Empty;
+    public string WorkflowStatus { get; set; } = PublicationWorkflowStatuses.Draft;
+    public bool RequiresReview { get; set; }
+    public string? ExternalId { get; set; }
+    public string? SourceName { get; set; }
+    public string? SourceUrl { get; set; }
+    public string? SourceDomain { get; set; }
     public string Type { get; set; } = string.Empty;
     public string CountryCode { get; set; } = string.Empty;
     public string CountryLabel { get; set; } = string.Empty;
@@ -22,9 +28,13 @@ public sealed class PublicationContentItem
     public string? DetailsJson { get; set; }
     public int DisplayOrder { get; set; }
     public bool IsPublished { get; set; } = true;
+    public DateTimeOffset? SourcePublishedAtUtc { get; set; }
+    public DateTimeOffset? ImportedAtUtc { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
     public DateTimeOffset UpdatedAtUtc { get; set; }
 
+    public ICollection<PublicationCountryAssignment> CountryAssignments { get; set; } = [];
+    public ICollection<PublicationCategoryAssignment> CategoryAssignments { get; set; } = [];
     public ICollection<PublicationActionEntry> ActionEntries { get; set; } = [];
     public ICollection<PublicationHighlightEntry> HighlightEntries { get; set; } = [];
     public ICollection<PublicationFindingEntry> FindingEntries { get; set; } = [];

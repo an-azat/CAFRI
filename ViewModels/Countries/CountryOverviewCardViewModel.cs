@@ -22,6 +22,8 @@ public sealed class CountryOverviewCardViewModel
 
     public required string HeroClassName { get; init; }
 
+    public string HeroImageUrl { get; init; } = string.Empty;
+
     public string IndicatorLabel { get; init; } = "Indicator";
 
     public string IndicatorValue { get; init; } = "No data";

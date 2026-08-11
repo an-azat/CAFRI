@@ -405,6 +405,175 @@ namespace CAFRI.Infrastructure.Persistence.Migrations
                     b.ToTable("CountryIndicators", (string)null);
                 });
 
+            modelBuilder.Entity("CAFRI.Domain.Content.HomePageContent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AboutDescription")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("AboutTitle")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("CountriesSectionDescription")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("CountriesSectionLabel")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<string>("CountriesSectionTitle")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("CountriesVisualDescription")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("CountriesVisualTitle")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("CoverageAreasText")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DirectionsText")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FeatureCardsText")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FeaturedPublicationEyebrow")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)");
+
+                    b.Property<Guid?>("FeaturedPublicationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FeaturesSectionDescription")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("FeaturesSectionLabel")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<string>("FeaturesSectionTitle")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("HeroLead")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("HeroPrimaryCtaLabel")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<string>("HeroPrimaryCtaUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("HeroSecondaryCtaLabel")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<string>("HeroSecondaryCtaUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("HeroTitle")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("IntroDescription")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("IntroTitle")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("LatestFeaturedLinkLabel")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)");
+
+                    b.Property<string>("LatestIntelligenceLinkLabel")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)");
+
+                    b.Property<string>("LatestSectionDescription")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("LatestSectionLabel")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<string>("LatestSectionTitle")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("PlatformSectionDescription")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("PlatformSectionLabel")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<string>("PlatformSectionTitle")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FeaturedPublicationId");
+
+                    b.ToTable("HomePageContents", (string)null);
+                });
+
             modelBuilder.Entity("CAFRI.Domain.Content.IntelligenceArticleSection", b =>
                 {
                     b.Property<Guid>("Id")
@@ -854,6 +1023,36 @@ namespace CAFRI.Infrastructure.Persistence.Migrations
                     b.ToTable("PublicationArticleSections", (string)null);
                 });
 
+            modelBuilder.Entity("CAFRI.Domain.Content.PublicationCategoryAssignment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CategoryName")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)");
+
+                    b.Property<string>("CategorySlug")
+                        .IsRequired()
+                        .HasMaxLength(180)
+                        .HasColumnType("character varying(180)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("PublicationContentItemId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PublicationContentItemId", "CategorySlug")
+                        .IsUnique();
+
+                    b.ToTable("PublicationCategoryAssignments", (string)null);
+                });
+
             modelBuilder.Entity("CAFRI.Domain.Content.PublicationContentItem", b =>
                 {
                     b.Property<Guid>("Id")
@@ -894,6 +1093,10 @@ namespace CAFRI.Infrastructure.Persistence.Migrations
                         .HasMaxLength(160)
                         .HasColumnType("character varying(160)");
 
+                    b.Property<string>("ExternalId")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
                     b.Property<string>("GalleryJson")
                         .HasColumnType("text");
 
@@ -905,6 +1108,9 @@ namespace CAFRI.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
+
+                    b.Property<DateTimeOffset?>("ImportedAtUtc")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsPublished")
                         .HasColumnType("boolean");
@@ -928,10 +1134,28 @@ namespace CAFRI.Infrastructure.Persistence.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
 
+                    b.Property<bool>("RequiresReview")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(180)
                         .HasColumnType("character varying(180)");
+
+                    b.Property<string>("SourceDomain")
+                        .HasMaxLength(220)
+                        .HasColumnType("character varying(220)");
+
+                    b.Property<string>("SourceName")
+                        .HasMaxLength(220)
+                        .HasColumnType("character varying(220)");
+
+                    b.Property<DateTimeOffset?>("SourcePublishedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SourceUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -951,14 +1175,61 @@ namespace CAFRI.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("WorkflowStatus")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ExternalId");
+
+                    b.HasIndex("RequiresReview");
 
                     b.HasIndex("Slug")
                         .IsUnique();
 
+                    b.HasIndex("SourceDomain");
+
+                    b.HasIndex("SourcePublishedAtUtc");
+
+                    b.HasIndex("SourceUrl");
+
+                    b.HasIndex("WorkflowStatus");
+
                     b.HasIndex("IsPublished", "DisplayOrder");
 
                     b.ToTable("PublicationContentItems", (string)null);
+                });
+
+            modelBuilder.Entity("CAFRI.Domain.Content.PublicationCountryAssignment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CountryCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("CountryLabel")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("PublicationContentItemId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PublicationContentItemId", "CountryCode")
+                        .IsUnique();
+
+                    b.ToTable("PublicationCountryAssignments", (string)null);
                 });
 
             modelBuilder.Entity("CAFRI.Domain.Content.PublicationDocumentEntry", b =>
@@ -1630,6 +1901,28 @@ namespace CAFRI.Infrastructure.Persistence.Migrations
                     b.Navigation("PublicationContentItem");
                 });
 
+            modelBuilder.Entity("CAFRI.Domain.Content.PublicationCategoryAssignment", b =>
+                {
+                    b.HasOne("CAFRI.Domain.Content.PublicationContentItem", "PublicationContentItem")
+                        .WithMany("CategoryAssignments")
+                        .HasForeignKey("PublicationContentItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PublicationContentItem");
+                });
+
+            modelBuilder.Entity("CAFRI.Domain.Content.PublicationCountryAssignment", b =>
+                {
+                    b.HasOne("CAFRI.Domain.Content.PublicationContentItem", "PublicationContentItem")
+                        .WithMany("CountryAssignments")
+                        .HasForeignKey("PublicationContentItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PublicationContentItem");
+                });
+
             modelBuilder.Entity("CAFRI.Domain.Content.PublicationDocumentEntry", b =>
                 {
                     b.HasOne("CAFRI.Domain.Content.PublicationContentItem", "PublicationContentItem")
@@ -1795,6 +2088,10 @@ namespace CAFRI.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("CAFRI.Domain.Content.PublicationContentItem", b =>
                 {
                     b.Navigation("ActionEntries");
+
+                    b.Navigation("CategoryAssignments");
+
+                    b.Navigation("CountryAssignments");
 
                     b.Navigation("DocumentEntries");
 

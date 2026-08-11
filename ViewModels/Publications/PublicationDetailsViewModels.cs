@@ -30,6 +30,8 @@ public sealed class PublicationDetailsViewModel
 
     public string PdfDownloadUrl { get; init; } = "#";
 
+    public string ExecutiveSummaryHtml { get; init; } = string.Empty;
+
     public bool IsPremium { get; init; }
 
     public bool CanAccessFullContent { get; set; }
@@ -205,6 +207,8 @@ public sealed class PublicationDocumentCardViewModel
     public required string Meta { get; init; }
 
     public string DownloadUrl { get; init; } = "#";
+
+    public bool IsDownloadable => !string.IsNullOrWhiteSpace(DownloadUrl) && DownloadUrl != "#";
 }
 
 public sealed class PublicationSidebarSectionLinkViewModel
