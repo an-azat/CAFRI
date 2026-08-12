@@ -8,6 +8,7 @@ using CAFRI.Infrastructure.Services.Access;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration
@@ -26,6 +27,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.Configure<AdminSeedOptions>(
     builder.Configuration.GetSection(AdminSeedOptions.SectionName));
+builder.Services.Configure<ContentMediaOptions>(
+    builder.Configuration.GetSection(ContentMediaOptions.SectionName));
 builder.Services.Configure<PublicationImportApiOptions>(
     builder.Configuration.GetSection(PublicationImportApiOptions.SectionName));
 builder.Services
@@ -66,6 +69,22 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+using (var scope = app.Services.CreateScope())
+{
+    var mediaStorage = scope.ServiceProvider.GetRequiredService<ContentMediaStorageService>();
+    if (!mediaStorage.UsesRemoteStorage)
+    {
+        var mediaRootPath = mediaStorage.GetMediaRootPath();
+        Directory.CreateDirectory(mediaRootPath);
+
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            FileProvider = new PhysicalFileProvider(mediaRootPath),
+            RequestPath = "/uploads/content"
+        });
+    }
+}
 
 app.UseRouting();
 

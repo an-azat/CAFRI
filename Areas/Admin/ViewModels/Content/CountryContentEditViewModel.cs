@@ -34,7 +34,7 @@ public sealed class CountryContentEditViewModel
     [Required, StringLength(150)]
     public string HeroClassName { get; init; } = string.Empty;
 
-    public string HeroGalleryText { get; init; } = string.Empty;
+    public string? HeroGalleryText { get; init; }
 
     public IFormFile[]? HeroGalleryFiles { get; init; }
 
