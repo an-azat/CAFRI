@@ -314,7 +314,9 @@ public sealed class ContentMediaStorageService
             Key = objectKey,
             InputStream = stream,
             AutoCloseStream = false,
-            ContentType = string.IsNullOrWhiteSpace(file.ContentType) ? "application/octet-stream" : file.ContentType
+            ContentType = string.IsNullOrWhiteSpace(file.ContentType) ? "application/octet-stream" : file.ContentType,
+            DisablePayloadSigning = true,
+            DisableDefaultChecksumValidation = true
         };
 
         await client.PutObjectAsync(request, cancellationToken);
