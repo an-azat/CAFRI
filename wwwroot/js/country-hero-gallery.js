@@ -4,10 +4,12 @@
     return;
   }
 
+  const copyBox = document.querySelector(".country-hero-image__gallery-copy");
   const title = document.querySelector("[data-country-hero-title]");
   const caption = document.querySelector("[data-country-hero-caption]");
+  const thumbs = document.querySelectorAll("[data-country-hero-thumb]");
 
-  document.querySelectorAll("[data-country-hero-thumb]").forEach((button) => {
+  thumbs.forEach((button) => {
     button.addEventListener("click", () => {
       const imageUrl = button.getAttribute("data-image-url") || "";
       const imageAlt = button.getAttribute("data-image-alt") || "";
@@ -27,6 +29,12 @@
       if (caption) {
         caption.textContent = imageCaption;
       }
+
+      if (copyBox) {
+        copyBox.hidden = !imageTitle && !imageCaption;
+      }
+
+      thumbs.forEach((item) => item.setAttribute("aria-pressed", item === button ? "true" : "false"));
     });
   });
 })();

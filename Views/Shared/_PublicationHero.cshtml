@@ -11,6 +11,11 @@
         <h1 class="publication-hero__title">@Model.Title</h1>
         <p class="publication-hero__lead">@Model.ShortDescription</p>
 
+        @if (!string.IsNullOrWhiteSpace(Model.HeroImageUrl))
+        {
+            <img class="publication-hero__image" src="@Model.HeroImageUrl" alt="@Model.Title" />
+        }
+
         <div class="publication-meta publication-meta--hero">
             <span>@Model.PublishedDate</span>
             <span>@Model.ReadingTime</span>
@@ -18,27 +23,27 @@
             <span>@Model.DocumentLabel</span>
         </div>
 
+        @{
+            var canDownload = Model.Documents.Any(x => x.IsDownloadable);
+            var hasSourceLink = !string.IsNullOrWhiteSpace(Model.SourceUrl) && Model.SourceUrl != "#";
+        }
         <div class="publication-actions">
-            @for (var index = 0; index < Model.Actions.Count; index++)
+            <button
+                class="is-primary"
+                type="button"
+                data-content-action="download"
+                data-content-title="@Model.Title"
+                data-download-trigger="true"
+                disabled="@(!canDownload ? "disabled" : null)">
+                <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" /></svg>
+                Download Full Report
+            </button>
+            @if (hasSourceLink)
             {
-                var action = Model.Actions[index];
-                var normalizedLabel = action.Label.Trim().ToLowerInvariant();
-                var actionType = normalizedLabel.Contains("download") ? "download"
-                    : normalizedLabel.Contains("share") ? "share"
-                    : normalizedLabel.Contains("print") ? "print"
-                    : normalizedLabel.Contains("save") ? "save"
-                    : normalizedLabel.Contains("cite") ? "cite"
-                    : "default";
-                var canDownload = Model.Documents.Any(x => x.IsDownloadable);
-                <button
-                    class="@(index == 0 ? "is-primary" : index == 1 ? "is-secondary" : null)"
-                    type="button"
-                    data-content-action="@actionType"
-                    data-content-title="@Model.Title"
-                    data-download-trigger="@(actionType == "download" ? "true" : "false")"
-                    disabled="@(actionType == "download" && !canDownload ? "disabled" : null)">
-                    @action.Label
-                </button>
+                <a class="is-secondary" href="@Model.SourceUrl" target="_blank" rel="noopener noreferrer">
+                    <svg viewBox="0 0 24 24"><path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7zM5 5h5V3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-5h-2v5H5V5z" /></svg>
+                    Open Original Source
+                </a>
             }
         </div>
     </div>

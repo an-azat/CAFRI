@@ -42,5 +42,33 @@ public sealed class CountryOverviewCardViewModel
         _ => "country-badge--default"
     };
 
+    // Centralized here so the country -> flag icon mapping exists in exactly one place
+    // (it used to be duplicated in Views/Home/Index.cshtml as a local function).
+    public string FlagIconUrl => Code switch
+    {
+        "KZ" => "/uploads/img/icons8-казахстан-48.png",
+        "UZ" => "/uploads/img/icons8-узбекистан-48.png",
+        "KG" => "/uploads/img/icons8-киргизия-48.png",
+        "TJ" => "/uploads/img/icons8-таджикистан-48.png",
+        "TM" => "/uploads/img/icons8-туркменистан-циркуляр-48.png",
+        _ => string.Empty
+    };
+
     public string Url => $"/countries/{Slug}";
+
+    // Short "key theme" tag derived from Summary rather than a separate authored
+    // field: Summary sentences follow a "<economy type> with <theme>." pattern
+    // (see App_Data seed data), so the text after the last "with" reads as a
+    // reasonable one-line focus area. Falls back to the full Summary if that
+    // pattern isn't present (e.g. a custom admin-edited summary).
+    public string Focus
+    {
+        get
+        {
+            const string marker = " with ";
+            var index = Summary.LastIndexOf(marker, StringComparison.OrdinalIgnoreCase);
+            var text = (index >= 0 ? Summary[(index + marker.Length)..] : Summary).Trim().TrimEnd('.');
+            return text.Length == 0 ? text : char.ToUpperInvariant(text[0]) + text[1..];
+        }
+    }
 }

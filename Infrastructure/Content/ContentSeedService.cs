@@ -195,6 +195,49 @@ public sealed class ContentSeedService
                 });
             }
         }
+        else
+        {
+            // Older seeded databases only carry a single latest-year "Real GDP Growth" row per
+            // country. Replace those with the full multi-year history from BuildIndicators() so the
+            // countries map's year selector has data to switch between, without duplicating rows.
+            var existingGrowthRows = _dbContext.CountryIndicators
+                .Where(x => x.Name == "Real GDP Growth")
+                .ToList();
+            var hasFullGrowthHistory = existingGrowthRows
+                .Select(x => x.YearLabel)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Count() >= 3;
+
+            if (!hasFullGrowthHistory)
+            {
+                var baseOrder = _dbContext.CountryIndicators.Any()
+                    ? _dbContext.CountryIndicators.Max(x => x.DisplayOrder) + 1
+                    : 0;
+                _dbContext.CountryIndicators.RemoveRange(existingGrowthRows);
+
+                var now = DateTimeOffset.UtcNow;
+                foreach (var (item, offset) in BuildIndicators().Where(x => x.Name == "Real GDP Growth").Select((item, offset) => (item, offset)))
+                {
+                    _dbContext.CountryIndicators.Add(new CountryIndicator
+                    {
+                        Id = Guid.NewGuid(),
+                        CountryCode = item.CountryCode,
+                        Name = item.Name,
+                        Slug = item.Slug,
+                        Category = item.Category,
+                        Unit = item.Unit,
+                        LatestValue = item.LatestValue,
+                        YearLabel = item.YearLabel,
+                        SourceName = item.SourceName,
+                        Notes = item.Notes,
+                        DisplayOrder = baseOrder + offset,
+                        IsPublished = true,
+                        CreatedAtUtc = now,
+                        UpdatedAtUtc = now
+                    });
+                }
+            }
+        }
 
         if (!_dbContext.HomePageContents.Any())
         {
@@ -416,12 +459,25 @@ public sealed class ContentSeedService
 
     private static List<(string CountryCode, string Name, string Slug, string Category, string Unit, string LatestValue, string YearLabel, string SourceName, string Notes)> BuildIndicators() =>
     [
-        ("KZ", "Real GDP Growth", "kz-real-gdp-growth", "Macroeconomics", "%", "4.8", "2025", "World Bank Data", "Illustrative value for editorial and admin workflows."),
+        ("KZ", "Real GDP Growth", "kz-real-gdp-growth-2023", "Macroeconomics", "%", "5.1", "2023", "World Bank Data", "Illustrative value for editorial and admin workflows."),
+        ("KZ", "Real GDP Growth", "kz-real-gdp-growth-2024", "Macroeconomics", "%", "4.1", "2024", "World Bank Data", "Illustrative value for editorial and admin workflows."),
+        ("KZ", "Real GDP Growth", "kz-real-gdp-growth-2025", "Macroeconomics", "%", "4.8", "2025", "World Bank Data", "Illustrative value for editorial and admin workflows."),
         ("KZ", "Banking Sector Assets", "kz-banking-assets", "Banking", "USD B", "137.2", "2025", "National Bank of Kazakhstan", "Aggregated banking assets."),
-        ("UZ", "Real GDP Growth", "uz-real-gdp-growth", "Macroeconomics", "%", "6.8", "2025", "World Bank Data", "Illustrative value for editorial and admin workflows."),
+        ("UZ", "Real GDP Growth", "uz-real-gdp-growth-2023", "Macroeconomics", "%", "6.0", "2023", "World Bank Data", "Illustrative value for editorial and admin workflows."),
+        ("UZ", "Real GDP Growth", "uz-real-gdp-growth-2024", "Macroeconomics", "%", "6.5", "2024", "World Bank Data", "Illustrative value for editorial and admin workflows."),
+        ("UZ", "Real GDP Growth", "uz-real-gdp-growth-2025", "Macroeconomics", "%", "6.8", "2025", "World Bank Data", "Illustrative value for editorial and admin workflows."),
         ("UZ", "Banking Sector Assets", "uz-banking-assets", "Banking", "USD B", "55.8", "2025", "Central Bank of Uzbekistan", "Aggregated banking assets."),
+        ("KG", "Real GDP Growth", "kg-real-gdp-growth-2023", "Macroeconomics", "%", "6.2", "2023", "World Bank Data", "Illustrative value for editorial and admin workflows."),
+        ("KG", "Real GDP Growth", "kg-real-gdp-growth-2024", "Macroeconomics", "%", "7.0", "2024", "World Bank Data", "Illustrative value for editorial and admin workflows."),
+        ("KG", "Real GDP Growth", "kg-real-gdp-growth-2025", "Macroeconomics", "%", "8.0", "2025", "World Bank Data", "Illustrative value for editorial and admin workflows."),
         ("KG", "Population", "kg-population", "Demographics", "M", "6.9", "2025", "World Bank Data", "Resident population estimate."),
+        ("TJ", "Real GDP Growth", "tj-real-gdp-growth-2023", "Macroeconomics", "%", "8.0", "2023", "World Bank Data", "Illustrative value for editorial and admin workflows."),
+        ("TJ", "Real GDP Growth", "tj-real-gdp-growth-2024", "Macroeconomics", "%", "8.3", "2024", "World Bank Data", "Illustrative value for editorial and admin workflows."),
+        ("TJ", "Real GDP Growth", "tj-real-gdp-growth-2025", "Macroeconomics", "%", "8.2", "2025", "World Bank Data", "Illustrative value for editorial and admin workflows."),
         ("TJ", "Inflation", "tj-inflation", "Macroeconomics", "%", "6.1", "2025", "World Bank Data", "Average annual CPI estimate."),
+        ("TM", "Real GDP Growth", "tm-real-gdp-growth-2023", "Macroeconomics", "%", "2.3", "2023", "World Bank Data", "Illustrative value for editorial and admin workflows."),
+        ("TM", "Real GDP Growth", "tm-real-gdp-growth-2024", "Macroeconomics", "%", "2.5", "2024", "World Bank Data", "Illustrative value for editorial and admin workflows."),
+        ("TM", "Real GDP Growth", "tm-real-gdp-growth-2025", "Macroeconomics", "%", "2.6", "2025", "World Bank Data", "Illustrative value for editorial and admin workflows."),
         ("TM", "GDP (Nominal)", "tm-gdp-nominal", "Macroeconomics", "USD B", "45.9", "2025", "World Bank Data", "Nominal GDP estimate.")
     ];
 

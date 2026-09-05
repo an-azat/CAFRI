@@ -4,5 +4,5 @@ namespace CAFRI.Application.Abstractions.Services;
 
 public interface IHomeContentService
 {
-    HomePageViewModel GetHomePage();
+    Task<HomePageViewModel> GetHomePageAsync(CancellationToken cancellationToken = default);
 }

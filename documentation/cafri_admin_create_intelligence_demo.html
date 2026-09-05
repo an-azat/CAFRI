@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CAFRI Admin — Create Intelligence</title>
+<style>
+:root{--bg:#f5f7fa;--card:#fff;--text:#172033;--muted:#70798b;--line:#e1e6ee;--blue:#2457d6;--blue2:#eef3ff;--red:#c43d3d;--green:#16845b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 Inter,Segoe UI,Arial,sans-serif}button,input,textarea,select{font:inherit}button{cursor:pointer}
+.header{height:68px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 30px;position:sticky;top:0;z-index:10}.logo{font-size:20px;font-weight:800;letter-spacing:.08em;margin-right:42px}.adminlabel{font-size:12px;color:#8a92a1;border-left:1px solid var(--line);padding-left:20px}.user{margin-left:auto;font-size:13px;color:#687286}
+.layout{display:grid;grid-template-columns:235px 1fr;min-height:calc(100vh - 68px)}.sidebar{background:#fff;border-right:1px solid var(--line);padding:24px 14px}.side-label{font-size:10px;font-weight:800;color:#9aa2b0;letter-spacing:.1em;text-transform:uppercase;margin:15px 12px 8px}.navitem{display:flex;gap:10px;padding:10px 12px;border-radius:8px;color:#687286;font-size:13px;margin:2px 0}.navitem.active{background:var(--blue2);color:var(--blue);font-weight:700}
+.main{max-width:1280px;width:100%;padding:28px 32px 60px;margin:auto}.topline{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.crumb{font-size:12px;color:#818a99}.topactions{display:flex;gap:9px}.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:9px 13px;font-size:12px;font-weight:700}.btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}.btn.ghost{background:transparent}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:22px}.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:23px;margin-bottom:17px}.card h2{font-size:16px;margin:0 0 4px}.desc{font-size:12px;color:var(--muted);margin:0 0 19px}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.field{margin-bottom:15px}.field.full{grid-column:1/-1}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:7px}.required{color:var(--red)}input,textarea,select{width:100%;border:1px solid #dce1e9;border-radius:7px;background:#fff;padding:10px 11px;outline:none;color:var(--text)}input:focus,textarea:focus,select:focus{border-color:#91a9ea}textarea{resize:vertical;min-height:110px}.hint{font-size:10.5px;color:#8992a1;margin-top:5px}
+.toolbar{display:flex;gap:5px;flex-wrap:wrap;border:1px solid #dce1e9;border-bottom:0;border-radius:7px 7px 0 0;padding:7px;background:#fafbfd}.tool{border:1px solid #e0e5ec;background:#fff;border-radius:5px;padding:5px 8px;font-size:11px;font-weight:700}.editor{border:1px solid #dce1e9;border-radius:0 0 7px 7px;padding:15px;min-height:180px}.block{border:1px solid #e3e7ee;border-radius:7px;padding:12px;margin-bottom:9px}.block:last-child{margin-bottom:0}.blockhead{display:flex;justify-content:space-between;color:#7a8392;font-size:10px;text-transform:uppercase;font-weight:800;letter-spacing:.06em}.block p{font-size:13px;margin:7px 0 0}.findingrow{display:grid;grid-template-columns:28px 1fr 28px;gap:9px;align-items:start;margin-bottom:9px}.findingrow:last-child{margin-bottom:0}.findingnum{background:var(--blue2);color:var(--blue);border-radius:6px;padding:8px 0;text-align:center;font-size:11px;font-weight:800}.iconbtn{border:1px solid var(--line);background:#fff;border-radius:6px;height:34px;color:#7b8494}
+.add{border:1px dashed #bfc8d8;background:#fafbfd;color:var(--blue);width:100%;padding:10px;border-radius:7px;font-size:12px;font-weight:700;margin-top:9px}
+.selectbox{border:1px solid #dce1e9;border-radius:7px;padding:11px;min-height:45px;display:flex;gap:7px;flex-wrap:wrap;align-items:center}.chip{border:1px solid #d9e0ec;background:#f8fafc;padding:5px 8px;border-radius:16px;font-size:11px}.chip.x{color:var(--blue);font-weight:700}.placeholder{color:#9aa2b0;font-size:12px}
+.pub{border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:9px}.pub:last-child{margin-bottom:0}.pubtop{display:flex;justify-content:space-between;font-size:10px;color:#818a99;text-transform:uppercase;font-weight:800}.pub h3{font-size:13px;margin:5px 0}.pub p{font-size:11px;color:#778193;margin:0 0 8px}.pub a{font-size:11px;color:var(--blue);font-weight:700}
+.preview{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;position:sticky;top:90px}.previewbar{padding:14px 17px;border-bottom:1px solid var(--line);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#7b8495}.previewbody{padding:21px}.pbadge{font-size:9px;color:var(--blue);font-weight:800;letter-spacing:.1em}.preview h1{font-size:24px;line-height:1.18;margin:8px 0 10px}.plead{font-size:12px;color:#6c7587}.pmeta{display:flex;gap:9px;flex-wrap:wrap;font-size:9px;color:#8992a1;margin:12px 0 16px}.passessment{background:var(--blue2);border-left:3px solid var(--blue);padding:12px;font-size:11px;border-radius:5px}.previewtitle{font-size:12px;font-weight:800;margin:19px 0 8px}.mini{border:1px solid var(--line);border-radius:6px;padding:9px;margin-bottom:6px;font-size:10px}.mini strong{display:block;margin-bottom:2px}.mini span{color:#7c8595}.status{display:flex;align-items:center;gap:7px;font-size:11px}.dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+@media(max-width:1000px){.layout{grid-template-columns:1fr}.sidebar{display:none}.grid{grid-template-columns:1fr}.preview{position:static}.formgrid{grid-template-columns:1fr}}
+@media(max-width:600px){.main{padding:18px 12px}.topline{align-items:flex-start;gap:12px}.topactions{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="logo">CAFRI</div><div class="adminlabel">ADMIN PANEL</div><div class="user">Research Admin ▾</div>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="side-label">Content</div>
+  <a class="navitem" href="#">Publications</a>
+  <a class="navitem active" href="#">Intelligence</a>
+  <a class="navitem" href="#">Countries</a>
+  <div class="side-label">Taxonomy</div>
+  <a class="navitem" href="#">Topics</a><a class="navitem" href="#">Sectors</a>
+  <div class="side-label">System</div>
+  <a class="navitem" href="#">Sources</a><a class="navitem" href="#">Users</a><a class="navitem" href="#">Settings</a>
+</aside>
+
+<main class="main">
+<div class="topline"><div class="crumb">Intelligence / Create new intelligence</div><div class="topactions"><button class="btn ghost">Save draft</button><button class="btn primary">Publish intelligence</button></div></div>
+
+<div class="grid">
+<div>
+<section class="card">
+<h2>Basic Information</h2><p class="desc">Define the identity and analytical classification of the Intelligence Case.</p>
+<div class="formgrid">
+<div class="field full"><label>Title <span class="required">*</span></label><input value="Regional Transport Integration Accelerates Across Central Asia"></div>
+<div class="field"><label>Slug</label><input value="regional-transport-integration-central-asia"><div class="hint">Generated automatically from title.</div></div>
+<div class="field"><label>Status</label><select><option>Draft</option><option>Published</option><option>Archived</option></select></div>
+<div class="field"><label>Impact</label><select><option>High</option><option>Medium</option><option>Low</option></select></div>
+<div class="field"><label>Confidence</label><select><option>High</option><option>Medium</option><option>Low</option></select></div>
+<div class="field"><label>Analyst</label><select><option>CAFRI Research</option><option>Economic Research</option></select></div>
+</div></section>
+
+<section class="card">
+<h2>Executive Assessment</h2><p class="desc">The primary analytical judgment. This is displayed prominently on the Intelligence Case page.</p>
+<textarea>Transport infrastructure is moving from isolated national projects toward a more coordinated regional network. The concentration of railway, logistics and border infrastructure announcements suggests that Central Asian states are increasingly treating connectivity as a strategic economic priority.</textarea>
+</section>
+
+<section class="card">
+<h2>Key Findings</h2><p class="desc">Add concise analytical conclusions that support the executive assessment.</p>
+<div class="findingrow"><div class="findingnum">01</div><input value="Railway investment is becoming regional."><button class="iconbtn">×</button></div>
+<div class="findingrow"><div class="findingnum">02</div><input value="Alternative corridors are gaining strategic importance."><button class="iconbtn">×</button></div>
+<div class="findingrow"><div class="findingnum">03</div><input value="Logistics infrastructure is following railway development."><button class="iconbtn">×</button></div>
+<button class="add">＋ Add finding</button>
+</section>
+
+<section class="card">
+<h2>Intelligence Content</h2><p class="desc">Build the analytical body using structured blocks rather than one large HTML field.</p>
+<div class="toolbar"><button class="tool">H2</button><button class="tool">H3</button><button class="tool">B</button><button class="tool">I</button><button class="tool">List</button><button class="tool">Link</button><button class="tool">Image</button><button class="tool">Chart</button><button class="tool">Table</button><button class="tool">Timeline</button><button class="tool">Quote</button><button class="tool">Key finding</button></div>
+<div class="editor">
+<div class="block"><div class="blockhead"><span>Heading · H2</span><span>⋮</span></div><p><strong>Regional implications</strong></p></div>
+<div class="block"><div class="blockhead"><span>Paragraph</span><span>⋮</span></div><p>The convergence of infrastructure commitments points to a broader shift in regional economic strategy.</p></div>
+<div class="block"><div class="blockhead"><span>Chart</span><span>⋮</span></div><p><strong>Regional transport activity · 2022–2026</strong><br><span style="color:#8992a1">Line chart · indexed values</span></p></div>
+<button class="add">＋ Add content block</button>
+</div>
+</section>
+
+<section class="card">
+<h2>Evidence Publications</h2><p class="desc">Select publications that directly support the analytical conclusions of this Intelligence Case.</p>
+<div class="pub"><div class="pubtop"><span>Official announcement · Kazakhstan</span><span>Primary evidence</span></div><h3>Central Asian railway corridor receives new financing commitment</h3><p>Published 28 Aug 2026 · CAFRI publication</p><a href="#">Remove publication ×</a></div>
+<div class="pub"><div class="pubtop"><span>Industry report · Regional</span><span>Primary evidence</span></div><h3>Regional logistics capacity expected to expand</h3><p>Published 21 Aug 2026 · CAFRI publication</p><a href="#">Remove publication ×</a></div>
+<button class="add">＋ Add evidence publication</button>
+</section>
+
+<section class="card">
+<h2>Related Publications</h2><p class="desc">Additional publications relevant to the topic, but not used as direct evidence.</p>
+<div class="pub"><div class="pubtop"><span>Trade · Regional</span><span>Related</span></div><h3>New regional trade routes reshape freight flows</h3><p>Published 14 Aug 2026</p><a href="#">Remove publication ×</a></div>
+<button class="add">＋ Add related publication</button>
+</section>
+
+<section class="card">
+<h2>Related Intelligence</h2><p class="desc">Connect this case with other analytical cases in CAFRI.</p>
+<div class="selectbox"><span class="chip x">Central Asia trade corridors diversify ×</span><span class="chip x">Infrastructure financing accelerates ×</span></div>
+<button class="add">＋ Add related intelligence</button>
+</section>
+
+<section class="card">
+<h2>Timeline</h2><p class="desc">Create dated developments and optionally link each event to a publication.</p>
+<div class="pub"><div class="pubtop"><span>May 2025</span><span>Kazakhstan</span></div><h3>New railway corridor financing announced</h3><p>Financing arrangements confirmed for a major cross-border route.</p><a href="#">Edit event</a></div>
+<div class="pub"><div class="pubtop"><span>Mar 2026</span><span>Kyrgyzstan</span></div><h3>Cross-border railway project advances</h3><p>Project milestones indicate progress toward a new regional connection.</p><a href="#">Edit event</a></div>
+<button class="add">＋ Add timeline event</button>
+</section>
+
+<section class="card">
+<h2>Classification</h2><p class="desc">Attach taxonomy used by search, filters and the regional map.</p>
+<div class="field"><label>Countries</label><div class="selectbox"><span class="chip x">Kyrgyzstan ×</span><span class="chip x">Uzbekistan ×</span><span class="chip x">Kazakhstan ×</span></div></div>
+<div class="field"><label>Sectors</label><div class="selectbox"><span class="chip x">Infrastructure ×</span><span class="chip x">Trade ×</span><span class="chip x">Logistics ×</span><span class="chip x">Investment ×</span></div></div>
+<div class="field"><label>Topics</label><div class="selectbox"><span class="chip x">Railway ×</span><span class="chip x">Connectivity ×</span><span class="chip x">Transport corridors ×</span></div></div>
+</section>
+
+<section class="card">
+<h2>Sources & Documents</h2><p class="desc">Attach the full analytical document and other supporting source files.</p>
+<div class="pub"><div class="pubtop"><span>PDF</span><span>Primary document</span></div><h3>Regional Transport Integration — Intelligence Case.pdf</h3><p>2.8 MB · Uploaded 02 Sep 2026</p><a href="#">Replace file</a></div>
+<button class="add">＋ Upload source document</button>
+</section>
+
+<section class="card">
+<h2>Publishing</h2><div class="formgrid">
+<div class="field"><label>Publication date</label><input type="date" value="2026-08-28"></div>
+<div class="field"><label>Updated date</label><input type="date" value="2026-09-02"></div>
+<div class="field"><label>Featured</label><select><option>Yes</option><option>No</option></select></div>
+<div class="field"><label>Visibility</label><select><option>Public</option><option>Internal</option></select></div>
+</div></section>
+</div>
+
+<aside>
+<div class="preview">
+<div class="previewbar">Live Preview</div>
+<div class="previewbody">
+<div class="pbadge">INTELLIGENCE CASE · HIGH IMPACT</div>
+<h1>Regional Transport Integration Accelerates Across Central Asia</h1>
+<div class="plead">Major infrastructure commitments indicate a shift toward deeper regional connectivity and alternative trade corridors.</div>
+<div class="pmeta"><span>28 Aug 2026</span><span>CAFRI Research</span><span>Confidence: High</span></div>
+<div class="passessment">Transport infrastructure is moving toward a more coordinated regional network.</div>
+<div class="previewtitle">Key Findings</div>
+<div class="mini"><strong>01 · Railway investment is becoming regional.</strong><span>Analytical conclusion</span></div>
+<div class="mini"><strong>02 · Alternative corridors are gaining importance.</strong><span>Strategic development</span></div>
+<div class="previewtitle">Evidence</div>
+<div class="mini"><strong>2 supporting publications</strong><span>Direct evidence</span></div>
+<div class="previewtitle">Related Publications</div>
+<div class="mini"><strong>1 related publication</strong><span>Additional context</span></div>
+<div class="previewtitle">Related Intelligence</div>
+<div class="mini"><strong>2 related cases</strong><span>Connected analysis</span></div>
+<div class="previewtitle">Status</div>
+<div class="status"><span class="dot"></span> Draft · Ready for review</div>
+</div>
+</div>
+</aside>
+</div>
+</main>
+</div>
+</body>
+</html>

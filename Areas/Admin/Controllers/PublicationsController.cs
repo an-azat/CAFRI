@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using CAFRI.Areas.Admin.ViewModels.Content;
 using CAFRI.Domain.Content;
 using CAFRI.Domain.Users;
@@ -51,24 +50,7 @@ public sealed class PublicationsController : Controller
         }
     }
 
-    private static string SanitizeRichTextHtml(string? html)
-    {
-        if (string.IsNullOrWhiteSpace(html))
-        {
-            return string.Empty;
-        }
-
-        var sanitized = html.Trim();
-        sanitized = Regex.Replace(sanitized, @"<(script|style)\b[^>]*>.*?</\1>", string.Empty, RegexOptions.IgnoreCase | RegexOptions.Singleline);
-        sanitized = Regex.Replace(sanitized, @"\scontenteditable\s*=\s*(""[^""]*""|'[^']*'|[^\s>]+)", string.Empty, RegexOptions.IgnoreCase);
-        sanitized = Regex.Replace(sanitized, @"\sspellcheck\s*=\s*(""[^""]*""|'[^']*'|[^\s>]+)", string.Empty, RegexOptions.IgnoreCase);
-        sanitized = Regex.Replace(sanitized, @"\s(?:data|aria)-[\w:-]+\s*=\s*(""[^""]*""|'[^']*'|[^\s>]+)", string.Empty, RegexOptions.IgnoreCase);
-        sanitized = Regex.Replace(sanitized, @"\s(?:role|tabindex|autocorrect|autocapitalize)\s*=\s*(""[^""]*""|'[^']*'|[^\s>]+)", string.Empty, RegexOptions.IgnoreCase);
-        sanitized = Regex.Replace(sanitized, @"\sclass\s*=\s*(""[^""]*\bql-[^""]*""|'[^']*\bql-[^']*')", string.Empty, RegexOptions.IgnoreCase);
-        sanitized = Regex.Replace(sanitized, @"\sstyle\s*=\s*(""[^""]*""|'[^']*')", string.Empty, RegexOptions.IgnoreCase);
-
-        return sanitized.Trim();
-    }
+    private static string SanitizeRichTextHtml(string? html) => RichTextHtmlSanitizer.Sanitize(html);
 
     public PublicationsController(AppDbContext dbContext, ContentMediaStorageService mediaStorage)
     {
@@ -95,6 +77,42 @@ public sealed class PublicationsController : Controller
         return (requestFiles ?? Array.Empty<IFormFile>())
             .Where(file => file is not null && file.Length > 0)
             .ToList();
+    }
+
+    // Image/document uploads that fail the format checks in ContentMediaStorageService
+    // (unsupported extension, oversized, or a magic-number mismatch for a renamed/corrupted
+    // file) are silently skipped by design there - this turns that silence into a visible
+    // admin-facing warning instead of a publication that quietly saved without its media.
+    private static string? BuildFileUploadWarning(
+        IFormFile? providedHeroFile,
+        string? savedHeroUrl,
+        int providedGalleryCount,
+        int savedGalleryCount,
+        int providedDocumentCount,
+        int savedDocumentCount)
+    {
+        var issues = new List<string>();
+
+        if (providedHeroFile is not null && providedHeroFile.Length > 0 && string.IsNullOrWhiteSpace(savedHeroUrl))
+        {
+            issues.Add($"hero image \"{providedHeroFile.FileName}\" could not be saved");
+        }
+
+        var droppedGallery = providedGalleryCount - savedGalleryCount;
+        if (droppedGallery > 0)
+        {
+            issues.Add($"{droppedGallery} gallery photo(s) could not be saved");
+        }
+
+        var droppedDocuments = providedDocumentCount - savedDocumentCount;
+        if (droppedDocuments > 0)
+        {
+            issues.Add($"{droppedDocuments} document(s) could not be saved");
+        }
+
+        return issues.Count == 0
+            ? null
+            : $"Some uploads were skipped ({string.Join("; ", issues)}). The file format could not be verified - try re-exporting/re-saving it and upload again.";
     }
 
     private static string FormatFileSize(long bytes)
@@ -471,8 +489,10 @@ public sealed class PublicationsController : Controller
         var heroImageUrl = string.IsNullOrWhiteSpace(model.HeroImageUrl)
             ? await _mediaStorage.SaveImageAsync(uploadedHeroFile, "publications", HttpContext.RequestAborted)
             : model.HeroImageUrl.Trim();
+        var providedGalleryFiles = ResolveFiles(model.GalleryFiles, Request.Form.Files.GetFiles(nameof(model.GalleryFiles)));
+        var savedGalleryImages = await _mediaStorage.SaveImagesAsync(providedGalleryFiles, "publications", HttpContext.RequestAborted);
         var galleryItems = ContentImageTextSerializer.Parse(model.GalleryText).ToList();
-        galleryItems.AddRange(await _mediaStorage.SaveImagesAsync(ResolveFiles(model.GalleryFiles, Request.Form.Files.GetFiles(nameof(model.GalleryFiles))), "publications", HttpContext.RequestAborted));
+        galleryItems.AddRange(savedGalleryImages);
         var uploadedDocumentFiles = ResolveFiles(model.DocumentFiles, Request.Form.Files.GetFiles(nameof(model.DocumentFiles)));
 
         var entity = new PublicationContentItem
@@ -516,6 +536,13 @@ public sealed class PublicationsController : Controller
         var uploadedDocuments = await BuildUploadedPublicationDocumentsAsync(entity.Id, uploadedDocumentFiles);
         await ReplaceStructuredDetailsAsync(entity.Id, model, uploadedDocuments);
         await _dbContext.SaveChangesAsync();
+
+        var uploadWarning = BuildFileUploadWarning(uploadedHeroFile, heroImageUrl, providedGalleryFiles.Count, savedGalleryImages.Count, uploadedDocumentFiles.Count, uploadedDocuments.Count);
+        if (uploadWarning is not null)
+        {
+            TempData["AdminError"] = uploadWarning;
+        }
+
         TempData["AdminSuccess"] = $"Publication saved. Hero: {(string.IsNullOrWhiteSpace(entity.HeroImageUrl) ? "not saved" : entity.HeroImageUrl)}. Gallery items: {galleryItems.Count}.";
         return RedirectToAction(nameof(Edit), new { id = entity.Id });
     }
@@ -555,9 +582,12 @@ public sealed class PublicationsController : Controller
         var normalizedPublishedDate = PublicationMetadataFormatter.NormalizePublishedDate(model.PublishedMonth, model.PublishedDate, model.Meta);
         var normalizedReadingTime = PublicationMetadataFormatter.NormalizeReadingTime(model.ReadingTime, model.Meta);
         var previousUrls = GetPublicationMediaUrls(entity).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var uploadedHeroImageUrl = await _mediaStorage.SaveImageAsync(ResolveSingleFile(model.HeroImageFile, Request.Form.Files.GetFile(nameof(model.HeroImageFile))), "publications", HttpContext.RequestAborted);
+        var providedHeroFile = ResolveSingleFile(model.HeroImageFile, Request.Form.Files.GetFile(nameof(model.HeroImageFile)));
+        var uploadedHeroImageUrl = await _mediaStorage.SaveImageAsync(providedHeroFile, "publications", HttpContext.RequestAborted);
+        var providedGalleryFiles = ResolveFiles(model.GalleryFiles, Request.Form.Files.GetFiles(nameof(model.GalleryFiles)));
+        var savedGalleryImages = await _mediaStorage.SaveImagesAsync(providedGalleryFiles, "publications", HttpContext.RequestAborted);
         var galleryItems = ContentImageTextSerializer.Parse(model.GalleryText).ToList();
-        galleryItems.AddRange(await _mediaStorage.SaveImagesAsync(ResolveFiles(model.GalleryFiles, Request.Form.Files.GetFiles(nameof(model.GalleryFiles))), "publications", HttpContext.RequestAborted));
+        galleryItems.AddRange(savedGalleryImages);
         var uploadedDocumentFiles = ResolveFiles(model.DocumentFiles, Request.Form.Files.GetFiles(nameof(model.DocumentFiles)));
 
         entity.Slug = model.Slug.Trim();
@@ -598,6 +628,13 @@ public sealed class PublicationsController : Controller
         await ReplaceStructuredDetailsAsync(entity.Id, model, uploadedDocuments);
         await _dbContext.SaveChangesAsync();
         await DeleteUnusedMediaAsync(previousUrls.Except(GetPublicationMediaUrls(entity), StringComparer.OrdinalIgnoreCase));
+
+        var uploadWarning = BuildFileUploadWarning(providedHeroFile, uploadedHeroImageUrl, providedGalleryFiles.Count, savedGalleryImages.Count, uploadedDocumentFiles.Count, uploadedDocuments.Count);
+        if (uploadWarning is not null)
+        {
+            TempData["AdminError"] = uploadWarning;
+        }
+
         TempData["AdminSuccess"] = $"Publication updated. Hero: {(string.IsNullOrWhiteSpace(entity.HeroImageUrl) ? "not saved" : entity.HeroImageUrl)}. Gallery items: {galleryItems.Count}.";
         return RedirectToAction(nameof(Edit), new { id });
     }
@@ -661,7 +698,7 @@ public sealed class PublicationsController : Controller
 
             if (!stillUsed)
             {
-                _mediaStorage.DeleteImage(url);
+                await _mediaStorage.DeleteImageAsync(url);
             }
         }
     }
@@ -717,13 +754,11 @@ public sealed class PublicationsController : Controller
             SectionsText = PublicationStructuredDetailParsers.JoinSections(details.Sections),
             ChartsText = PublicationStructuredDetailParsers.JoinCharts(details.Charts),
             TableRowsText = PublicationStructuredDetailParsers.JoinTableRows(details.TableRows),
-            GalleryText = ContentImageTextSerializer.Serialize(details.GalleryItems.Select(item => new CAFRI.ViewModels.Shared.ContentImageItemViewModel
-            {
-                ImageUrl = item.ImageUrl,
-                Alt = item.Alt,
-                Title = item.Title,
-                Caption = item.Caption
-            })),
+            // Sourced directly from entity.GalleryJson (the actual saved gallery), not from
+            // details.GalleryItems - that traces through BuildDefaultDetails/BuildStructuredDetails,
+            // which never populate GalleryItems from the entity, so it was always empty here and
+            // editing a publication silently wiped its gallery on save.
+            GalleryText = entity.GalleryJson ?? string.Empty,
             AssignedCountriesText = entity.CountryAssignments.Count == 0
                 ? entity.CountryLabel
                 : string.Join(Environment.NewLine, entity.CountryAssignments.OrderBy(x => x.DisplayOrder).Select(x => x.CountryLabel)),

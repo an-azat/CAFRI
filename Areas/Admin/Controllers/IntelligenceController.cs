@@ -316,7 +316,7 @@ public sealed class IntelligenceController : Controller
 
         if (!stillUsed)
         {
-            _mediaStorage.DeleteImage(previousUrl);
+            await _mediaStorage.DeleteImageAsync(previousUrl);
         }
     }
 
@@ -507,27 +507,40 @@ public sealed class IntelligenceController : Controller
             DisplayOrder = index
         }));
 
+        // Title(0) | Description(1..) | ImpactLabel | ImpactTone
+        // Description is the free-text field: a "|" typed inside it folds back into
+        // Description instead of shifting ImpactLabel/ImpactTone out of position.
         var impactRows = IntelligenceStructuredDetailParsers.ParsePipeRows(model.ImpactAnalysisText, 4);
-        _dbContext.IntelligenceImpactEntries.AddRange(impactRows.Select((parts, index) => new IntelligenceImpactEntry
+        _dbContext.IntelligenceImpactEntries.AddRange(impactRows.Select((parts, index) =>
         {
-            Id = Guid.NewGuid(),
-            IntelligenceContentItemId = intelligenceContentItemId,
-            Title = parts[0],
-            Description = parts[1],
-            ImpactLabel = parts[2],
-            ImpactTone = parts[3],
-            DisplayOrder = index
+            var descriptionEndIndex = parts.Length - 2;
+            return new IntelligenceImpactEntry
+            {
+                Id = Guid.NewGuid(),
+                IntelligenceContentItemId = intelligenceContentItemId,
+                Title = parts[0],
+                Description = string.Join(" | ", parts.Skip(1).Take(descriptionEndIndex - 1)),
+                ImpactLabel = parts[descriptionEndIndex],
+                ImpactTone = parts[descriptionEndIndex + 1],
+                DisplayOrder = index
+            };
         }));
 
+        // DateLabel(0) | Description(1..) | Stage
+        // Same fold-back rule as above, applied to Description.
         var timelineRows = IntelligenceStructuredDetailParsers.ParsePipeRows(model.TimelineText, 3);
-        _dbContext.IntelligenceTimelineEntries.AddRange(timelineRows.Select((parts, index) => new IntelligenceTimelineEntry
+        _dbContext.IntelligenceTimelineEntries.AddRange(timelineRows.Select((parts, index) =>
         {
-            Id = Guid.NewGuid(),
-            IntelligenceContentItemId = intelligenceContentItemId,
-            DateLabel = parts[0],
-            Description = parts[1],
-            Stage = parts[2],
-            DisplayOrder = index
+            var descriptionEndIndex = parts.Length - 1;
+            return new IntelligenceTimelineEntry
+            {
+                Id = Guid.NewGuid(),
+                IntelligenceContentItemId = intelligenceContentItemId,
+                DateLabel = parts[0],
+                Description = string.Join(" | ", parts.Skip(1).Take(descriptionEndIndex - 1)),
+                Stage = parts[descriptionEndIndex],
+                DisplayOrder = index
+            };
         }));
 
         var documentInfoRows = IntelligenceStructuredDetailParsers.ParsePipeRows(model.DocumentInformationText, 2).ToList();
@@ -617,15 +630,25 @@ public sealed class IntelligenceController : Controller
             DisplayOrder = index
         }));
 
+        // Label(0) | Value(1..) | [IsStatus]
+        // The trailing segment is only treated as the IsStatus flag when it actually
+        // parses as a bool; otherwise it's folded back into Value like the other
+        // free-text fields above, so a "|" inside Value can't corrupt IsStatus.
         var statusRows = IntelligenceStructuredDetailParsers.ParsePipeRows(model.MonitoringStatusText, 2);
-        _dbContext.IntelligenceStatusEntries.AddRange(statusRows.Select((parts, index) => new IntelligenceStatusEntry
+        _dbContext.IntelligenceStatusEntries.AddRange(statusRows.Select((parts, index) =>
         {
-            Id = Guid.NewGuid(),
-            IntelligenceContentItemId = intelligenceContentItemId,
-            Label = parts[0],
-            Value = parts[1],
-            IsStatus = parts.Length > 2 && bool.TryParse(parts[2], out var isStatus) && isStatus,
-            DisplayOrder = index
+            var hasIsStatus = parts.Length > 2 && bool.TryParse(parts[^1], out _);
+            var valueParts = hasIsStatus ? parts.Skip(1).Take(parts.Length - 2) : parts.Skip(1);
+
+            return new IntelligenceStatusEntry
+            {
+                Id = Guid.NewGuid(),
+                IntelligenceContentItemId = intelligenceContentItemId,
+                Label = parts[0],
+                Value = string.Join(" | ", valueParts),
+                IsStatus = hasIsStatus && bool.Parse(parts[^1]),
+                DisplayOrder = index
+            };
         }));
     }
 }

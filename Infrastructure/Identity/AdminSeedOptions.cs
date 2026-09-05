@@ -4,7 +4,7 @@ public sealed class AdminSeedOptions
 {
     public const string SectionName = "AdminSeed";
 
-    public string Email { get; set; } = "admin@cafri.local";
-    public string Password { get; set; } = "Admin!23456";
+    public string Email { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
     public string FullName { get; set; } = "CAFRI Administrator";
 }

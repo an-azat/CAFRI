@@ -48,14 +48,14 @@
     }
     else
     {
-        <partial name="_ArticleTabs" model="Model.Tabs" />
-
         <div class="article-layout">
             <main class="article-main">
                 <section id="overview" class="article-section article-overview">
-                    <h2>Overview</h2>
-                    <p>@Model.OverviewLead</p>
-                    <p>@Model.OverviewBody</p>
+                    <h2>Executive Assessment</h2>
+                    <div class="article-assessment">
+                        <p>@Model.OverviewLead</p>
+                        <p>@Model.OverviewBody</p>
+                    </div>
                     <partial name="_InfoBox" model="Model" />
                 </section>
 
@@ -210,6 +210,5 @@
 }
 
 @section Scripts {
-    <script src="~/js/article-tabs.js" asp-append-version="true"></script>
     <script src="~/js/article-actions.js" asp-append-version="true"></script>
 }

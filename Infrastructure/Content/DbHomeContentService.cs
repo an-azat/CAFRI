@@ -14,19 +14,19 @@ public sealed class DbHomeContentService : IHomeContentService
         _dbContext = dbContext;
     }
 
-    public HomePageViewModel GetHomePage()
+    public async Task<HomePageViewModel> GetHomePageAsync(CancellationToken cancellationToken = default)
     {
-        var page = _dbContext.HomePageContents
+        var page = await _dbContext.HomePageContents
             .AsNoTracking()
             .OrderByDescending(x => x.UpdatedAtUtc)
-            .FirstOrDefault();
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (page is null)
         {
             return BuildFallbackHomePage();
         }
 
-        var latestIntelligence = _dbContext.IntelligenceContentItems
+        var latestIntelligence = await _dbContext.IntelligenceContentItems
             .AsNoTracking()
             .Where(x => x.IsPublished)
             .OrderByDescending(x => x.UpdatedAtUtc)
@@ -42,23 +42,23 @@ public sealed class DbHomeContentService : IHomeContentService
                 Source = x.Source,
                 Url = $"/intelligence/{x.Slug}"
             })
-            .ToList();
+            .ToListAsync(cancellationToken);
 
-        var featuredPublicationEntity = _dbContext.PublicationContentItems
+        var featuredPublicationEntity = await _dbContext.PublicationContentItems
             .AsNoTracking()
             .Where(x => x.IsPublished && (!page.FeaturedPublicationId.HasValue || x.Id == page.FeaturedPublicationId.Value))
             .OrderByDescending(x => x.UpdatedAtUtc)
             .ThenBy(x => x.DisplayOrder)
-            .FirstOrDefault();
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (featuredPublicationEntity is null)
         {
-            featuredPublicationEntity = _dbContext.PublicationContentItems
+            featuredPublicationEntity = await _dbContext.PublicationContentItems
                 .AsNoTracking()
                 .Where(x => x.IsPublished)
                 .OrderByDescending(x => x.UpdatedAtUtc)
                 .ThenBy(x => x.DisplayOrder)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync(cancellationToken);
         }
 
         return new HomePageViewModel

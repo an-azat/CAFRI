@@ -1,64 +1,55 @@
 @model CAFRI.ViewModels.Publications.PublicationDetailsViewModel
 
 <aside class="publication-sidebar">
-    <section class="publication-sidebar-card">
-        <h2>Table of Contents</h2>
-        <nav class="publication-toc">
-            @foreach (var item in Model.TableOfContents)
+    @if (!string.IsNullOrWhiteSpace(Model.SourceName))
+    {
+        <section class="publication-sidebar-card">
+            <h2>Original Source</h2>
+            <p class="publication-sidebar-card__source-name">@Model.SourceName</p>
+            @if (!string.IsNullOrWhiteSpace(Model.SourceUrl) && Model.SourceUrl != "#")
             {
-                <a class="publication-toc__link" href="#@item.TargetId" data-section-link data-target="@item.TargetId">@item.Label</a>
+                <a class="publication-sidebar-card__link" href="@Model.SourceUrl" target="_blank" rel="noopener noreferrer">Open original source <span>&rarr;</span></a>
             }
-        </nav>
-    </section>
+        </section>
+    }
 
-    <section class="publication-sidebar-card">
-        <h2>Key Corridors</h2>
-        <div class="publication-sidebar-list">
-            @foreach (var item in Model.KeyTopics)
-            {
-                <a class="publication-sidebar-list__item" href="#@item.TargetId">
-                    <strong>@item.Label</strong>
-                </a>
-            }
-        </div>
-    </section>
+    @if (Model.CountryLabels.Count > 0)
+    {
+        <section class="publication-sidebar-card">
+            <h2>Countries</h2>
+            <div class="publication-sidebar-tags">
+                @foreach (var country in Model.CountryLabels)
+                {
+                    <span class="publication-sidebar-tag">@country</span>
+                }
+            </div>
+        </section>
+    }
 
-    <section class="publication-sidebar-card">
-        <h2>Related Documents</h2>
-        <div class="publication-sidebar-list">
-            @foreach (var item in Model.SidebarDocuments)
-            {
-                <article class="publication-sidebar-list__item">
-                    <strong>@item.Title</strong>
-                    <span>@item.Meta</span>
-                </article>
-            }
-        </div>
-        <a class="publication-sidebar-card__link" href="#related-documents">View all documents (12) <span>&rarr;</span></a>
-    </section>
+    @if (Model.TopicLabels.Count > 0)
+    {
+        <section class="publication-sidebar-card">
+            <h2>Topics</h2>
+            <div class="publication-sidebar-tags">
+                @foreach (var topic in Model.TopicLabels)
+                {
+                    <span class="publication-sidebar-tag">@topic</span>
+                }
+            </div>
+        </section>
+    }
 
-    <section class="publication-sidebar-card">
-        <h2>Related Intelligence</h2>
-        <div class="publication-sidebar-list">
-            @foreach (var item in Model.RelatedIntelligence)
-            {
-                <a class="publication-sidebar-list__item" href="@item.Url">
-                    <strong>@item.Title</strong>
-                    <span>@item.Meta</span>
-                </a>
-            }
-        </div>
-        <a class="publication-sidebar-card__link" href="/intelligence">View all related intelligence <span>&rarr;</span></a>
-    </section>
-
-    <section class="publication-sidebar-card">
-        <h2>Publication Info</h2>
-        <dl class="publication-info-list">
-            @foreach (var item in Model.PublicationInfo)
-            {
-                <dt>@item.Label</dt>
-                <dd>@item.Value</dd>
-            }
-        </dl>
-    </section>
+    @if (Model.PublicationInfo.Count > 0)
+    {
+        <section class="publication-sidebar-card">
+            <h2>Publication Info</h2>
+            <dl class="publication-info-list">
+                @foreach (var item in Model.PublicationInfo)
+                {
+                    <dt>@item.Label</dt>
+                    <dd>@item.Value</dd>
+                }
+            </dl>
+        </section>
+    }
 </aside>

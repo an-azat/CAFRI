@@ -163,6 +163,7 @@
   justify-content: center;
   min-height: 2.75rem;
   padding: 0 1rem;
+  font-weight: 700;
   border-radius: 0.85rem;
   border: 1px solid rgba(120, 160, 210, 0.2);
   background: rgba(8, 27, 55, 0.55);
@@ -256,6 +257,7 @@
 .admin-panel__title {
   margin: 0;
   color: #f7faff;
+  font-weight: 700;
   letter-spacing: -0.04em;
 }
 
@@ -382,6 +384,7 @@
   margin-bottom: 0.45rem;
   color: #dbe6f4;
   font-size: 0.88rem;
+  font-weight: 700;
 }
 
 .admin-editor-card .form-check-label,
@@ -1305,6 +1308,7 @@
   background: rgba(11, 99, 246, 0.12);
   color: #8fbfff;
   font-size: 0.74rem;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -1312,6 +1316,7 @@
 .admin-preview-card__title {
   margin: 0;
   font-size: 1.5rem;
+  font-weight: 700;
   color: #ffffff;
 }
 
@@ -1974,6 +1979,25 @@
   margin-bottom: 1rem;
 }
 
+.admin-required-mark {
+  margin-left: 0.2rem;
+  color: #f87171;
+}
+
+.admin-auto-badge {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.18);
+  color: #a7b4c8;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  vertical-align: middle;
+}
+
 .admin-form-segment__header--spaced {
   margin-top: 2rem;
   padding-top: 1.6rem;
@@ -2123,4 +2147,171 @@
   .admin-publication-subcard {
     padding: 1rem;
   }
+}
+
+.admin-publication-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.admin-publication-main,
+.admin-publication-aside {
+  display: grid;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+.admin-block-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1.4rem;
+}
+
+.admin-block-group {
+  margin-top: 1.75rem;
+}
+
+.admin-block-group:first-of-type {
+  margin-top: 0;
+}
+
+.admin-block-group__label {
+  display: block;
+  margin-bottom: 0.75rem;
+  color: var(--admin-text-soft);
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.admin-help-text {
+  margin-top: 0.35rem;
+}
+
+.admin-advanced {
+  margin-top: 1.4rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--admin-border);
+}
+
+.admin-advanced summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  list-style: none;
+  color: var(--admin-accent);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.admin-advanced summary::-webkit-details-marker {
+  display: none;
+}
+
+.admin-advanced summary::before {
+  content: "\25B8";
+  display: inline-block;
+  font-size: 0.7rem;
+  transition: transform 150ms ease;
+}
+
+.admin-advanced[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.admin-advanced > .row {
+  margin-top: 1rem;
+}
+
+.admin-advanced--full {
+  margin-top: 0;
+  padding: 1.35rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 0.85rem;
+  background: #ffffff;
+}
+
+.admin-advanced--full summary {
+  margin-bottom: 0;
+}
+
+.admin-advanced--full[open] summary {
+  margin-bottom: 0.25rem;
+}
+
+@media (max-width: 1099.98px) {
+  .admin-publication-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Tighten the publication editor's card/input geometry and add per-block-type
+   accents so the editing surface reads like the block-editor reference mockup:
+   crisp corners, a blue "add block" toolbar, and a color cue per block kind. */
+.admin-publication-form__card {
+  border-radius: 0.85rem;
+  background: #ffffff;
+}
+
+.admin-publication-form .form-control,
+.admin-publication-form .form-select {
+  border-radius: 0.5rem;
+  padding-top: 0.6rem;
+  padding-bottom: 0.6rem;
+}
+
+.admin-summary-block {
+  padding: 1rem 1.15rem;
+  border-left: 4px solid var(--admin-accent);
+  border-radius: 0 0.7rem 0.7rem 0;
+  background: var(--admin-accent-soft);
+  margin-bottom: 1.25rem;
+}
+
+.admin-body.admin-theme-editorial .admin-block-toolbar .admin-chip {
+  border-color: rgba(37, 99, 235, 0.22);
+  background: var(--admin-accent-soft);
+  color: var(--admin-accent);
+  font-weight: 700;
+}
+
+.admin-body.admin-theme-editorial .admin-block-toolbar .admin-chip:hover,
+.admin-body.admin-theme-editorial .admin-block-toolbar .admin-chip:focus {
+  border-color: rgba(37, 99, 235, 0.4);
+}
+
+.admin-body.admin-theme-editorial .admin-block-group--findings .publication-finding-row {
+  border-left: 3px solid var(--admin-accent);
+  background: var(--admin-accent-soft);
+}
+
+.admin-block-group--sections input[data-section-field="heading"] {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.admin-body.admin-theme-editorial .admin-block-group--charts .publication-chart-row {
+  border-left: 3px solid #7c3aed;
+}
+
+.admin-body.admin-theme-editorial .admin-block-group--table .publication-table-row {
+  border-left: 3px solid var(--admin-success);
+}
+
+.admin-body.admin-theme-editorial .admin-block-group--keychanges .intelligence-keychange-row {
+  border-left: 3px solid var(--admin-accent);
+  background: var(--admin-accent-soft);
+}
+
+.admin-body.admin-theme-editorial .admin-block-group--impact .intelligence-impact-row {
+  border-left: 3px solid var(--admin-warning);
+}
+
+.admin-body.admin-theme-editorial .admin-block-group--timeline .intelligence-timeline-row {
+  border-left: 3px solid #0891b2;
 }

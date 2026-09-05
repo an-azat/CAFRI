@@ -11,4 +11,8 @@ public sealed class CountriesPageViewModel
     public IReadOnlyList<CountryOverviewCardViewModel> Countries { get; init; } = [];
 
     public IReadOnlyList<CountryCompareFeatureViewModel> CompareFeatures { get; init; } = [];
+
+    public IReadOnlyList<string> GdpGrowthYears { get; init; } = [];
+
+    public string SelectedGdpGrowthYear { get; init; } = string.Empty;
 }

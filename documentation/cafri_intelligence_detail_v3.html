@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CAFRI — Intelligence Case</title>
+<style>
+:root{--bg:#f6f8fb;--card:#fff;--text:#172033;--muted:#697386;--line:#e4e8ef;--blue:#2457d6;--blue2:#eef3ff;--green:#16845b;--orange:#b76b08}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.55 Inter,Segoe UI,Arial,sans-serif}a{text-decoration:none;color:inherit}
+.header{height:72px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 5%;position:sticky;top:0;z-index:5}.logo{font-size:21px;font-weight:800;letter-spacing:.08em;margin-right:42px}.nav{display:flex;gap:28px;color:#596276}.nav .active{font-weight:700;color:var(--text)}.search{margin-left:auto;border:1px solid var(--line);padding:9px 14px;border-radius:9px;color:#8992a3}
+.wrap{max-width:1240px;margin:auto;padding:30px 28px 70px}.crumb{color:#7b8495;font-size:13px;margin-bottom:24px}.hero,.main,.sidecard{background:#fff;border:1px solid var(--line);border-radius:15px;box-shadow:0 8px 30px #1720330f}.hero{padding:34px 38px;margin-bottom:24px}.eyebrow{font-size:11px;font-weight:800;letter-spacing:.13em;color:var(--blue);text-transform:uppercase}.badge{margin-left:10px;background:#fff0df;color:var(--orange);padding:5px 9px;border-radius:20px;letter-spacing:.06em}
+h1{font-size:38px;line-height:1.16;letter-spacing:-.025em;margin:15px 0;max-width:900px}.lead{font-size:17px;color:#596276;max-width:880px}.meta{display:flex;gap:22px;flex-wrap:wrap;color:#7b8495;font-size:12px;margin-top:20px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);padding:10px 14px;border-radius:8px;font-weight:700;font-size:13px;background:#fff}.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:24px}.main{padding:30px 34px}.side{display:grid;gap:16px;align-content:start}.sidecard{padding:21px}.section{margin-bottom:36px}.section:last-child{margin-bottom:0}.title{font-size:18px;font-weight:800;margin:0 0 16px}.assessment{background:var(--blue2);border-left:4px solid var(--blue);padding:19px 20px;border-radius:8px;font-size:15px}
+.findings{display:grid;gap:0}.finding{display:grid;grid-template-columns:35px 1fr;gap:12px;padding:15px 0;border-bottom:1px solid var(--line)}.finding:last-child{border:0}.num{color:var(--blue);font-weight:800}.finding strong{display:block}.finding p,.evidence p,.note{color:#687286;font-size:13px;margin:4px 0 0}
+.chart{border:1px solid var(--line);border-radius:10px;padding:18px}.chartlabel{font-size:12px;color:#7c8595;margin-bottom:8px}.chart svg{width:100%}
+.timeline{padding-left:24px;position:relative}.timeline:before{content:"";position:absolute;left:5px;top:5px;bottom:5px;width:1px;background:#d9deea}.event{position:relative;padding:0 0 23px 20px}.event:before{content:"";position:absolute;left:-1px;top:5px;width:10px;height:10px;border:2px solid var(--blue);background:#fff;border-radius:50%}.date{font-size:11px;color:var(--blue);font-weight:800}.event h3{font-size:14px;margin:3px 0}.event p{font-size:13px;color:#687286;margin:0}.link{color:var(--blue);font-size:12px;font-weight:700}
+.evidence{display:grid;gap:12px}.evidencecard{border:1px solid var(--line);border-radius:10px;padding:17px}.top{display:flex;justify-content:space-between;color:#7b8495;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.evidence h3{font-size:14px;margin:6px 0}.links{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px}.links a{color:var(--blue);font-size:12px;font-weight:750}
+.sources{display:grid;gap:9px}.source{display:grid;grid-template-columns:40px 1fr auto;gap:13px;align-items:center;border:1px solid var(--line);padding:12px 13px;border-radius:9px}.icon{width:34px;height:34px;border-radius:7px;background:#f1f3f7;display:grid;place-items:center;font-size:11px;font-weight:800;color:#687286}.sname{font-size:13px;font-weight:700}.smeta{font-size:11px;color:#7b8495;margin-top:2px}.sactions{display:flex;gap:12px}.sactions a{font-size:11px;color:var(--blue);font-weight:750;white-space:nowrap}
+.related{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.related a{border:1px solid var(--line);border-radius:10px;padding:16px}.tag{font-size:10px;color:var(--blue);font-weight:800}.related h3{font-size:13px;margin:7px 0}.related p{font-size:11px;color:#788294;margin:0}
+.side-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#7b8495;margin-bottom:14px}.row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}.row:last-child{border:0}.high{color:var(--orange);font-weight:800}.good{color:var(--green);font-weight:800}.chips{display:flex;gap:7px;flex-wrap:wrap}.chip{font-size:11px;padding:6px 9px;border:1px solid var(--line);border-radius:20px;background:#fafbfc}.summary{background:#f8fafc;border-radius:9px;padding:14px}.summary strong{display:block;font-size:13px}.summary span{font-size:11px;color:#7a8393}
+@media(max-width:900px){.grid{grid-template-columns:1fr}.nav{display:none}.search{display:none}.related{grid-template-columns:1fr}}@media(max-width:600px){.wrap{padding:20px 14px}.hero,.main{padding:22px}h1{font-size:29px}.source{grid-template-columns:40px 1fr}.sactions{grid-column:2}}
+</style>
+</head>
+<body>
+<header class="header"><div class="logo">CAFRI</div><nav class="nav"><a class="active" href="#">Intelligence</a><a href="#">Map</a><a href="#">Publications</a><a href="#">Countries</a></nav><div class="search">Search intelligence…</div></header>
+<main class="wrap">
+<div class="crumb">Intelligence / Regional Developments / Transport</div>
+<section class="hero">
+<div class="eyebrow">Intelligence Case <span class="badge">HIGH IMPACT</span></div>
+<h1>Regional Transport Integration Accelerates Across Central Asia</h1>
+<p class="lead">Major infrastructure commitments across Kazakhstan, Kyrgyzstan and Uzbekistan indicate a shift toward deeper regional connectivity and the development of alternative trade corridors.</p>
+<div class="meta"><span>Published: 28 Aug 2026</span><span>Updated: 02 Sep 2026</span><span>Analyst: CAFRI Research</span><span>Confidence: High</span></div>
+<div class="actions"><a class="btn primary" href="https://example.com/cafri/intelligence/transport-integration.pdf">↓ Download full document</a><a class="btn" href="https://example.com/original-analysis">↗ View original analysis</a><a class="btn" href="#">＋ Add to watchlist</a></div>
+</section>
+<div class="grid">
+<article class="main">
+<section class="section"><h2 class="title">Executive Assessment</h2><div class="assessment">Transport infrastructure is moving from isolated national projects toward a more coordinated regional network. The concentration of railway, logistics and border infrastructure announcements suggests that Central Asian states are increasingly treating connectivity as a strategic economic priority.</div></section>
+<section class="section"><h2 class="title">Key Findings</h2><div class="findings">
+<div class="finding"><div class="num">01</div><div><strong>Railway investment is becoming regional.</strong><p>New projects increasingly connect multiple markets rather than serving only domestic routes.</p></div></div>
+<div class="finding"><div class="num">02</div><div><strong>Alternative corridors are gaining strategic importance.</strong><p>Governments are seeking routes that reduce dependence on traditional transit infrastructure.</p></div></div>
+<div class="finding"><div class="num">03</div><div><strong>Logistics infrastructure is following railway development.</strong><p>Dry ports, terminals and border facilities are being developed alongside major transport corridors.</p></div></div>
+<div class="finding"><div class="num">04</div><div><strong>Implementation remains the main uncertainty.</strong><p>Financing, construction schedules and cross-border coordination will determine the speed of regional integration.</p></div></div>
+</div></section>
+<section class="section"><h2 class="title">Regional Activity</h2><div class="chart"><div class="chartlabel">Indexed number of major transport announcements · 2022 = 100</div><svg viewBox="0 0 760 250"><line x1="45" y1="205" x2="735" y2="205" stroke="#dfe4ec"/><line x1="45" y1="155" x2="735" y2="155" stroke="#eef1f5"/><line x1="45" y1="105" x2="735" y2="105" stroke="#eef1f5"/><polyline points="55,185 215,160 375,125 535,90 710,58" fill="none" stroke="#2457d6" stroke-width="3"/><circle cx="55" cy="185" r="4" fill="#2457d6"/><circle cx="215" cy="160" r="4" fill="#2457d6"/><circle cx="375" cy="125" r="4" fill="#2457d6"/><circle cx="535" cy="90" r="4" fill="#2457d6"/><circle cx="710" cy="58" r="4" fill="#2457d6"/><text x="48" y="228" font-size="11" fill="#7b8495">2022</text><text x="205" y="228" font-size="11" fill="#7b8495">2023</text><text x="365" y="228" font-size="11" fill="#7b8495">2024</text><text x="525" y="228" font-size="11" fill="#7b8495">2025</text><text x="700" y="228" font-size="11" fill="#7b8495">2026</text></svg></div></section>
+<section class="section"><h2 class="title">Development Timeline</h2><div class="timeline">
+<div class="event"><div class="date">May 2025 · Kazakhstan</div><h3>New railway corridor financing announced</h3><p>Public authorities confirmed financing arrangements for a major cross-border route.</p><a class="link" href="#">Read supporting publication →</a></div>
+<div class="event"><div class="date">Nov 2025 · Uzbekistan</div><h3>Logistics hub expansion approved</h3><p>Expansion plans increase the capacity of a strategically located regional logistics hub.</p><a class="link" href="#">Read supporting publication →</a></div>
+<div class="event"><div class="date">Mar 2026 · Kyrgyzstan</div><h3>Cross-border railway project advances</h3><p>Project milestones indicate progress toward a new connection between regional markets.</p><a class="link" href="#">Read supporting publication →</a></div>
+<div class="event"><div class="date">Aug 2026 · Regional</div><h3>Multiple connectivity initiatives converge</h3><p>A growing number of announcements point toward a broader regional connectivity strategy.</p><a class="link" href="#">Read supporting publication →</a></div>
+</div></section>
+<section class="section"><h2 class="title">Evidence</h2><div class="evidence">
+<div class="evidencecard"><div class="top"><span>Publication · Official announcement</span><span>01</span></div><h3>Central Asian railway corridor receives new financing commitment</h3><p>Supports the assessment that cross-border railway investment is shifting toward regional connectivity.</p><div class="links"><a href="#">Read CAFRI publication →</a><a href="https://example.com/source/railway">↗ Original source</a><a href="https://example.com/source/railway.pdf">↓ Download PDF</a></div></div>
+<div class="evidencecard"><div class="top"><span>Publication · Industry report</span><span>02</span></div><h3>Regional logistics capacity expected to expand</h3><p>Provides evidence for parallel development of logistics infrastructure around emerging corridors.</p><div class="links"><a href="#">Read CAFRI publication →</a><a href="https://example.com/source/logistics">↗ Original source</a><a href="https://example.com/source/logistics.pdf">↓ Download PDF</a></div></div>
+<div class="evidencecard"><div class="top"><span>Publication · Government document</span><span>03</span></div><h3>Cross-border transport cooperation enters implementation phase</h3><p>Supports the conclusion that regional coordination is moving beyond policy statements.</p><div class="links"><a href="#">Read CAFRI publication →</a><a href="https://example.com/source/cooperation">↗ Original source</a><a href="https://example.com/source/cooperation.pdf">↓ Download PDF</a></div></div>
+</div></section>
+<section class="section" id="sources"><h2 class="title">Sources & Documents</h2><div class="sources">
+<div class="source"><div class="icon">PDF</div><div><div class="sname">Regional Transport Integration — Intelligence Case</div><div class="smeta">CAFRI Research · 28 Aug 2026 · Full analytical document</div></div><div class="sactions"><a href="https://example.com/cafri/intelligence/transport-integration.pdf">Download ↓</a></div></div>
+<div class="source"><div class="icon">WEB</div><div><div class="sname">Official railway corridor announcement</div><div class="smeta">Government source · May 2025 · Original publication</div></div><div class="sactions"><a href="https://example.com/source/railway">Open source ↗</a></div></div>
+<div class="source"><div class="icon">PDF</div><div><div class="sname">Regional Logistics Outlook 2026</div><div class="smeta">Industry report · 2026 · Supporting document</div></div><div class="sactions"><a href="https://example.com/source/logistics.pdf">Download ↓</a><a href="https://example.com/source/logistics">Source ↗</a></div></div>
+<div class="source"><div class="icon">DOC</div><div><div class="sname">Cross-border transport cooperation framework</div><div class="smeta">Government document · 2026 · Supporting evidence</div></div><div class="sactions"><a href="https://example.com/source/cooperation">Open ↗</a></div></div>
+</div></section>
+
+<section class="section">
+<h2 class="title">Related Publications</h2>
+<div class="evidence">
+<div class="evidencecard">
+<div class="top"><span>Publication · Infrastructure</span><span>28 Aug 2026</span></div>
+<h3>Central Asian railway corridor receives new financing commitment</h3>
+<p>Government and infrastructure updates relevant to the development of regional transport connectivity.</p>
+<div class="links"><a href="#">Read publication →</a><a href="https://example.com/source/railway">↗ Original source</a><a href="https://example.com/source/railway.pdf">↓ Download PDF</a></div>
+</div>
+<div class="evidencecard">
+<div class="top"><span>Publication · Logistics</span><span>21 Aug 2026</span></div>
+<h3>Regional logistics capacity expected to expand</h3>
+<p>Additional context on dry ports, logistics hubs and emerging trade corridors across Central Asia.</p>
+<div class="links"><a href="#">Read publication →</a><a href="https://example.com/source/logistics">↗ Original source</a><a href="https://example.com/source/logistics.pdf">↓ Download PDF</a></div>
+</div>
+<div class="evidencecard">
+<div class="top"><span>Publication · Trade</span><span>14 Aug 2026</span></div>
+<h3>New regional trade routes reshape freight flows</h3>
+<p>Analysis of changing freight patterns and the growing role of alternative Central Asian corridors.</p>
+<div class="links"><a href="#">Read publication →</a><a href="https://example.com/source/trade">↗ Original source</a><a href="https://example.com/source/trade.pdf">↓ Download PDF</a></div>
+</div>
+</div>
+</section>
+<section class="section"><h2 class="title">Related Intelligence</h2><div class="related"><a href="#"><div class="tag">REGIONAL</div><h3>Central Asia trade corridors diversify</h3><p>Updated 31 Aug 2026</p></a><a href="#"><div class="tag">INFRASTRUCTURE</div><h3>Dry ports become strategic logistics assets</h3><p>Updated 26 Aug 2026</p></a><a href="#"><div class="tag">INVESTMENT</div><h3>Infrastructure financing accelerates</h3><p>Updated 19 Aug 2026</p></a></div></section>
+</article>
+<aside class="side">
+<div class="sidecard"><div class="side-title">Intelligence Profile</div><div class="row"><span>Impact</span><span class="high">High</span></div><div class="row"><span>Confidence</span><span class="good">High</span></div><div class="row"><span>Status</span><span>Active</span></div><div class="row"><span>First detected</span><span>May 2025</span></div></div>
+<div class="sidecard"><div class="side-title">Countries</div><div class="chips"><span class="chip">Kyrgyzstan</span><span class="chip">Uzbekistan</span><span class="chip">Kazakhstan</span></div></div>
+<div class="sidecard"><div class="side-title">Sectors</div><div class="chips"><span class="chip">Infrastructure</span><span class="chip">Trade</span><span class="chip">Logistics</span><span class="chip">Investment</span></div></div>
+<div class="sidecard"><div class="side-title">Topics</div><div class="chips"><span class="chip">Railway</span><span class="chip">Connectivity</span><span class="chip">Transport corridors</span></div></div>
+<div class="sidecard"><div class="side-title">Source Documents</div><div class="summary"><strong>7 linked publications</strong><span>3 evidence · 4 related publications</span></div><div style="margin-top:12px"><a class="btn" style="width:100%;justify-content:center" href="#sources">View all sources</a></div></div>
+<div class="sidecard"><div class="side-title">Analyst Note</div><div class="note">The main variables to monitor are financing commitments, construction timelines, border coordination and the final configuration of regional routes.</div></div>
+</aside>
+</div></main>
+</body></html>

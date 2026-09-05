@@ -13,20 +13,21 @@ public sealed class IntelligenceController : Controller
     }
 
     [HttpGet("/intelligence")]
-    public IActionResult Index(
+    public async Task<IActionResult> Index(
         string? search,
         string? country,
         string? category,
         string? institution,
         string? dateRange,
         string? sortBy,
-        int page = 1) =>
-        View(_intelligenceContentService.GetIndexPage(search, country, category, institution, dateRange, sortBy, page));
+        int page,
+        CancellationToken cancellationToken) =>
+        View(await _intelligenceContentService.GetIndexPageAsync(search, country, category, institution, dateRange, sortBy, page == 0 ? 1 : page, cancellationToken));
 
     [HttpGet("/intelligence/{slug}")]
-    public IActionResult Details(string slug)
+    public async Task<IActionResult> Details(string slug, CancellationToken cancellationToken)
     {
-        var item = _intelligenceContentService.GetDetails(slug);
+        var item = await _intelligenceContentService.GetDetailsAsync(slug, cancellationToken);
         if (item is null)
         {
             return NotFound();

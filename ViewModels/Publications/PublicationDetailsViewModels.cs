@@ -28,6 +28,14 @@ public sealed class PublicationDetailsViewModel
 
     public string HeroImageUrl { get; set; } = string.Empty;
 
+    public string SourceName { get; init; } = string.Empty;
+
+    public string SourceUrl { get; init; } = string.Empty;
+
+    public IReadOnlyList<string> CountryLabels { get; init; } = [];
+
+    public IReadOnlyList<string> TopicLabels { get; init; } = [];
+
     public string PdfDownloadUrl { get; init; } = "#";
 
     public string ExecutiveSummaryHtml { get; init; } = string.Empty;

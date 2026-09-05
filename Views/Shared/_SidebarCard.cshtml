@@ -1,9 +1,9 @@
-@model Tuple<string, IReadOnlyList<CAFRI.ViewModels.Countries.CountrySidebarLinkItemViewModel>, string>
+@model CAFRI.ViewModels.Countries.CountrySidebarCardViewModel
 
 <section class="sidebar-card">
-    <h2 class="sidebar-card__title">@Model.Item1</h2>
+    <h2 class="sidebar-card__title">@Model.Title</h2>
     <div class="sidebar-card__items">
-        @foreach (var item in Model.Item2)
+        @foreach (var item in Model.Items)
         {
             <article class="sidebar-card__item">
                 <h3>@item.Title</h3>
@@ -11,5 +11,8 @@
             </article>
         }
     </div>
-    <a class="sidebar-card__link" href="#">@Model.Item3 <span>&rarr;</span></a>
+    @if (!string.IsNullOrWhiteSpace(Model.LinkUrl) && !string.IsNullOrWhiteSpace(Model.LinkLabel))
+    {
+        <a class="sidebar-card__link" href="@Model.LinkUrl">@Model.LinkLabel <span>&rarr;</span></a>
+    }
 </section>

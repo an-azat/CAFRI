@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const previewForms = document.querySelectorAll("[data-live-preview-form]");
   previewForms.forEach((form) => {
-    form.addEventListener("input", () => {
+    const syncPreview = () => {
       const mappings = form.querySelectorAll("[data-preview-target]");
       mappings.forEach((field) => {
         const inputName = field.getAttribute("data-preview-target");
@@ -29,6 +29,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const value = "value" in input ? input.value : "";
         preview.textContent = value.trim() || preview.getAttribute("data-preview-fallback") || "Not set";
       });
-    });
+    };
+
+    form.addEventListener("input", syncPreview);
+    // Sync once on load too, so editing an existing record shows its real
+    // title/description in the preview immediately instead of the fallback
+    // placeholders until the user types something.
+    syncPreview();
   });
 });

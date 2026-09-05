@@ -13,19 +13,20 @@ public sealed class PublicationsController : Controller
     }
 
     [HttpGet("/publications")]
-    public IActionResult Index(
+    public async Task<IActionResult> Index(
         string? query,
         string? type,
         string? country,
         string? topic,
         string? tab,
-        int page = 1) =>
-        View(_publicationContentService.GetIndexPage(query, type, country, topic, tab, page));
+        int page,
+        CancellationToken cancellationToken) =>
+        View(await _publicationContentService.GetIndexPageAsync(query, type, country, topic, tab, page == 0 ? 1 : page, cancellationToken));
 
     [HttpGet("/publications/{slug}")]
-    public IActionResult Details(string slug)
+    public async Task<IActionResult> Details(string slug, CancellationToken cancellationToken)
     {
-        var detail = _publicationContentService.GetDetails(slug);
+        var detail = await _publicationContentService.GetDetailsAsync(slug, cancellationToken);
         if (detail is null)
         {
             return Redirect("/publications");

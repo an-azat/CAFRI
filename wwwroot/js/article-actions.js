@@ -45,8 +45,26 @@
     }
   };
 
+  // localStorage can throw (Safari private mode, sandboxed iframes, enterprise
+  // policies); a single unguarded call here previously aborted the buttons.forEach
+  // loop below, leaving every action button after "save" without a click listener.
+  const readSaved = (key) => {
+    try {
+      return window.localStorage.getItem(key) === "true";
+    } catch {
+      return false;
+    }
+  };
+
+  const writeSaved = (key, value) => {
+    try {
+      window.localStorage.setItem(key, value ? "true" : "false");
+    } catch {
+    }
+  };
+
   const updateSaveButton = (button, key) => {
-    const isSaved = window.localStorage.getItem(key) === "true";
+    const isSaved = readSaved(key);
     button.classList.toggle("is-active", isSaved);
     button.textContent = isSaved ? "Saved" : "Save";
   };
@@ -108,8 +126,7 @@
       }
 
       if (action === "save") {
-        const isSaved = window.localStorage.getItem(saveKey) === "true";
-        window.localStorage.setItem(saveKey, isSaved ? "false" : "true");
+        writeSaved(saveKey, !readSaved(saveKey));
         updateSaveButton(button, saveKey);
       }
     });

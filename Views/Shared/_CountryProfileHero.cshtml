@@ -51,20 +51,30 @@
         {
             <img class="country-hero-image__photo" src="@featuredImage.ImageUrl" alt="@(string.IsNullOrWhiteSpace(featuredImage.Alt) ? Model.Country.Name : featuredImage.Alt)" data-country-hero-main />
             <div class="country-hero-image__overlay country-hero-image__overlay--gallery">
+                @if (!string.IsNullOrWhiteSpace(featuredImage.Title) || !string.IsNullOrWhiteSpace(featuredImage.Caption))
+                {
+                    <div class="country-hero-image__gallery-copy">
+                        <strong data-country-hero-title>@featuredImage.Title</strong>
+                        <p data-country-hero-caption>@featuredImage.Caption</p>
+                    </div>
+                }
                 @if (galleryThumbs.Count > 1)
                 {
                     <div class="country-hero-image__thumbs">
                         @foreach (var image in galleryThumbs)
                         {
+                            var thumbTitle = string.IsNullOrWhiteSpace(image.Title) ? $"{Model.Country.Name} gallery" : image.Title;
                             <button
                                 class="country-hero-image__thumb"
                                 type="button"
                                 data-country-hero-thumb
                                 data-image-url="@image.ImageUrl"
                                 data-image-alt="@(string.IsNullOrWhiteSpace(image.Alt) ? Model.Country.Name : image.Alt)"
-                                data-image-title="@(string.IsNullOrWhiteSpace(image.Title) ? $"{Model.Country.Name} gallery" : image.Title)"
-                                data-image-caption="@image.Caption">
-                                <img src="@image.ImageUrl" alt="@(string.IsNullOrWhiteSpace(image.Alt) ? Model.Country.Name : image.Alt)" />
+                                data-image-title="@thumbTitle"
+                                data-image-caption="@image.Caption"
+                                aria-label="@("View " + thumbTitle + " image")"
+                                aria-pressed="@(image == featuredImage ? "true" : "false")">
+                                <img src="@image.ImageUrl" alt="" />
                             </button>
                         }
                     </div>
@@ -80,7 +90,7 @@
     <aside class="country-risk-panel">
         <div class="country-risk-card">
             <div class="country-risk-card__label">Country Risk Rating</div>
-            <div class="country-risk-card__badge">@Model.RiskRating</div>
+            <div class="country-risk-card__badge country-risk-card__badge--@Model.RiskRatingTone">@Model.RiskRating</div>
             <div class="country-risk-card__meta">@Model.RiskOutlook</div>
         </div>
 

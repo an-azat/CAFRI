@@ -46,11 +46,16 @@
                     <h3>Access status</h3>
                     <dl class="access-detail-list">
                         <dt>Content access</dt>
-                        <dd>Enabled</dd>
+                        <dd>@(Model.IsProfessional ? "Enabled" : "Not enabled")</dd>
                         <dt>Admin panel</dt>
                         <dd>@(User.IsInRole("Admin") ? "Available" : "Not available")</dd>
                         <dt>Access model</dt>
-                        <dd>@Model.AccessType</dd>
+                        <dd>@(Model.AccessType?.ToString() ?? "No active grant")</dd>
+                        @if (Model.ExpiresAtUtc.HasValue)
+                        {
+                            <dt>Expires</dt>
+                            <dd>@Model.ExpiresAtUtc.Value.ToString("d MMMM yyyy")</dd>
+                        }
                     </dl>
                 </article>
             </div>

@@ -4,14 +4,15 @@ namespace CAFRI.Application.Abstractions.Services;
 
 public interface IIntelligenceContentService
 {
-    IntelligencePageViewModel GetIndexPage(
+    Task<IntelligencePageViewModel> GetIndexPageAsync(
         string? search = null,
         string? country = null,
         string? category = null,
         string? institution = null,
         string? dateRange = null,
         string? sortBy = null,
-        int page = 1);
+        int page = 1,
+        CancellationToken cancellationToken = default);
 
-    IntelligenceDetailsViewModel? GetDetails(string slug);
+    Task<IntelligenceDetailsViewModel?> GetDetailsAsync(string slug, CancellationToken cancellationToken = default);
 }

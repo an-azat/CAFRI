@@ -1,13 +1,13 @@
 @model IReadOnlyList<CAFRI.ViewModels.Publications.PublicationGalleryItemViewModel>
 
-@{
+@if (Model.Count != 0)
+{
     var galleryItems = Model
         .Where(item => !string.IsNullOrWhiteSpace(item.ImageUrl))
         .ToList();
     var featured = galleryItems.FirstOrDefault() ?? Model[0];
-}
 
-<section class="photo-gallery">
+    <section class="photo-gallery">
     <button class="photo-gallery__featured" type="button" data-gallery-open data-gallery-image="@featured.ImageUrl" data-gallery-class="@featured.VisualClassName" data-gallery-title="@featured.Title" data-gallery-caption="@featured.Caption">
         <img class="photo-gallery__featured-image" src="@featured.ImageUrl" alt="@(string.IsNullOrWhiteSpace(featured.Alt) ? featured.Title : featured.Alt)" @(string.IsNullOrWhiteSpace(featured.ImageUrl) ? "hidden" : null) />
         <div class="photo-gallery__featured-visual @featured.VisualClassName" @(!string.IsNullOrWhiteSpace(featured.ImageUrl) ? "hidden" : null)></div>
@@ -45,4 +45,5 @@
             </div>
         </div>
     </div>
-</section>
+    </section>
+}

@@ -5,7 +5,7 @@
         <div class="admin-eyebrow">Intelligence Editor</div>
         <h1 class="admin-page__title">@((Model.Id is null) ? "Create Intelligence Item" : "Edit Intelligence Item")</h1>
         <p class="admin-page__lead">
-            Control the metadata, summary text and structured detail blocks used by the public intelligence catalog and detail page.
+            Build the intelligence case from a single, simplified editorial workspace — the same database record and public detail page are still driving everything underneath.
         </p>
     </div>
 
@@ -27,80 +27,46 @@
                     <div class="alert alert-success mb-4">@successMessage</div>
                 }
 
+                <div class="admin-publication-form">
+                <div class="admin-publication-layout">
+                <div class="admin-publication-main">
+
+                <section class="admin-publication-form__card">
+                <div class="admin-form-segment__header">
+                    <div class="admin-panel__eyebrow">Intelligence</div>
+                    <h2 class="admin-form-segment__title">Basic Information</h2>
+                </div>
+
                 <div class="row g-3">
-                    <div class="col-md-4">
-                        <label asp-for="Slug" class="form-label"></label>
-                        <input asp-for="Slug" class="form-control" data-preview-target="Slug" data-preview-key="slug" />
-                    </div>
-                    <div class="col-md-4">
-                        <label asp-for="Category" class="form-label"></label>
-                        <input asp-for="Category" class="form-control" data-preview-target="Category" data-preview-key="category" />
-                    </div>
-                    <div class="col-md-2">
-                        <label asp-for="CountryCode" class="form-label"></label>
-                        <input asp-for="CountryCode" class="form-control" data-preview-target="CountryCode" data-preview-key="countryCode" />
-                    </div>
-                    <div class="col-md-2">
-                        <label asp-for="DisplayOrder" class="form-label"></label>
-                        <input asp-for="DisplayOrder" class="form-control" />
-                    </div>
-                    <div class="col-md-6">
-                        <label asp-for="CountryName" class="form-label"></label>
-                        <input asp-for="CountryName" class="form-control" data-preview-target="CountryName" data-preview-key="countryName" />
-                    </div>
-                    <div class="col-md-6">
-                        <label asp-for="PublishedLabel" class="form-label"></label>
-                        <input asp-for="PublishedLabel" class="form-control" data-preview-target="PublishedLabel" data-preview-key="publishedLabel" />
-                    </div>
                     <div class="col-12">
                         <label asp-for="Title" class="form-label"></label>
                         <input asp-for="Title" class="form-control" data-preview-target="Title" data-preview-key="title" />
                     </div>
                     <div class="col-12">
                         <label asp-for="Description" class="form-label"></label>
-                        <textarea asp-for="Description" class="form-control" rows="4" data-preview-target="Description" data-preview-key="description"></textarea>
+                        <textarea asp-for="Description" class="form-control" rows="3" data-preview-target="Description" data-preview-key="description"></textarea>
                     </div>
-                    <div class="col-12">
+                    <div class="col-md-4">
+                        <label asp-for="Category" class="form-label"></label>
+                        <input asp-for="Category" class="form-control" data-preview-target="Category" data-preview-key="category" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="CountryCode" class="form-label"></label>
+                        <input asp-for="CountryCode" class="form-control" data-preview-target="CountryCode" data-preview-key="countryCode" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="CountryName" class="form-label"></label>
+                        <input asp-for="CountryName" class="form-control" data-preview-target="CountryName" data-preview-key="countryName" />
+                    </div>
+                    <div class="col-md-6">
                         <label asp-for="Source" class="form-label"></label>
                         <input asp-for="Source" class="form-control" data-preview-target="Source" data-preview-key="source" />
                     </div>
-                    <div class="col-12">
-                        <div class="admin-media-hero-editor" data-media-hero-editor>
-                            <div class="admin-media-hero-editor__preview">
-                                <img data-media-hero-preview-image alt="Intelligence hero image" hidden />
-                                <div class="admin-media-hero-editor__placeholder" data-media-hero-preview-placeholder>No hero image</div>
-                                <div class="admin-media-hero-editor__label" data-media-hero-preview-label>No hero image uploaded yet</div>
-                            </div>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label asp-for="HeroImageUrl" class="form-label"></label>
-                                    <input asp-for="HeroImageUrl" class="form-control" readonly data-media-hero-url />
-                                </div>
-                                <div class="col-md-6">
-                                    <label asp-for="HeroImageFile" class="form-label">Hero Photo Upload</label>
-                                    <input asp-for="HeroImageFile" type="file" class="form-control" accept="image/*" data-media-hero-file />
-                                </div>
-                            </div>
-                        </div>
+                    <div class="col-md-6">
+                        <label asp-for="PublishedLabel" class="form-label"></label>
+                        <input asp-for="PublishedLabel" class="form-control" data-preview-target="PublishedLabel" data-preview-key="publishedLabel" />
                     </div>
-                    @if (!string.IsNullOrWhiteSpace(Model.HeroImageUrl))
-                    {
-                        <div class="col-12">
-                            <section class="admin-saved-media">
-                                <div class="admin-panel__eyebrow">Currently Saved Media</div>
-                                <div class="admin-saved-media__grid">
-                                    <div class="admin-saved-media__section">
-                                        <h3>Saved Hero Image</h3>
-                                        <div class="admin-saved-media__hero">
-                                            <img src="@Model.HeroImageUrl" alt="Saved intelligence hero image" />
-                                            <div class="admin-saved-media__url">@Model.HeroImageUrl</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>
-                        </div>
-                    }
-                    <div class="col-md-3 d-flex align-items-end">
+                    <div class="col-12">
                         <div class="form-check">
                             <input asp-for="IsPublished" class="form-check-input" />
                             <label asp-for="IsPublished" class="form-check-label"></label>
@@ -108,89 +74,163 @@
                     </div>
                 </div>
 
-                <hr class="my-4" />
+                <details class="admin-advanced">
+                    <summary>Advanced settings</summary>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Slug" class="form-label"></label>
+                            <input asp-for="Slug" class="form-control" data-preview-target="Slug" data-preview-key="slug" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="DisplayOrder" class="form-label"></label>
+                            <input asp-for="DisplayOrder" class="form-control" />
+                        </div>
+                    </div>
+                </details>
+                </section>
 
-                <div class="row g-3">
-                    <div class="col-12">
-                        <h2 class="h5 mb-1">Structured Detail Content</h2>
-                        <p class="text-secondary mb-0">These fields now feed the normalized detail-page tables for Intelligence.</p>
+                <section class="admin-publication-form__card">
+                    <div class="admin-form-segment__header">
+                        <div class="admin-panel__eyebrow">Narrative</div>
+                        <h2 class="admin-form-segment__title">Executive Assessment</h2>
                     </div>
 
-                    <div class="col-12">
+                    <div class="admin-summary-block">
                         <label asp-for="OverviewLead" class="form-label"></label>
                         <textarea asp-for="OverviewLead" class="form-control" rows="3"></textarea>
-                    </div>
-                    <div class="col-12">
-                        <label asp-for="OverviewBody" class="form-label"></label>
+                        <label asp-for="OverviewBody" class="form-label mt-3"></label>
                         <textarea asp-for="OverviewBody" class="form-control" rows="4"></textarea>
                     </div>
-                    <div class="col-md-6">
-                        <label asp-for="EffectiveDate" class="form-label"></label>
-                        <input asp-for="EffectiveDate" class="form-control" />
-                    </div>
-                    <div class="col-md-6">
-                        <label asp-for="AppliesTo" class="form-label"></label>
-                        <input asp-for="AppliesTo" class="form-control" />
-                    </div>
-                    <div class="col-md-6">
-                        <label asp-for="DocumentTitle" class="form-label"></label>
-                        <input asp-for="DocumentTitle" class="form-control" />
-                    </div>
-                    <div class="col-md-6">
-                        <label asp-for="DocumentSubtitle" class="form-label"></label>
-                        <input asp-for="DocumentSubtitle" class="form-control" />
-                    </div>
-                    <div class="col-md-6">
-                        <label asp-for="DocumentMeta" class="form-label"></label>
-                        <input asp-for="DocumentMeta" class="form-control" />
-                    </div>
-                    <div class="col-md-6">
-                        <label asp-for="DocumentDownloadUrl" class="form-label"></label>
-                        <input asp-for="DocumentDownloadUrl" class="form-control" />
-                    </div>
-                    <div class="col-12">
-                        <label asp-for="DocumentsText" class="form-label">Available Download Files</label>
-                        <textarea asp-for="DocumentsText" class="form-control font-monospace d-none" rows="5" data-intelligence-documents-raw></textarea>
-                        <div class="intelligence-official-editor" data-intelligence-documents-editor>
-                            <div class="intelligence-official-editor__list" data-intelligence-documents-list></div>
-                            <button type="button" class="admin-chip intelligence-official-editor__add" data-intelligence-documents-add>Add Download File</button>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="EffectiveDate" class="form-label"></label>
+                            <input asp-for="EffectiveDate" class="form-control" />
                         </div>
-                        <div class="form-text">Manage available files in the `Title | Subtitle | Meta | DownloadUrl` format. The first row becomes the main official document card.</div>
+                        <div class="col-md-6">
+                            <label asp-for="AppliesTo" class="form-label"></label>
+                            <input asp-for="AppliesTo" class="form-control" />
+                        </div>
                     </div>
-                    <div class="col-12">
-                        <label asp-for="DocumentFiles" class="form-label">Upload Download Files</label>
-                        <input asp-for="DocumentFiles" type="file" class="form-control" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt" />
-                        <span asp-validation-for="DocumentFiles" class="field-validation-error"></span>
-                        <div class="form-text">Upload multiple files and they will appear in the download selector for this intelligence item.</div>
+                </section>
+
+                <section class="admin-publication-form__card">
+                    <div class="admin-form-segment__header">
+                        <div class="admin-panel__eyebrow">Content</div>
+                        <h2 class="admin-form-segment__title">Intelligence Content</h2>
+                        <p class="admin-help-text">Add the key changes, impact cards and timeline events that make up the analytical body — use the buttons below to insert a block.</p>
                     </div>
-                    <div class="col-12">
-                        <label asp-for="KeyChangesText" class="form-label"></label>
-                        <textarea asp-for="KeyChangesText" class="form-control font-monospace d-none" rows="6" data-intelligence-keychanges-raw></textarea>
-                        <div class="intelligence-keychanges-editor" data-intelligence-keychanges-editor>
+
+                    <textarea asp-for="KeyChangesText" class="form-control font-monospace d-none" rows="6" data-intelligence-keychanges-raw></textarea>
+                    <textarea asp-for="ImpactAnalysisText" class="form-control font-monospace d-none" rows="5" data-intelligence-impact-raw></textarea>
+                    <textarea asp-for="TimelineText" class="form-control font-monospace d-none" rows="5" data-intelligence-timeline-raw></textarea>
+
+                    <div class="admin-block-toolbar">
+                        <button type="button" class="admin-chip intelligence-keychanges-editor__add" data-intelligence-keychanges-add>◆ Add Key Change</button>
+                        <button type="button" class="admin-chip intelligence-impact-editor__add" data-intelligence-impact-add>▲ Add Impact Card</button>
+                        <button type="button" class="admin-chip intelligence-timeline-editor__add" data-intelligence-timeline-add>◷ Add Timeline Item</button>
+                    </div>
+
+                    <div class="intelligence-keychanges-editor" data-intelligence-keychanges-editor>
+                        <div class="admin-block-group admin-block-group--keychanges">
+                            <span class="admin-block-group__label">Key Changes</span>
                             <div class="intelligence-keychanges-editor__list" data-intelligence-keychanges-list></div>
-                            <button type="button" class="admin-chip intelligence-keychanges-editor__add" data-intelligence-keychanges-add>Add Key Change</button>
                         </div>
-                        <div class="form-text">Manage key changes as structured cards. They will be saved into the compatible `Number | Title | Description` format automatically.</div>
                     </div>
-                    <div class="col-12">
-                        <label asp-for="ImpactAnalysisText" class="form-label"></label>
-                        <textarea asp-for="ImpactAnalysisText" class="form-control font-monospace d-none" rows="5" data-intelligence-impact-raw></textarea>
-                        <div class="intelligence-impact-editor" data-intelligence-impact-editor>
+
+                    <div class="intelligence-impact-editor" data-intelligence-impact-editor>
+                        <div class="admin-block-group admin-block-group--impact">
+                            <span class="admin-block-group__label">Impact Analysis</span>
                             <div class="intelligence-impact-editor__list" data-intelligence-impact-list></div>
-                            <button type="button" class="admin-chip intelligence-impact-editor__add" data-intelligence-impact-add>Add Impact Card</button>
                         </div>
-                        <div class="form-text">Manage impact analysis as structured cards. They will be saved into the compatible `Title | Description | Impact Label | Impact Tone` format automatically.</div>
                     </div>
-                    <div class="col-12">
-                        <label asp-for="TimelineText" class="form-label"></label>
-                        <textarea asp-for="TimelineText" class="form-control font-monospace d-none" rows="5" data-intelligence-timeline-raw></textarea>
-                        <div class="intelligence-timeline-editor" data-intelligence-timeline-editor>
+
+                    <div class="intelligence-timeline-editor" data-intelligence-timeline-editor>
+                        <div class="admin-block-group admin-block-group--timeline">
+                            <span class="admin-block-group__label">Timeline</span>
                             <div class="intelligence-timeline-editor__list" data-intelligence-timeline-list></div>
-                            <button type="button" class="admin-chip intelligence-timeline-editor__add" data-intelligence-timeline-add>Add Timeline Item</button>
                         </div>
-                        <div class="form-text">Manage timeline entries as structured rows. They will be saved into the compatible `Date | Description | Stage` format automatically.</div>
                     </div>
-                    <div class="col-12">
+                </section>
+
+                <section class="admin-publication-form__card">
+                    <div class="admin-form-segment__header">
+                        <div class="admin-panel__eyebrow">Media</div>
+                        <h2 class="admin-form-segment__title">Hero Image</h2>
+                    </div>
+
+                    <div class="admin-media-hero-editor" data-media-hero-editor>
+                        <div class="admin-media-hero-editor__preview">
+                            <img data-media-hero-preview-image alt="Intelligence hero image" hidden />
+                            <div class="admin-media-hero-editor__placeholder" data-media-hero-preview-placeholder>No hero image</div>
+                            <div class="admin-media-hero-editor__label" data-media-hero-preview-label>No hero image uploaded yet</div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="HeroImageUrl" class="form-label"></label>
+                                <input asp-for="HeroImageUrl" class="form-control" readonly data-media-hero-url />
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="HeroImageFile" class="form-label">Hero Photo Upload</label>
+                                <input asp-for="HeroImageFile" type="file" class="form-control" accept="image/*" data-media-hero-file />
+                            </div>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(Model.HeroImageUrl))
+                    {
+                        <section class="admin-saved-media admin-saved-media--compact">
+                            <div class="admin-panel__eyebrow">Currently Saved</div>
+                            <div class="admin-saved-media__section">
+                                <h3>Saved Hero Image</h3>
+                                <div class="admin-saved-media__hero">
+                                    <img src="@Model.HeroImageUrl" alt="Saved intelligence hero image" />
+                                    <div class="admin-saved-media__url">@Model.HeroImageUrl</div>
+                                </div>
+                            </div>
+                        </section>
+                    }
+                </section>
+
+                <section class="admin-publication-form__card">
+                    <div class="admin-form-segment__header">
+                        <div class="admin-panel__eyebrow">Resources</div>
+                        <h2 class="admin-form-segment__title">Documents &amp; Resources</h2>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="DocumentTitle" class="form-label"></label>
+                            <input asp-for="DocumentTitle" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="DocumentSubtitle" class="form-label"></label>
+                            <input asp-for="DocumentSubtitle" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="DocumentMeta" class="form-label"></label>
+                            <input asp-for="DocumentMeta" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="DocumentDownloadUrl" class="form-label"></label>
+                            <input asp-for="DocumentDownloadUrl" class="form-control" />
+                        </div>
+                    </div>
+
+                    <label asp-for="DocumentsText" class="form-label mt-3">Available Download Files</label>
+                    <textarea asp-for="DocumentsText" class="form-control font-monospace d-none" rows="5" data-intelligence-documents-raw></textarea>
+                    <div class="intelligence-official-editor" data-intelligence-documents-editor>
+                        <div class="intelligence-official-editor__list" data-intelligence-documents-list></div>
+                        <button type="button" class="admin-chip intelligence-official-editor__add" data-intelligence-documents-add>Add Download File</button>
+                    </div>
+                    <div class="form-text">Manage available files in the `Title | Subtitle | Meta | DownloadUrl` format. The first row becomes the main official document card.</div>
+
+                    <label asp-for="DocumentFiles" class="form-label mt-3">Upload Download Files</label>
+                    <input asp-for="DocumentFiles" type="file" class="form-control" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt" />
+                    <span asp-validation-for="DocumentFiles" class="field-validation-error"></span>
+                    <div class="form-text">Upload multiple files and they will appear in the download selector for this intelligence item.</div>
+
+                    <details class="admin-advanced">
+                        <summary>Additional metadata</summary>
                         <label asp-for="DocumentInformationText" class="form-label"></label>
                         <textarea asp-for="DocumentInformationText" class="form-control font-monospace d-none" rows="5" data-intelligence-docinfo-raw></textarea>
                         <div class="intelligence-docinfo-editor" data-intelligence-docinfo-editor>
@@ -198,44 +238,73 @@
                             <button type="button" class="admin-chip intelligence-docinfo-editor__add" data-intelligence-docinfo-add>Add Info Row</button>
                         </div>
                         <div class="form-text">Manage document information as structured label/value rows. They will be saved into the compatible `Label | Value` format automatically.</div>
+                    </details>
+                </section>
+
+                <section class="admin-publication-form__card">
+                    <div class="admin-form-segment__header">
+                        <div class="admin-panel__eyebrow">Related</div>
+                        <h2 class="admin-form-segment__title">Related Materials</h2>
                     </div>
-                    <div class="col-12">
-                        <label asp-for="KeyHighlightsText" class="form-label"></label>
-                        <textarea asp-for="KeyHighlightsText" class="form-control" rows="4"></textarea>
-                        <div class="form-text">One highlight per line.</div>
-                    </div>
-                    <div class="col-12">
-                        <label asp-for="RelatedOfficialSourcesText" class="form-label"></label>
-                        <textarea asp-for="RelatedOfficialSourcesText" class="form-control font-monospace d-none" rows="4" data-intelligence-official-raw></textarea>
+
+                    <textarea asp-for="RelatedOfficialSourcesText" class="form-control font-monospace d-none" rows="4" data-intelligence-official-raw></textarea>
+                    <div class="admin-block-group">
+                        <span class="admin-block-group__label">Related Official Sources</span>
                         <div class="intelligence-official-editor" data-intelligence-official-editor>
                             <div class="intelligence-official-editor__list" data-intelligence-official-list></div>
                             <button type="button" class="admin-chip intelligence-official-editor__add" data-intelligence-official-add>Add Official Source</button>
                         </div>
-                        <div class="form-text">Manage official sources as structured link rows. They will be saved into the compatible `Title | Subtitle | Url` format automatically.</div>
                     </div>
-                    <div class="col-12">
-                        <label asp-for="RelatedIntelligenceText" class="form-label"></label>
-                        <textarea asp-for="RelatedIntelligenceText" class="form-control font-monospace d-none" rows="4" data-intelligence-related-raw></textarea>
+
+                    <textarea asp-for="RelatedIntelligenceText" class="form-control font-monospace d-none" rows="4" data-intelligence-related-raw></textarea>
+                    <div class="admin-block-group">
+                        <span class="admin-block-group__label">Related Intelligence</span>
                         <div class="intelligence-related-editor" data-intelligence-related-editor>
                             <div class="intelligence-related-editor__list" data-intelligence-related-list></div>
                             <button type="button" class="admin-chip intelligence-related-editor__add" data-intelligence-related-add>Add Related Intelligence</button>
                         </div>
-                        <div class="form-text">Manage related intelligence links as structured rows. They will be saved into the compatible `Title | Subtitle | Url` format automatically.</div>
                     </div>
-                    <div class="col-12">
-                        <label asp-for="MonitoringStatusText" class="form-label"></label>
-                        <textarea asp-for="MonitoringStatusText" class="form-control font-monospace d-none" rows="4" data-intelligence-status-raw></textarea>
-                        <div class="intelligence-status-editor" data-intelligence-status-editor>
-                            <div class="intelligence-status-editor__list" data-intelligence-status-list></div>
-                            <button type="button" class="admin-chip intelligence-status-editor__add" data-intelligence-status-add>Add Status Row</button>
+                </section>
+
+                <section class="admin-publication-form__card">
+                    <div class="admin-form-segment__header">
+                        <div class="admin-panel__eyebrow">Status</div>
+                        <h2 class="admin-form-segment__title">Status &amp; Highlights</h2>
+                    </div>
+
+                    <label asp-for="MonitoringStatusText" class="form-label"></label>
+                    <textarea asp-for="MonitoringStatusText" class="form-control font-monospace d-none" rows="4" data-intelligence-status-raw></textarea>
+                    <div class="intelligence-status-editor" data-intelligence-status-editor>
+                        <div class="intelligence-status-editor__list" data-intelligence-status-list></div>
+                        <button type="button" class="admin-chip intelligence-status-editor__add" data-intelligence-status-add>Add Status Row</button>
+                    </div>
+                    <div class="form-text mb-3">Manage monitoring status as structured rows. They will be saved into the compatible `Label | Value | true/false` format automatically.</div>
+
+                    <label asp-for="KeyHighlightsText" class="form-label"></label>
+                    <textarea asp-for="KeyHighlightsText" class="form-control" rows="4"></textarea>
+                    <div class="form-text">One highlight per line.</div>
+                </section>
+
+                </div>
+
+                <aside class="admin-publication-aside">
+                    <section class="admin-preview-card">
+                        <div class="admin-panel__eyebrow">Live Preview</div>
+                        <div class="admin-preview-card__badge-row">
+                            <span class="admin-preview-card__badge" data-preview="category" data-preview-fallback="Category">Category</span>
                         </div>
-                        <div class="form-text">Manage monitoring status as structured rows. They will be saved into the compatible `Label | Value | true/false` format automatically.</div>
-                    </div>
-                    <div class="col-12">
-                        <label asp-for="DetailsJson" class="form-label"></label>
-                        <textarea asp-for="DetailsJson" class="form-control font-monospace" rows="8"></textarea>
-                        <div class="form-text">Legacy fallback only. Structured fields above are now the primary editing surface.</div>
-                    </div>
+                        <h3 class="admin-preview-card__title" data-preview="title" data-preview-fallback="Untitled intelligence item">Untitled intelligence item</h3>
+                        <p class="admin-preview-card__body" data-preview="description" data-preview-fallback="No description yet.">No description yet.</p>
+                    </section>
+                </aside>
+                </div>
+
+                <details class="admin-advanced admin-advanced--full">
+                    <summary>Advanced / Legacy compatibility</summary>
+                    <label asp-for="DetailsJson" class="form-label"></label>
+                    <textarea asp-for="DetailsJson" class="form-control font-monospace" rows="8"></textarea>
+                    <div class="form-text">Legacy fallback only. Structured fields above are now the primary editing surface.</div>
+                </details>
                 </div>
 
                 <div class="admin-editor-actions">

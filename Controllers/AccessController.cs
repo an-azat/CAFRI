@@ -1,3 +1,4 @@
+using CAFRI.Application.Abstractions.Services;
 using CAFRI.Domain.Access;
 using CAFRI.Infrastructure.Persistence;
 using CAFRI.ViewModels.Access;
@@ -11,10 +12,12 @@ namespace CAFRI.Controllers;
 public sealed class AccessController : Controller
 {
     private readonly AppDbContext _dbContext;
+    private readonly IProfessionalAccessService _professionalAccessService;
 
-    public AccessController(AppDbContext dbContext)
+    public AccessController(AppDbContext dbContext, IProfessionalAccessService professionalAccessService)
     {
         _dbContext = dbContext;
+        _professionalAccessService = professionalAccessService;
     }
 
     [HttpGet]
@@ -86,16 +89,18 @@ public sealed class AccessController : Controller
 
         ViewData["Title"] = "Account Dashboard";
 
+        var grant = await _professionalAccessService.GetActiveGrantAsync(userId, cancellationToken);
+
         return View(new ProfessionalDashboardViewModel
         {
             FullName = user.FullName ?? user.Email ?? "CAFRI User",
             Email = user.Email ?? string.Empty,
             Organization = user.Organization,
             Position = user.Position,
-            AccessType = AccessType.Approval,
-            GrantedAtUtc = DateTimeOffset.UtcNow,
-            ExpiresAtUtc = null,
-            IsProfessional = User.IsInRole("Admin")
+            AccessType = grant?.AccessType,
+            GrantedAtUtc = grant?.GrantedAtUtc,
+            ExpiresAtUtc = grant?.ExpiresAtUtc,
+            IsProfessional = grant is not null || User.IsInRole("Admin")
         });
     }
 }

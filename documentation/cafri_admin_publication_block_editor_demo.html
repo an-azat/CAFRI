@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CAFRI Admin — Create Publication</title>
+<style>
+:root{--bg:#f5f6f8;--white:#fff;--line:#e2e6ea;--text:#17191c;--muted:#737a83;--blue:#1d5cff;--blue2:#edf3ff;--soft:#f8f9fb;--green:#18864b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif}
+button,input,textarea,select{font:inherit}.app{display:flex;min-height:100vh}
+.sidebar{position:fixed;inset:0 auto 0 0;width:235px;background:#fff;border-right:1px solid var(--line);padding:22px 14px}.brand{font-size:21px;font-weight:800;padding:0 13px 30px}.brand i{color:var(--blue);font-style:normal}
+.nav-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#a0a6ad;padding:0 13px;margin:20px 0 8px}.nav a{display:flex;gap:11px;padding:10px 13px;border-radius:7px;color:#606770;font-size:13px;margin:2px 0}.nav a.active{background:var(--blue2);color:var(--blue);font-weight:700}
+.main{margin-left:235px;width:calc(100% - 235px)}.top{height:67px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 32px;font-size:13px;font-weight:700}.user{margin-left:auto;color:var(--muted);font-weight:400}
+.content{max-width:1280px;padding:30px 36px 70px}.head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px}.head h1{font-size:28px;letter-spacing:-.8px;margin:0 0 5px}.head p{margin:0;color:var(--muted);font-size:13px}.actions{display:flex;gap:8px}.btn{border:1px solid var(--line);background:#fff;border-radius:7px;padding:9px 15px;font-size:13px;font-weight:650;cursor:pointer}.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 315px;gap:22px}.card{background:#fff;border:1px solid var(--line);border-radius:9px;padding:22px;margin-bottom:16px}.title{font-size:14px;font-weight:750;margin-bottom:18px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.field{display:flex;flex-direction:column;gap:7px}.full{grid-column:1/-1}label{font-size:12px;font-weight:700}.hint{font-size:11px;color:var(--muted);font-weight:400}input,select{border:1px solid #d8dde2;border-radius:6px;padding:10px;font-size:13px;background:#fff;outline:none}input:focus,select:focus{border-color:#9bb5ff;box-shadow:0 0 0 3px var(--blue2)}
+.summary{border-left:4px solid var(--blue);background:#fbfcff;padding:15px;border-radius:6px}.summary textarea{width:100%;border:0;background:transparent;outline:0;resize:vertical;min-height:95px;font-size:13px;line-height:1.55}
+.editor{border:1px solid #d8dde2;border-radius:7px;overflow:hidden}.toolbar{display:flex;gap:3px;flex-wrap:wrap;padding:8px;border-bottom:1px solid var(--line);background:#fafbfc}.tool{border:0;background:#fff;border:1px solid transparent;border-radius:5px;padding:6px 9px;font-size:12px;cursor:pointer}.tool:hover{border-color:var(--line);background:#f3f5f7}.sep{width:1px;background:var(--line);margin:0 4px}.blocks{padding:15px;background:#fff}.block{border:1px solid transparent;border-radius:6px;padding:8px;margin-bottom:7px;position:relative}.block:hover{border-color:#d9dee4;background:#fcfcfd}.block-text{font-size:14px;line-height:1.65}.block-h2{font-size:21px;font-weight:750;letter-spacing:-.3px}.block-quote{border-left:3px solid #b9c0c8;padding-left:14px;color:#5e6670;font-size:14px}.block-key{background:var(--blue2);border:1px solid #d8e4ff;padding:14px}.block-key strong{display:block;font-size:11px;text-transform:uppercase;color:var(--blue);letter-spacing:.6px;margin-bottom:5px}.block-actions{display:none;position:absolute;right:6px;top:5px;background:#fff;border:1px solid var(--line);border-radius:5px}.block:hover .block-actions{display:flex}.block-actions button{border:0;background:transparent;padding:4px 7px;font-size:11px;color:var(--muted)}
+.add-block{border:1px dashed #c8cdd3;border-radius:7px;padding:12px;text-align:center;color:var(--blue);font-size:12px;font-weight:650;cursor:pointer;background:#fafbfc}
+.image-block{border:1px solid var(--line);border-radius:7px;padding:10px}.image-placeholder{height:145px;background:#f0f2f4;border-radius:5px;display:grid;place-items:center;color:var(--muted);font-size:12px}.caption{font-size:11px;color:var(--muted);margin-top:8px}
+.chart{border:1px solid var(--line);border-radius:7px;padding:14px;background:#fff}.chart-head{display:flex;justify-content:space-between;margin-bottom:13px}.chart-title{font-weight:700;font-size:13px}.chart-type{font-size:10px;color:var(--blue);background:var(--blue2);padding:4px 7px;border-radius:4px}.bars{height:120px;display:flex;align-items:flex-end;gap:13px;border-bottom:1px solid #dce0e4;padding:0 10px}.bar{width:34px;background:#b8c8e8;border-radius:3px 3px 0 0}.bar:nth-child(1){height:38%}.bar:nth-child(2){height:52%}.bar:nth-child(3){height:68%}.bar:nth-child(4){height:82%}.bar:nth-child(5){height:94%}.chart-axis{display:flex;justify-content:space-around;font-size:9px;color:var(--muted);padding-top:6px}
+.upload{border:1px dashed #c7cdd4;border-radius:7px;padding:20px;text-align:center;background:#fafbfc;color:var(--muted);font-size:12px}.upload strong{display:block;color:#444b53;margin-bottom:4px}.cover-preview{height:120px;border-radius:7px;background:linear-gradient(135deg,#dfe4ea,#f4f5f6);display:grid;place-items:center;color:#6e757d;font-size:12px;margin-bottom:10px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;border:1px solid #d8dde2;border-radius:6px;padding:7px}.tag{background:#f0f2f4;border-radius:4px;padding:5px 7px;font-size:11px}.tags input{border:0;padding:3px;min-width:80px;outline:0}.meta{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:11px 0;font-size:12px}.meta:last-child{border:0}.muted{color:var(--muted)}.status{background:#fff3df;color:#966000;border-radius:5px;padding:5px 8px;font-size:11px;font-weight:700}.resource{display:grid;grid-template-columns:1fr 100px 30px;gap:7px;margin-bottom:8px}.resource button{border:0;background:#fff0f0;color:#c93636;border-radius:5px}
+.preview{background:#fafbfc;border:1px solid var(--line);border-radius:7px;padding:15px}.preview .cat{color:var(--blue);font-size:9px;font-weight:800;text-transform:uppercase}.preview h2{font-size:17px;line-height:1.25;margin:8px 0}.preview p{font-size:11px;color:var(--muted);line-height:1.45}
+@media(max-width:950px){.sidebar{width:70px}.brand{font-size:0}.brand:first-letter{font-size:21px}.nav-label,.nav a span:last-child{display:none}.nav a{justify-content:center}.main{margin-left:70px;width:calc(100% - 70px)}.layout{grid-template-columns:1fr}}
+@media(max-width:650px){.content{padding:20px 15px}.grid{grid-template-columns:1fr}.full{grid-column:auto}.head{display:block}.actions{margin-top:15px}.top{padding:0 15px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+<div class="brand">CAF<i>RI</i></div>
+<div class="nav-label">Content</div><nav class="nav">
+<a href="#"><span>▦</span><span>Dashboard</span></a><a class="active" href="#"><span>＋</span><span>Publications</span></a><a href="#"><span>◫</span><span>Drafts</span></a><a href="#"><span>✓</span><span>Published</span></a>
+</nav>
+<div class="nav-label">Intelligence</div><nav class="nav">
+<a href="#"><span>◎</span><span>Countries</span></a><a href="#"><span>⌁</span><span>Topics</span></a><a href="#"><span>◈</span><span>Sources</span></a>
+</nav>
+<div class="nav-label">System</div><nav class="nav"><a href="#"><span>⚙</span><span>Settings</span></a></nav>
+</aside>
+
+<main class="main">
+<header class="top">Administration / Publications / Create <span class="user">Administrator</span></header>
+<section class="content">
+<div class="head"><div><h1>Create publication</h1><p>Build an intelligence publication from structured content blocks.</p></div><div class="actions"><button class="btn" onclick="saveDraft()">Save draft</button><button class="btn primary" onclick="publish()">Publish</button></div></div>
+
+<div class="layout">
+<div>
+<section class="card"><div class="title">Basic information</div><div class="grid">
+<div class="field full"><label>Title</label><input id="title" value="Kyrgyzstan and Uzbekistan Advance New Regional Railway Project" oninput="preview()"></div>
+<div class="field full"><label>Subtitle <span class="hint">Short description displayed below the title</span></label><input id="subtitle" value="The proposed railway is expected to strengthen regional connectivity and create a new trade corridor across Central Asia." oninput="preview()"></div>
+<div class="field"><label>Category</label><select><option>Infrastructure</option><option>Economy</option><option>Finance</option><option>Regulation</option><option>Trade</option></select></div>
+<div class="field"><label>Importance</label><select><option>High</option><option>Medium</option><option>Low</option></select></div>
+<div class="field"><label>Publication date</label><input type="date" value="2026-08-28"></div>
+<div class="field"><label>Reading time</label><input value="6 min read"></div>
+</div></section>
+
+<section class="card"><div class="title">Intelligence summary</div><div class="summary"><label>Executive summary</label><textarea>Kyrgyzstan and Uzbekistan are moving forward with a strategic railway initiative designed to improve freight connectivity, reduce transport bottlenecks and strengthen Central Asia's position as a regional transit hub.</textarea></div></section>
+
+<section class="card">
+<div class="title">Article body <span class="hint">Visual editor — content is stored as blocks</span></div>
+<div class="editor">
+<div class="toolbar">
+<button class="tool"><b>B</b></button><button class="tool"><i>I</i></button><button class="tool"><u>U</u></button><div class="sep"></div>
+<button class="tool">H2</button><button class="tool">H3</button><button class="tool">• List</button><button class="tool">1. List</button><div class="sep"></div>
+<button class="tool">↗ Link</button><button class="tool" onclick="addImage()">▧ Image</button><button class="tool" onclick="addChart()">◫ Chart</button><button class="tool">▤ Table</button><button class="tool">❝ Quote</button><button class="tool">◆ Key finding</button>
+</div>
+<div class="blocks" id="blocks">
+<div class="block"><div class="block-text">The development of new transport infrastructure has become a central element of economic cooperation in Central Asia. The proposed railway would connect key logistics routes and potentially provide an alternative path for regional freight.</div><div class="block-actions"><button>↑</button><button>↓</button><button>×</button></div></div>
+<div class="block"><div class="block-h2">Regional implications</div><div class="block-actions"><button>↑</button><button>↓</button><button>×</button></div></div>
+<div class="block"><div class="block-text">For Kyrgyzstan, the project could improve access to international markets while supporting investment around logistics, manufacturing and related services.</div><div class="block-actions"><button>↑</button><button>↓</button><button>×</button></div></div>
+<div class="block"><div class="block-key"><strong>Key finding</strong>The project should be assessed as part of a broader effort to integrate regional supply chains.</div><div class="block-actions"><button>↑</button><button>↓</button><button>×</button></div></div>
+<div class="block chart"><div class="chart-head"><span class="chart-title">Illustrative regional freight volume</span><span class="chart-type">BAR CHART</span></div><div class="bars"><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span></div><div class="chart-axis"><span>2022</span><span>2023</span><span>2024</span><span>2025</span><span>2026</span></div><div class="block-actions"><button>↑</button><button>↓</button><button>×</button></div></div>
+<div class="block"><div class="block-h2">What to watch</div><div class="block-actions"><button>↑</button><button>↓</button><button>×</button></div></div>
+<div class="block"><div class="block-text">Further developments will depend on financing arrangements, construction timelines, intergovernmental agreements and the final route configuration.</div><div class="block-actions"><button>↑</button><button>↓</button><button>×</button></div></div>
+<div class="add-block" onclick="addText()">＋ Add content block</div>
+</div></div>
+</section>
+
+<section class="card"><div class="title">Cover image</div><div class="cover-preview">Hero image preview</div><div class="upload"><strong>Drop image here or choose file</strong>JPG, PNG or WebP · Recommended 1400 × 800</div></section>
+
+<section class="card"><div class="title">Publication resources</div>
+<div class="resource"><input value="/publications/123/full-publication.pdf"><input value="PDF"><button>×</button></div>
+<div class="resource"><input value="https://www.reuters.com/"><input value="Article"><button>×</button></div>
+<button class="btn" onclick="addResource()">＋ Add resource</button></section>
+</div>
+
+<aside>
+<section class="card"><div class="title">Publication preview</div><div class="preview"><div class="cat">Infrastructure</div><h2 id="ptitle">Kyrgyzstan and Uzbekistan Advance New Regional Railway Project</h2><p id="psub">The proposed railway is expected to strengthen regional connectivity and create a new trade corridor across Central Asia.</p></div></section>
+
+<section class="card"><div class="title">Intelligence metadata</div>
+<div class="field" style="margin-bottom:16px"><label>Countries</label><div class="tags"><span class="tag">Kyrgyzstan ×</span><span class="tag">Uzbekistan ×</span><input placeholder="Add..."></div></div>
+<div class="field" style="margin-bottom:16px"><label>Topics</label><div class="tags"><span class="tag">Railway ×</span><span class="tag">Infrastructure ×</span><span class="tag">Trade ×</span><input placeholder="Add..."></div></div>
+<div class="field"><label>Source</label><select><option>Reuters</option><option>World Bank</option><option>ADB</option><option>National Bank</option></select></div>
+</section>
+
+<section class="card"><div class="title">Publishing</div>
+<div class="meta"><span class="muted">Status</span><span class="status">● Draft</span></div><div class="meta"><span class="muted">Visibility</span><span>Public</span></div><div class="meta"><span class="muted">Author</span><span>CAFRI Intelligence</span></div><div class="meta"><span class="muted">Homepage</span><span>Yes</span></div><div class="meta"><span class="muted">Featured</span><span>No</span></div>
+</section>
+</aside>
+</div>
+</section>
+</main>
+</div>
+<script>
+function preview(){ptitle.textContent=title.value;psub.textContent=subtitle.value}
+function saveDraft(){alert("Publication saved as draft.")}
+function publish(){alert("Publication published successfully.")}
+function addText(){let d=document.createElement("div");d.className="block";d.innerHTML='<div class="block-text" contenteditable="true">Start writing here...</div><div class="block-actions"><button>↑</button><button>↓</button><button>×</button></div>';document.getElementById("blocks").insertBefore(d,document.querySelector(".add-block"))}
+function addImage(){let d=document.createElement("div");d.className="block image-block";d.innerHTML='<div class="image-placeholder">▧ Click to upload article image</div><div class="caption" contenteditable="true">Image caption</div><div class="block-actions"><button>↑</button><button>↓</button><button>×</button></div>';document.getElementById("blocks").insertBefore(d,document.querySelector(".add-block"))}
+function addChart(){let d=document.createElement("div");d.className="block chart";d.innerHTML='<div class="chart-head"><span class="chart-title">New chart</span><span class="chart-type">CHART</span></div><div style="padding:22px;text-align:center;color:#737a83;font-size:12px">Chart configuration opens here · choose type and add data</div><div class="block-actions"><button>↑</button><button>↓</button><button>×</button></div>';document.getElementById("blocks").insertBefore(d,document.querySelector(".add-block"))}
+function addResource(){let d=document.createElement("div");d.className="resource";d.innerHTML='<input placeholder="Resource URL"><input placeholder="Type"><button onclick="this.parentElement.remove()">×</button>';document.querySelector(".resource").parentElement.appendChild(d)}
+</script>
+</body>
+</html>

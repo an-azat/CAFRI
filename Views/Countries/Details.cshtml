@@ -1,7 +1,24 @@
+@using CAFRI.ViewModels.Countries
 @model CAFRI.ViewModels.Countries.CountryProfilePageViewModel
 @{
     ViewData["Title"] = Model.Country.Name;
     ViewData["PageTheme"] = "theme-home";
+
+    var countryQuery = Uri.EscapeDataString(Model.Country.Name);
+    var latestUpdatesCard = new CountrySidebarCardViewModel
+    {
+        Title = "Latest Updates",
+        Items = Model.LatestUpdates,
+        LinkLabel = "View all updates",
+        LinkUrl = $"/intelligence?country={countryQuery}"
+    };
+    var relatedPublicationsCard = new CountrySidebarCardViewModel
+    {
+        Title = "Related Publications",
+        Items = Model.RelatedPublications,
+        LinkLabel = "View all publications",
+        LinkUrl = $"/publications?country={countryQuery}"
+    };
 }
 
 <div class="page-country-profile">
@@ -132,14 +149,13 @@
                             </tbody>
                         </table>
                     </div>
-                    <a class="table-card__link" href="#">View all banks <span>&rarr;</span></a>
                 </article>
             </section>
         </main>
 
         <aside class="country-sidebar">
-            <partial name="_SidebarCard" model='Tuple.Create("Latest Updates", Model.LatestUpdates, "View all updates")' />
-            <partial name="_SidebarCard" model='Tuple.Create("Related Publications", Model.RelatedPublications, "View all publications")' />
+            <partial name="_SidebarCard" model="latestUpdatesCard" />
+            <partial name="_SidebarCard" model="relatedPublicationsCard" />
 
             <section class="sidebar-card">
                 <h2 class="sidebar-card__title">Key Institutions</h2>
@@ -152,7 +168,6 @@
                         </article>
                     }
                 </div>
-                <a class="sidebar-card__link" href="#">View all institutions <span>&rarr;</span></a>
             </section>
         </aside>
     </div>

@@ -4,17 +4,8 @@
     ViewData["PageTheme"] = "theme-home";
 
     var countryRows = Model.Countries.Take(5).ToList();
-    var latestCards = Model.LatestIntelligence.Take(3).ToList();
-
-    string countryFlagIcon(string code) => code switch
-    {
-        "KZ" => "/uploads/img/icons8-казахстан-48.png",
-        "UZ" => "/uploads/img/icons8-узбекистан-48.png",
-        "KG" => "/uploads/img/icons8-киргизия-48.png",
-        "TJ" => "/uploads/img/icons8-таджикистан-48.png",
-        "TM" => "/uploads/img/icons8-туркменистан-циркуляр-48.png",
-        _ => string.Empty
-    };
+    var latestCards = Model.LatestIntelligence.Take(2).ToList();
+    var hasFeaturedPublication = !string.IsNullOrWhiteSpace(Model.FeaturedPublication.Title);
 }
 
 <div class="home-v2">
@@ -24,7 +15,7 @@
 
         <div class="site-container">
             <div class="home-v2-hero__content">
-               
+
                 <h1 class="home-v2-hero__title">@Model.HeroTitle</h1>
                 <p class="home-v2-hero__lead">@Model.HeroLead</p>
 
@@ -33,7 +24,7 @@
                     <a class="home-v2-button home-v2-button--ghost" href="@Model.HeroSecondaryCtaUrl">@Model.HeroSecondaryCtaLabel</a>
                 </div>
 
-               
+
             </div>
         </div>
     </section>
@@ -81,7 +72,7 @@
                     {
                         <a class="home-v2-country-row" href="@country.Url">
                             <span class="home-v2-country-row__code @country.AccentClass">
-                                <img class="home-v2-country-row__flag-icon" src="@countryFlagIcon(country.Code)" alt="@country.Name flag" />
+                                <img class="home-v2-country-row__flag-icon" src="@country.FlagIconUrl" alt="@country.Name flag" />
                             </span>
                             <div>
                                 <h3>@country.Name</h3>
@@ -128,17 +119,20 @@
         </div>
 
         <div class="home-v2-latest__grid">
-            <article class="home-v2-article-card home-v2-article-card--main">
-                <div class="home-v2-article-card__meta">
-                    <span>@(string.IsNullOrWhiteSpace(Model.FeaturedPublicationEyebrow) ? Model.FeaturedPublication.Eyebrow : Model.FeaturedPublicationEyebrow)</span>
-                    <span>@Model.FeaturedPublication.MetaItems.FirstOrDefault(x => x.Icon == "calendar")?.Label</span>
-                </div>
-                <h3>@Model.FeaturedPublication.Title</h3>
-                <p>@Model.FeaturedPublication.Description</p>
-                <a href="@Model.FeaturedPublication.ReadOnlineUrl">@Model.LatestFeaturedLinkLabel</a>
-            </article>
+            @if (hasFeaturedPublication)
+            {
+                <article class="home-v2-article-card home-v2-article-card--main">
+                    <div class="home-v2-article-card__meta">
+                        <span>@(string.IsNullOrWhiteSpace(Model.FeaturedPublicationEyebrow) ? Model.FeaturedPublication.Eyebrow : Model.FeaturedPublicationEyebrow)</span>
+                        <span>@Model.FeaturedPublication.MetaItems.FirstOrDefault(x => x.Icon == "calendar")?.Label</span>
+                    </div>
+                    <h3>@Model.FeaturedPublication.Title</h3>
+                    <p>@Model.FeaturedPublication.Description</p>
+                    <a href="@Model.FeaturedPublication.ReadOnlineUrl">@Model.LatestFeaturedLinkLabel</a>
+                </article>
+            }
 
-            @foreach (var item in latestCards.Skip(1))
+            @foreach (var item in latestCards)
             {
                 <article class="home-v2-article-card">
                     <div class="home-v2-article-card__meta">

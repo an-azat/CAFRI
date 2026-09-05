@@ -31,10 +31,10 @@
         <span class="is-active">@Model.Title</span>
     </nav>
 
-    <partial name="_PublicationHero" model="Model" />
-
     @if (showLockedPreview)
     {
+        <partial name="_PublicationHero" model="Model" />
+
         <section class="article-premium-banner article-premium-banner--detail">
             <div class="article-premium-banner__preview">
                 <span class="article-premium-banner__eyebrow">Preview Available</span>
@@ -47,19 +47,12 @@
     }
     else
     {
-        <partial name="_PublicationDetailTabs" model="Model.Tabs" />
-
         <div class="publication-layout">
             <main class="publication-main">
-                <section class="kpi-grid">
-                    @foreach (var item in Model.Kpis)
-                    {
-                        <partial name="_PublicationKpiCard" model="item" />
-                    }
-                </section>
+                <partial name="_PublicationHero" model="Model" />
 
-                <section class="article-section" id="overview" data-section>
-                    <h2>Executive Summary</h2>
+                <section class="publication-summary">
+                    <span class="publication-summary__label">Intelligence Summary</span>
                     @if (!string.IsNullOrWhiteSpace(Model.ExecutiveSummaryHtml))
                     {
                         <div class="article-richtext">
@@ -73,32 +66,57 @@
                             <p>@paragraph</p>
                         }
                     }
+                </section>
 
+                <section class="publication-facts">
+                    <div class="publication-fact">
+                        <div class="publication-fact__label">Countries</div>
+                        <div class="publication-fact__value">@(Model.CountryLabels.Count > 0 ? string.Join(" · ", Model.CountryLabels) : Model.CoverageLabel)</div>
+                    </div>
+                    <div class="publication-fact">
+                        <div class="publication-fact__label">Sector</div>
+                        <div class="publication-fact__value">@Model.PublicationType</div>
+                    </div>
+                    <div class="publication-fact">
+                        <div class="publication-fact__label">Topic</div>
+                        <div class="publication-fact__value">@Model.Topic</div>
+                    </div>
+                    <div class="publication-fact">
+                        <div class="publication-fact__label">Reading Time</div>
+                        <div class="publication-fact__value">@Model.ReadingTime</div>
+                    </div>
+                </section>
+
+                @if (Model.ExecutiveHighlights.Count > 0)
+                {
                     <ul class="publication-highlight-list">
                         @foreach (var item in Model.ExecutiveHighlights)
                         {
                             <li>@item</li>
                         }
                     </ul>
-                </section>
+                }
 
-                <section class="article-section" id="key-findings" data-section>
-                    <h2>Key Findings</h2>
-                    <div class="publication-findings-grid">
-                        @foreach (var item in Model.KeyFindings)
-                        {
-                            <article class="publication-finding-card">
-                                <span class="publication-finding-card__icon">@item.Icon</span>
-                                <h3>@item.Title</h3>
-                                <p>@item.Description</p>
-                            </article>
-                        }
-                    </div>
-                </section>
+                @if (Model.KeyFindings.Count > 0)
+                {
+                    <section class="publication-findings-inline" id="key-findings">
+                        <span class="publication-findings-inline__label">Key Findings</span>
+                        <div class="publication-findings-grid">
+                            @foreach (var item in Model.KeyFindings)
+                            {
+                                <article class="publication-finding-card">
+                                    <span class="publication-finding-card__icon">@item.Icon</span>
+                                    <h3>@item.Title</h3>
+                                    <p>@item.Description</p>
+                                </article>
+                            }
+                        </div>
+                    </section>
+                }
 
                 @foreach (var contentSection in Model.Sections)
                 {
-                    <section class="article-section" id="@contentSection.Id" data-section>
+                    <section class="article-section" id="@contentSection.Id">
                         <h2>@contentSection.Heading</h2>
 
                         @foreach (var paragraph in contentSection.Paragraphs)
@@ -127,56 +145,62 @@
                     </section>
                 }
 
-                <section class="article-section" id="data-charts" data-section>
-                    <h2>Data &amp; Charts</h2>
-                    <div class="chart-grid">
-                        @foreach (var chart in Model.Charts)
-                        {
-                            <partial name="_PublicationChartCard" model="chart" />
-                        }
-                    </div>
-                </section>
+                @if (Model.Charts.Count > 0)
+                {
+                    <section class="article-section" id="data-charts">
+                        <h2>Data &amp; Charts</h2>
+                        <div class="chart-grid">
+                            @foreach (var chart in Model.Charts)
+                            {
+                                <partial name="_PublicationChartCard" model="chart" />
+                            }
+                        </div>
+                    </section>
+                }
 
-                <section class="article-section" id="transit-table" data-section>
-                    <h2>Transit Data &amp; Performance</h2>
-                    <div class="data-table-wrapper">
-                        <table class="publication-data-table">
-                            <thead>
-                                <tr>
-                                    <th>Corridor</th>
-                                    <th>Countries Covered</th>
-                                    <th>Main Route</th>
-                                    <th>2025 Volume</th>
-                                    <th>YoY Growth</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var row in Model.TableRows)
-                                {
+                @if (Model.TableRows.Count > 0)
+                {
+                    <section class="article-section" id="transit-table">
+                        <h2>Transit Data &amp; Performance</h2>
+                        <div class="data-table-wrapper">
+                            <table class="publication-data-table">
+                                <thead>
                                     <tr>
-                                        <td>@row.Corridor</td>
-                                        <td>@row.CountriesCovered</td>
-                                        <td>@row.MainRoute</td>
-                                        <td>@row.Volume</td>
-                                        <td>@row.Growth</td>
-                                        <td>@row.Status</td>
+                                        <th>Corridor</th>
+                                        <th>Countries Covered</th>
+                                        <th>Main Route</th>
+                                        <th>2025 Volume</th>
+                                        <th>YoY Growth</th>
+                                        <th>Status</th>
                                     </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
+                                </thead>
+                                <tbody>
+                                    @foreach (var row in Model.TableRows)
+                                    {
+                                        <tr>
+                                            <td>@row.Corridor</td>
+                                            <td>@row.CountriesCovered</td>
+                                            <td>@row.MainRoute</td>
+                                            <td>@row.Volume</td>
+                                            <td>@row.Growth</td>
+                                            <td>@row.Status</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                }
 
                 @if (Model.GalleryItems.Count > 0)
                 {
-                    <section class="article-section" id="photo-gallery" data-section>
+                    <section class="article-section" id="photo-gallery">
                         <h2>Photo Gallery</h2>
                         <partial name="_PublicationPhotoGallery" model="Model.GalleryItems" />
                     </section>
                 }
 
-                <section class="article-section" id="related-documents" data-section>
+                <section class="article-section" id="related-documents">
                     <h2>Related Documents</h2>
                     <div class="document-list">
                         @foreach (var item in Model.Documents)
@@ -190,7 +214,7 @@
             <partial name="_PublicationDetailSidebar" model="Model" />
         </div>
 
-        <section class="related-publications" id="related-publications" data-section>
+        <section class="related-publications" id="related-publications">
             <div class="related-publications__header">
                 <h2>Related Publications</h2>
                 <p>Continue exploring reports, briefs and country profiles connected to this topic.</p>
@@ -244,7 +268,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script src="~/js/publication-charts.js" asp-append-version="true"></script>
     <script src="~/js/publication-gallery.js" asp-append-version="true"></script>
-    <script src="~/js/publication-toc.js" asp-append-version="true"></script>
     <script src="~/js/publication-cards.js" asp-append-version="true"></script>
     <script src="~/js/article-actions.js" asp-append-version="true"></script>
 }

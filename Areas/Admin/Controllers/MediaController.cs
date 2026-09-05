@@ -27,7 +27,7 @@ public sealed class MediaController : Controller
         ViewData["Title"] = "Media Library";
         ViewData["AdminNav"] = "media";
 
-        var files = _mediaStorage.GetStoredImages();
+        var files = await _mediaStorage.GetStoredImagesAsync();
         var usageMap = await BuildUsageMapAsync(files.Select(x => x.Url));
 
         var filteredFiles = files.AsEnumerable();
@@ -91,7 +91,7 @@ public sealed class MediaController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        _mediaStorage.DeleteImage(url);
+        await _mediaStorage.DeleteImageAsync(url);
         TempData["AdminSuccess"] = "Media file deleted.";
         return RedirectToAction(nameof(Index));
     }

@@ -4,7 +4,7 @@ namespace CAFRI.Application.Abstractions.Services;
 
 public interface ICountryContentService
 {
-    CountriesPageViewModel GetIndexPage();
+    Task<CountriesPageViewModel> GetIndexPageAsync(CancellationToken cancellationToken = default);
 
-    CountryProfilePageViewModel? GetDetails(string slug);
+    Task<CountryProfilePageViewModel?> GetDetailsAsync(string slug, CancellationToken cancellationToken = default);
 }

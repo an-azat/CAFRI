@@ -51,4 +51,46 @@ public sealed class CountryProfilePageViewModel
     public IReadOnlyList<CountryInstitutionViewModel> KeyInstitutions { get; init; } = [];
 
     public IReadOnlyList<CountryExploreLinkViewModel> ExploreLinks { get; init; } = [];
+
+    // Classifies the free-text credit-rating letter grade (S&amp;P/Fitch-style: AAA..D) into a
+    // CSS tone so the badge color reflects how strong the rating actually is, instead of a
+    // single hardcoded "positive" color for every country regardless of rating.
+    public string RiskRatingTone
+    {
+        get
+        {
+            var grade = RiskRating.TrimStart().ToUpperInvariant();
+            if (grade.StartsWith("AAA", StringComparison.Ordinal) ||
+                grade.StartsWith("AA", StringComparison.Ordinal) ||
+                (grade.StartsWith("A", StringComparison.Ordinal) && !grade.StartsWith("AB", StringComparison.Ordinal)))
+            {
+                return "positive";
+            }
+
+            if (grade.StartsWith("BBB", StringComparison.Ordinal))
+            {
+                return "positive";
+            }
+
+            if (grade.StartsWith("BB", StringComparison.Ordinal))
+            {
+                return "neutral";
+            }
+
+            if (grade.StartsWith("B", StringComparison.Ordinal))
+            {
+                return "caution";
+            }
+
+            if (grade.StartsWith("CCC", StringComparison.Ordinal) ||
+                grade.StartsWith("CC", StringComparison.Ordinal) ||
+                grade.StartsWith("C", StringComparison.Ordinal) ||
+                grade.StartsWith("D", StringComparison.Ordinal))
+            {
+                return "negative";
+            }
+
+            return "neutral";
+        }
+    }
 }

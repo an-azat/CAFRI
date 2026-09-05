@@ -13,12 +13,13 @@ public sealed class CountriesController : Controller
     }
 
     [HttpGet("/countries")]
-    public IActionResult Index() => View(_countryContentService.GetIndexPage());
+    public async Task<IActionResult> Index(CancellationToken cancellationToken) =>
+        View(await _countryContentService.GetIndexPageAsync(cancellationToken));
 
     [HttpGet("/countries/{slug}")]
-    public IActionResult Details(string slug)
+    public async Task<IActionResult> Details(string slug, CancellationToken cancellationToken)
     {
-        var model = _countryContentService.GetDetails(slug);
+        var model = await _countryContentService.GetDetailsAsync(slug, cancellationToken);
         return model is null ? NotFound() : View(model);
     }
 }

@@ -20,56 +20,57 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
         _dbContext = dbContext;
     }
 
-    public IntelligencePageViewModel GetIndexPage(
+    public async Task<IntelligencePageViewModel> GetIndexPageAsync(
         string? search = null,
         string? country = null,
         string? category = null,
         string? institution = null,
         string? dateRange = null,
         string? sortBy = null,
-        int page = 1)
+        int page = 1,
+        CancellationToken cancellationToken = default)
     {
         const int pageSize = 12;
-        var countries = _dbContext.CountryContents
+        var countries = await _dbContext.CountryContents
             .AsNoTracking()
             .Where(x => x.IsPublished)
             .OrderBy(x => x.Name)
             .Select(x => x.Name)
-            .ToList();
+            .ToListAsync(cancellationToken);
 
-        var categories = _dbContext.ContentCategories
+        var categories = await _dbContext.ContentCategories
             .AsNoTracking()
             .Where(x => x.IsPublished && (x.Scope == "Intelligence" || x.Scope == "Shared"))
             .OrderBy(x => x.DisplayOrder)
             .ThenBy(x => x.Name)
             .Select(x => x.Name)
-            .ToList();
+            .ToListAsync(cancellationToken);
 
-        var institutions = _dbContext.ContentSources
+        var institutions = await _dbContext.ContentSources
             .AsNoTracking()
             .Where(x => x.IsPublished)
             .OrderBy(x => x.SourceType)
             .Select(x => x.SourceType)
             .Distinct()
-            .ToList();
+            .ToListAsync(cancellationToken);
 
         var publishedItemsQuery = _dbContext.IntelligenceContentItems
             .AsNoTracking()
             .Where(x => x.IsPublished);
 
-        var totalPublishedItems = publishedItemsQuery.Count();
-        var coveredCountriesCount = publishedItemsQuery
+        var totalPublishedItems = await publishedItemsQuery.CountAsync(cancellationToken);
+        var coveredCountriesCount = await publishedItemsQuery
             .Select(x => x.CountryName)
             .Distinct()
-            .Count();
-        var usedCategoriesCount = publishedItemsQuery
+            .CountAsync(cancellationToken);
+        var usedCategoriesCount = await publishedItemsQuery
             .Select(x => x.Category)
             .Distinct()
-            .Count();
-        var monitoredSourcesCount = publishedItemsQuery
+            .CountAsync(cancellationToken);
+        var monitoredSourcesCount = await publishedItemsQuery
             .Select(x => x.Source)
             .Distinct()
-            .Count();
+            .CountAsync(cancellationToken);
 
         var selectedCountry = string.IsNullOrWhiteSpace(country) ? "All Countries" : country.Trim();
         var selectedCategory = string.IsNullOrWhiteSpace(category) ? "All Categories" : category.Trim();
@@ -104,11 +105,11 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
 
         if (!string.Equals(selectedInstitution, "All Institutions", StringComparison.OrdinalIgnoreCase))
         {
-            var institutionSourceNames = _dbContext.ContentSources
+            var institutionSourceNames = await _dbContext.ContentSources
                 .AsNoTracking()
                 .Where(x => x.IsPublished && x.SourceType == selectedInstitution)
                 .Select(x => x.Name)
-                .ToList();
+                .ToListAsync(cancellationToken);
 
             query = institutionSourceNames.Count == 0
                 ? query.Where(_ => false)
@@ -139,11 +140,11 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
             _ => query.OrderBy(x => x.DisplayOrder).ThenBy(x => x.Title)
         };
 
-        var totalResults = query.Count();
+        var totalResults = await query.CountAsync(cancellationToken);
         var totalPages = Math.Max(1, (int)Math.Ceiling(totalResults / (double)pageSize));
         var currentPage = Math.Min(Math.Max(page, 1), totalPages);
 
-        var items = query
+        var items = await query
             .Skip((currentPage - 1) * pageSize)
             .Take(pageSize)
             .Select(x => new IntelligenceItemCardViewModel
@@ -157,7 +158,7 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
                 Description = x.Description,
                 Source = x.Source
             })
-            .ToList();
+            .ToListAsync(cancellationToken);
 
         return new IntelligencePageViewModel
         {
@@ -201,9 +202,9 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
         };
     }
 
-    public IntelligenceDetailsViewModel? GetDetails(string slug)
+    public async Task<IntelligenceDetailsViewModel?> GetDetailsAsync(string slug, CancellationToken cancellationToken = default)
     {
-        var entity = _dbContext.IntelligenceContentItems
+        var entity = await _dbContext.IntelligenceContentItems
             .AsNoTracking()
             .Include(x => x.Sections)
             .Include(x => x.KeyChangeEntries)
@@ -214,7 +215,7 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
             .Include(x => x.RelatedLinks)
             .Include(x => x.StatusEntries)
             .Include(x => x.HighlightEntries)
-            .FirstOrDefault(x => x.IsPublished && x.Slug == slug);
+            .FirstOrDefaultAsync(x => x.IsPublished && x.Slug == slug, cancellationToken);
 
         if (entity is null)
         {
@@ -228,15 +229,31 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
 
         if (!string.IsNullOrWhiteSpace(entity.DetailsJson))
         {
-            var details = JsonSerializer.Deserialize<IntelligenceDetailsViewModel>(entity.DetailsJson, JsonOptions);
-            if (details is not null)
+            try
             {
-                return details;
+                var details = JsonSerializer.Deserialize<IntelligenceDetailsViewModel>(entity.DetailsJson, JsonOptions);
+                if (details is not null)
+                {
+                    return details;
+                }
+            }
+            catch (JsonException)
+            {
+                // Fall through to the generated fallback below.
             }
         }
 
         return BuildFallbackDetails(entity);
     }
+
+    private static string GetHeroImageClassName(string? countryCode) => countryCode switch
+    {
+        "UZ" => "article-hero-image--uzbekistan",
+        "KG" => "article-hero-image--kyrgyzstan",
+        "TJ" => "article-hero-image--tajikistan",
+        "TM" => "article-hero-image--turkmenistan",
+        _ => "article-hero-image--kazakhstan"
+    };
 
     private static bool HasStructuredDetails(Domain.Content.IntelligenceContentItem item) =>
         item.Sections.Count != 0 ||
@@ -292,14 +309,7 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
             CountryCode = item.CountryCode,
             CountryName = item.CountryName,
             ShortDescription = item.Description,
-            HeroImageClassName = item.CountryCode switch
-            {
-                "UZ" => "article-hero-image--uzbekistan",
-                "KG" => "article-hero-image--kyrgyzstan",
-                "TJ" => "article-hero-image--tajikistan",
-                "TM" => "article-hero-image--turkmenistan",
-                _ => "article-hero-image--kazakhstan"
-            },
+            HeroImageClassName = GetHeroImageClassName(item.CountryCode),
             HeroImageUrl = item.HeroImageUrl ?? string.Empty,
             PublishedDate = item.PublishedLabel,
             ReadingTime = "8 min read",
@@ -418,14 +428,7 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
             CountryCode = item.CountryCode,
             CountryName = item.CountryName,
             ShortDescription = item.Description,
-            HeroImageClassName = item.CountryCode switch
-            {
-                "UZ" => "article-hero-image--uzbekistan",
-                "KG" => "article-hero-image--kyrgyzstan",
-                "TJ" => "article-hero-image--tajikistan",
-                "TM" => "article-hero-image--turkmenistan",
-                _ => "article-hero-image--kazakhstan"
-            },
+            HeroImageClassName = GetHeroImageClassName(item.CountryCode),
             HeroImageUrl = item.HeroImageUrl ?? string.Empty,
             PublishedDate = item.PublishedLabel,
             ReadingTime = "8 min read",

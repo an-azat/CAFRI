@@ -33,7 +33,7 @@
         <div class="admin-eyebrow">Publication Editor</div>
         <h1 class="admin-page__title">@((Model.Id is null) ? "Create Publication" : "Edit Publication")</h1>
         <p class="admin-page__lead">
-            Update the database record, publication metadata and the main detail-page content from a single editorial workspace.
+            Build the publication from a single, simplified editorial workspace — the same database record and public detail page are still driving everything underneath.
         </p>
     </div>
 
@@ -50,89 +50,43 @@
                 @Html.AntiForgeryToken()
                 @Html.ValidationSummary(false, "", new { @class = "validation-summary-errors" })
 
+                @if (TempData["AdminError"] is string errorMessage)
+                {
+                    <div class="alert alert-danger mb-4">@errorMessage</div>
+                }
+
                 @if (TempData["AdminSuccess"] is string successMessage)
                 {
                     <div class="alert alert-success mb-4">@successMessage</div>
                 }
 
                 <div class="admin-publication-form">
+                <div class="admin-publication-layout">
+                <div class="admin-publication-main">
+
                 <section class="admin-publication-form__card">
                 <div class="admin-form-segment__header">
-                    <div class="admin-panel__eyebrow">Core Record</div>
-                    <h2 class="admin-form-segment__title">Identity, workflow and source metadata</h2>
+                    <div class="admin-panel__eyebrow">Publication</div>
+                    <h2 class="admin-form-segment__title">Basic Information</h2>
                 </div>
 
                 <div class="row g-3">
-                    <div class="col-md-4">
-                        <label asp-for="Slug" class="form-label"></label>
-                        <input asp-for="Slug" class="form-control" data-preview-target="Slug" data-preview-key="slug" />
+                    <div class="col-12">
+                        <label asp-for="Title" class="form-label">Title<span class="admin-required-mark">*</span></label>
+                        <input asp-for="Title" class="form-control" data-preview-target="Title" data-preview-key="title" />
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Description" class="form-label">Short Description<span class="admin-required-mark">*</span></label>
+                        <textarea asp-for="Description" class="form-control" rows="3" placeholder="1-2 sentence summary shown on publication cards and listings." data-preview-target="Description" data-preview-key="description"></textarea>
                     </div>
                     <div class="col-md-4">
-                        <label asp-for="WorkflowStatus" class="form-label"></label>
-                        <select asp-for="WorkflowStatus" class="form-select">
-                            @foreach (var status in Model.AvailableStatuses)
-                            {
-                                <option value="@status">@status</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label asp-for="Type" class="form-label"></label>
+                        <label asp-for="Type" class="form-label">Publication Type<span class="admin-required-mark">*</span></label>
                         <select asp-for="Type" class="form-select" data-preview-target="Type" data-preview-key="type">
                             @foreach (var type in Model.AvailableTypes)
                             {
                                 <option value="@type">@type</option>
                             }
                         </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label asp-for="CountryCode" class="form-label"></label>
-                        <select asp-for="CountryCode" class="form-select" data-preview-target="CountryCode" data-preview-key="countryCode">
-                            @foreach (var country in Model.AvailableCountries)
-                            {
-                                <option value="@country.Code">@country.Code</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label asp-for="DisplayOrder" class="form-label"></label>
-                        <input asp-for="DisplayOrder" class="form-control" />
-                    </div>
-                    <div class="col-md-6">
-                        <label asp-for="CountryLabel" class="form-label"></label>
-                        <input asp-for="CountryLabel" class="form-control" readonly data-preview-target="CountryLabel" data-preview-key="countryLabel" />
-                    </div>
-                    <div class="col-md-6">
-                        <label asp-for="Meta" class="form-label"></label>
-                        <input asp-for="Meta" class="form-control" readonly data-preview-target="Meta" data-preview-key="meta" />
-                    </div>
-                    <div class="col-md-4">
-                        <label asp-for="SourceName" class="form-label"></label>
-                        <input asp-for="SourceName" class="form-control" />
-                    </div>
-                    <div class="col-md-4">
-                        <label asp-for="SourceDomain" class="form-label"></label>
-                        <input asp-for="SourceDomain" class="form-control" readonly />
-                    </div>
-                    <div class="col-md-4">
-                        <label asp-for="ExternalId" class="form-label"></label>
-                        <input asp-for="ExternalId" class="form-control" />
-                    </div>
-                    <div class="col-md-8">
-                        <label asp-for="SourceUrl" class="form-label"></label>
-                        <input asp-for="SourceUrl" class="form-control" />
-                    </div>
-                    <div class="col-md-4">
-                        <label asp-for="SourcePublishedAtUtc" class="form-label"></label>
-                        <input asp-for="SourcePublishedAtUtc" class="form-control" />
-                    </div>
-                    <div class="col-12">
-                        <label asp-for="Title" class="form-label"></label>
-                        <input asp-for="Title" class="form-control" data-preview-target="Title" data-preview-key="title" />
-                    </div>
-                    <div class="col-12">
-                        <label asp-for="Description" class="form-label"></label>
-                        <textarea asp-for="Description" class="form-control" rows="4" data-preview-target="Description" data-preview-key="description"></textarea>
                     </div>
                     <div class="col-md-4">
                         <label asp-for="Topic" class="form-label"></label>
@@ -144,8 +98,13 @@
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <label asp-for="PublishedDate" class="form-label"></label>
-                        <input asp-for="PublishedDate" class="form-control" readonly />
+                        <label asp-for="CountryCode" class="form-label">Country<span class="admin-required-mark">*</span></label>
+                        <select asp-for="CountryCode" class="form-select" data-preview-target="CountryCode" data-preview-key="countryCode">
+                            @foreach (var country in Model.AvailableCountries)
+                            {
+                                <option value="@country.Code">@country.Code</option>
+                            }
+                        </select>
                     </div>
                     <div class="col-md-4">
                         <label asp-for="PublishedMonth" class="form-label"></label>
@@ -162,162 +121,71 @@
                     </div>
                     <div class="col-md-4">
                         <label asp-for="AuthorLabel" class="form-label"></label>
-                        <input asp-for="AuthorLabel" class="form-control" />
-                    </div>
-                    <div class="col-md-4">
-                        <label asp-for="DocumentLabel" class="form-label"></label>
-                        <input asp-for="DocumentLabel" class="form-control" />
-                    </div>
-                    <div class="col-md-4">
-                        <label asp-for="HeroVisualClassName" class="form-label"></label>
-                        <input asp-for="HeroVisualClassName" class="form-control" />
+                        <input asp-for="AuthorLabel" class="form-control" placeholder="e.g. CAFRI Research Team" />
                     </div>
                 </div>
-                </section>
 
-                <section class="admin-publication-form__card admin-publication-form__card--media">
-                    <div class="admin-form-segment__header">
-                        <div class="admin-panel__eyebrow">Media</div>
-                        <h2 class="admin-form-segment__title">Hero image and photo gallery</h2>
-                    </div>
-                    <div class="admin-publication-subgrid">
-                        <section class="admin-publication-subcard admin-publication-subcard--hero">
-                            <div class="admin-publication-subcard__header">
-                                <h3 class="admin-publication-subcard__title">Hero Media</h3>
-                                <p class="admin-publication-subcard__hint">Main cover image used in the publication hero block.</p>
-                            </div>
-                            <div class="admin-media-hero-editor" data-media-hero-editor>
-                                <div class="admin-media-hero-editor__preview">
-                                    <img data-media-hero-preview-image alt="Publication hero image" hidden />
-                                    <div class="admin-media-hero-editor__placeholder" data-media-hero-preview-placeholder>No hero image</div>
-                                    <div class="admin-media-hero-editor__label" data-media-hero-preview-label>No hero image uploaded yet</div>
-                                </div>
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label asp-for="HeroImageUrl" class="form-label"></label>
-                                        <input asp-for="HeroImageUrl" class="form-control" readonly data-media-hero-url />
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label asp-for="HeroImageFile" class="form-label">Hero Photo Upload</label>
-                                        <input asp-for="HeroImageFile" type="file" class="form-control" accept="image/*" data-media-hero-file />
-                                        <span asp-validation-for="HeroImageFile" class="field-validation-error"></span>
-                                    </div>
-                                </div>
-                            </div>
-                            @if (!string.IsNullOrWhiteSpace(Model.HeroImageUrl))
-                            {
-                                <section class="admin-saved-media admin-saved-media--compact">
-                                    <div class="admin-panel__eyebrow">Currently Saved</div>
-                                    <div class="admin-saved-media__section">
-                                        <h3>Saved Hero Image</h3>
-                                        <div class="admin-saved-media__hero">
-                                            <img src="@Model.HeroImageUrl" alt="Saved publication hero image" />
-                                            <div class="admin-saved-media__url">@Model.HeroImageUrl</div>
-                                        </div>
-                                    </div>
-                                </section>
-                            }
-                        </section>
-
-                        <section class="admin-publication-subcard admin-publication-subcard--gallery">
-                            <div class="admin-publication-subcard__header">
-                                <h3 class="admin-publication-subcard__title">Photo Gallery</h3>
-                                <p class="admin-publication-subcard__hint">Upload gallery images and manage captions for the article gallery block.</p>
-                            </div>
-                            <div class="row g-3">
-                                <div class="col-12">
-                                    <label asp-for="GalleryFiles" class="form-label">Photo Gallery Uploads</label>
-                                    <input asp-for="GalleryFiles" type="file" class="form-control" multiple accept="image/*" />
-                                    <span asp-validation-for="GalleryFiles" class="field-validation-error"></span>
-                                    <div class="form-text">Upload one or more photos for the publication gallery.</div>
-                                </div>
-                                <div class="col-12">
-                                    <label asp-for="GalleryText" class="form-label">Photo Gallery Items</label>
-                                    <div class="admin-media-gallery-editor" data-media-gallery-editor>
-                                        <textarea asp-for="GalleryText" class="form-control font-monospace d-none" rows="6" data-media-gallery-raw></textarea>
-                                        <div class="admin-media-gallery-editor__list" data-media-gallery-list></div>
-                                        <button type="button" class="admin-chip admin-media-gallery-editor__add" data-media-gallery-add>Add Gallery Item</button>
-                                    </div>
-                                    <div class="form-text">Manage gallery items visually. Data is still stored in the compatible `ImageUrl | Alt | Title | Caption` format.</div>
-                                </div>
-                            </div>
-                            @if (savedGalleryItems.Count != 0)
-                            {
-                                <section class="admin-saved-media admin-saved-media--compact">
-                                    <div class="admin-panel__eyebrow">Currently Saved</div>
-                                    <div class="admin-saved-media__section">
-                                        <h3>Saved Gallery</h3>
-                                        <div class="admin-saved-media__gallery">
-                                            @foreach (var item in savedGalleryItems)
-                                            {
-                                                <article class="admin-saved-media__gallery-item">
-                                                    <img src="@item.ImageUrl" alt="@(string.IsNullOrWhiteSpace(item.Alt) ? item.Title : item.Alt)" />
-                                                    <div class="admin-saved-media__gallery-copy">
-                                                        <strong>@(string.IsNullOrWhiteSpace(item.Title) ? "Untitled image" : item.Title)</strong>
-                                                        @if (!string.IsNullOrWhiteSpace(item.Caption))
-                                                        {
-                                                            <p>@item.Caption</p>
-                                                        }
-                                                        <span>@item.ImageUrl</span>
-                                                    </div>
-                                                </article>
-                                            }
-                                        </div>
-                                    </div>
-                                </section>
-                            }
-                        </section>
-
-                        <section class="admin-publication-subcard admin-publication-subcard--legacy">
-                            <div class="admin-publication-subcard__header">
-                                <h3 class="admin-publication-subcard__title">Legacy Download Link</h3>
-                                <p class="admin-publication-subcard__hint">Optional compatibility field for older publication templates.</p>
-                            </div>
-                            <label asp-for="PdfDownloadUrl" class="form-label"></label>
-                            <input asp-for="PdfDownloadUrl" class="form-control" />
-                        </section>
-                    </div>
-                </section>
-
-                <section class="admin-publication-form__card admin-publication-form__card--access">
-                    <div class="admin-form-segment__header">
-                        <div class="admin-panel__eyebrow">Taxonomy & Access</div>
-                        <h2 class="admin-form-segment__title">Coverage, categories and visibility</h2>
-                    </div>
+                <details class="admin-advanced">
+                    <summary>Advanced settings</summary>
                     <div class="row g-3">
-                    <div class="col-md-6">
-                        <label asp-for="AssignedCountriesText" class="form-label">Assigned Countries</label>
-                        <textarea asp-for="AssignedCountriesText" class="form-control" rows="4"></textarea>
-                        <div class="form-text">One country per line or comma-separated. Supports country codes, names and `Regional`.</div>
-                    </div>
-                    <div class="col-md-6">
-                        <label asp-for="AssignedCategoriesText" class="form-label">Assigned Categories</label>
-                        <textarea asp-for="AssignedCategoriesText" class="form-control" rows="4"></textarea>
-                        <div class="form-text">One category per line or comma-separated. Values are matched against CAFRI content categories.</div>
-                    </div>
-                    <div class="col-md-3 d-flex align-items-end">
-                        <div class="form-check">
-                            <input asp-for="IsPublished" class="form-check-input" />
-                            <label asp-for="IsPublished" class="form-check-label"></label>
+                        <div class="col-md-6">
+                            <label asp-for="CountryLabel" class="form-label">Country Name<span class="admin-auto-badge">auto</span></label>
+                            <input asp-for="CountryLabel" class="form-control" readonly data-preview-target="CountryLabel" data-preview-key="countryLabel" />
+                            <small class="form-text">Filled in automatically from the Country selection above.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Meta" class="form-label">Meta Summary<span class="admin-auto-badge">auto</span></label>
+                            <input asp-for="Meta" class="form-control" readonly data-preview-target="Meta" data-preview-key="meta" />
+                            <small class="form-text">Built automatically from Published Date/Month and Reading Time.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="PublishedDate" class="form-label">Published Date<span class="admin-auto-badge">auto</span></label>
+                            <input asp-for="PublishedDate" class="form-control" readonly />
+                            <small class="form-text">Derived from Published Month above.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="DocumentLabel" class="form-label"></label>
+                            <input asp-for="DocumentLabel" class="form-control" placeholder="e.g. PDF available | 1.2 MB" />
+                            <small class="form-text">Short badge shown next to the download button.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="HeroVisualClassName" class="form-label"></label>
+                            <input asp-for="HeroVisualClassName" class="form-control" placeholder="e.g. publication-hero-media--trade-corridors" />
+                            <small class="form-text">CSS class controlling the hero background pattern when no hero image is set.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="SourceName" class="form-label"></label>
+                            <input asp-for="SourceName" class="form-control" placeholder="e.g. World Bank" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="SourceUrl" class="form-label"></label>
+                            <input asp-for="SourceUrl" class="form-control" placeholder="https://example.org/original-report" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="SourceDomain" class="form-label">Source Domain<span class="admin-auto-badge">auto</span></label>
+                            <input asp-for="SourceDomain" class="form-control" readonly />
+                            <small class="form-text">Extracted automatically from Source URL.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ExternalId" class="form-label"></label>
+                            <input asp-for="ExternalId" class="form-control" placeholder="Optional import/reference ID" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="SourcePublishedAtUtc" class="form-label"></label>
+                            <input asp-for="SourcePublishedAtUtc" class="form-control" placeholder="2026-06-17T00:00:00+00:00" />
+                            <small class="form-text">ISO date/time when the original source was published. Leave blank if unknown.</small>
                         </div>
                     </div>
-                    <div class="col-md-3 d-flex align-items-end">
-                        <div class="form-check">
-                            <input asp-for="RequiresReview" class="form-check-input" />
-                            <label asp-for="RequiresReview" class="form-check-label"></label>
-                        </div>
-                    </div>
-                </div>
+                </details>
                 </section>
 
-                <section class="admin-publication-form__card admin-publication-form__card--narrative">
+                <section class="admin-publication-form__card">
                     <div class="admin-form-segment__header">
-                        <div class="admin-panel__eyebrow">Editorial Narrative</div>
-                        <h2 class="admin-form-segment__title">Summary and highlights</h2>
+                        <div class="admin-panel__eyebrow">Narrative</div>
+                        <h2 class="admin-form-segment__title">Intelligence Summary</h2>
                     </div>
-                    <div class="row g-3">
                     <input asp-for="ActionsText" type="hidden" />
-                    <div class="col-12">
+                    <div class="admin-summary-block">
                         <label asp-for="ExecutiveSummaryText" class="form-label"></label>
                         <textarea asp-for="ExecutiveSummaryText" class="form-control d-none" rows="8" data-executive-summary-raw></textarea>
                         <div class="admin-richtext-editor" data-executive-summary-editor>
@@ -348,145 +216,270 @@
                         </div>
                         <div class="form-text">Rich text editor for the Executive Summary block on the publication detail page.</div>
                     </div>
-                    <div class="col-12">
-                        <label asp-for="ExecutiveHighlightsText" class="form-label"></label>
-                        <textarea asp-for="ExecutiveHighlightsText" class="form-control" rows="4"></textarea>
-                        <div class="form-text">One highlight per line.</div>
+
+                    <label asp-for="ExecutiveHighlightsText" class="form-label"></label>
+                    <textarea asp-for="ExecutiveHighlightsText" class="form-control" rows="3"></textarea>
+                    <div class="form-text">One highlight per line.</div>
+                </section>
+
+                <section class="admin-publication-form__card">
+                    <div class="admin-form-segment__header">
+                        <div class="admin-panel__eyebrow">Content</div>
+                        <h2 class="admin-form-segment__title">Article Content</h2>
+                        <p class="admin-help-text">Add the findings, sections, charts and table rows that make up the article body — use the buttons below to insert a block.</p>
                     </div>
+
+                    <textarea asp-for="KeyFindingsText" class="form-control font-monospace d-none" rows="6" data-publication-findings-raw></textarea>
+                    <textarea asp-for="SectionsText" class="form-control font-monospace d-none" rows="8" data-publication-sections-raw></textarea>
+                    <textarea asp-for="ChartsText" class="form-control font-monospace d-none" rows="8" data-publication-charts-raw></textarea>
+                    <textarea asp-for="TableRowsText" class="form-control font-monospace d-none" rows="8" data-publication-table-raw></textarea>
+
+                    <div class="admin-block-toolbar">
+                        <button type="button" class="admin-chip publication-findings-editor__add" data-publication-findings-add>◆ Add Key Finding</button>
+                        <button type="button" class="admin-chip publication-sections-editor__add" data-publication-sections-add>H2 Add Section</button>
+                        <button type="button" class="admin-chip publication-charts-editor__add" data-publication-charts-add>◫ Add Chart</button>
+                        <button type="button" class="admin-chip publication-table-editor__add" data-publication-table-add>▤ Add Table Row</button>
+                    </div>
+
+                    <div class="publication-findings-editor" data-publication-findings-editor>
+                        <div class="admin-block-group admin-block-group--findings">
+                            <span class="admin-block-group__label">◆ Key Findings</span>
+                            <div class="publication-findings-editor__list" data-publication-findings-list></div>
+                        </div>
+                    </div>
+
+                    <div class="publication-sections-editor" data-publication-sections-editor>
+                        <div class="admin-block-group admin-block-group--sections">
+                            <span class="admin-block-group__label">H2 Sections</span>
+                            <div class="publication-sections-editor__list" data-publication-sections-list></div>
+                        </div>
+                    </div>
+
+                    <div class="publication-charts-editor" data-publication-charts-editor>
+                        <div class="admin-block-group admin-block-group--charts">
+                            <span class="admin-block-group__label">◫ Charts</span>
+                            <div class="publication-charts-editor__list" data-publication-charts-list></div>
+                        </div>
+                    </div>
+
+                    <div class="publication-table-editor" data-publication-table-editor>
+                        <div class="admin-block-group admin-block-group--table">
+                            <span class="admin-block-group__label">▤ Transit Data Table</span>
+                            <div class="publication-table-editor__list" data-publication-table-list></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="admin-publication-form__card">
+                    <div class="admin-form-segment__header">
+                        <div class="admin-panel__eyebrow">Media</div>
+                        <h2 class="admin-form-segment__title">Cover Image &amp; Gallery</h2>
+                    </div>
+
+                    <div class="admin-media-hero-editor" data-media-hero-editor>
+                        <div class="admin-media-hero-editor__preview">
+                            <img data-media-hero-preview-image alt="Publication hero image" hidden />
+                            <div class="admin-media-hero-editor__placeholder" data-media-hero-preview-placeholder>No hero image</div>
+                            <div class="admin-media-hero-editor__label" data-media-hero-preview-label>No hero image uploaded yet</div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="HeroImageUrl" class="form-label"></label>
+                                <input asp-for="HeroImageUrl" class="form-control" readonly data-media-hero-url />
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="HeroImageFile" class="form-label">Hero Photo Upload</label>
+                                <input asp-for="HeroImageFile" type="file" class="form-control" accept="image/*" data-media-hero-file />
+                                <span asp-validation-for="HeroImageFile" class="field-validation-error"></span>
+                            </div>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(Model.HeroImageUrl))
+                    {
+                        <section class="admin-saved-media admin-saved-media--compact">
+                            <div class="admin-panel__eyebrow">Currently Saved</div>
+                            <div class="admin-saved-media__section">
+                                <h3>Saved Hero Image</h3>
+                                <div class="admin-saved-media__hero">
+                                    <img src="@Model.HeroImageUrl" alt="Saved publication hero image" />
+                                    <div class="admin-saved-media__url">@Model.HeroImageUrl</div>
+                                </div>
+                            </div>
+                        </section>
+                    }
+
+                    <details class="admin-advanced">
+                        <summary>Photo Gallery (optional)</summary>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label asp-for="GalleryFiles" class="form-label">Photo Gallery Uploads</label>
+                                <input asp-for="GalleryFiles" type="file" class="form-control" multiple accept="image/*" />
+                                <span asp-validation-for="GalleryFiles" class="field-validation-error"></span>
+                                <div class="form-text">Upload one or more photos for the publication gallery.</div>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="GalleryText" class="form-label">Photo Gallery Items</label>
+                                <div class="admin-media-gallery-editor" data-media-gallery-editor>
+                                    <textarea asp-for="GalleryText" class="form-control font-monospace d-none" rows="6" data-media-gallery-raw></textarea>
+                                    <div class="admin-media-gallery-editor__list" data-media-gallery-list></div>
+                                    <button type="button" class="admin-chip admin-media-gallery-editor__add" data-media-gallery-add>Add Gallery Item</button>
+                                </div>
+                                <div class="form-text">Manage gallery items visually. Data is still stored in the compatible `ImageUrl | Alt | Title | Caption` format.</div>
+                            </div>
+                        </div>
+                        @if (savedGalleryItems.Count != 0)
+                        {
+                            <section class="admin-saved-media admin-saved-media--compact">
+                                <div class="admin-panel__eyebrow">Currently Saved</div>
+                                <div class="admin-saved-media__section">
+                                    <h3>Saved Gallery</h3>
+                                    <div class="admin-saved-media__gallery">
+                                        @foreach (var item in savedGalleryItems)
+                                        {
+                                            <article class="admin-saved-media__gallery-item">
+                                                <img src="@item.ImageUrl" alt="@(string.IsNullOrWhiteSpace(item.Alt) ? item.Title : item.Alt)" />
+                                                <div class="admin-saved-media__gallery-copy">
+                                                    <strong>@(string.IsNullOrWhiteSpace(item.Title) ? "Untitled image" : item.Title)</strong>
+                                                    @if (!string.IsNullOrWhiteSpace(item.Caption))
+                                                    {
+                                                        <p>@item.Caption</p>
+                                                    }
+                                                    <span>@item.ImageUrl</span>
+                                                </div>
+                                            </article>
+                                        }
+                                    </div>
+                                </div>
+                            </section>
+                        }
+                    </details>
+                </section>
+
+                <section class="admin-publication-form__card">
+                    <div class="admin-form-segment__header">
+                        <div class="admin-panel__eyebrow">Resources</div>
+                        <h2 class="admin-form-segment__title">Documents &amp; Resources</h2>
+                    </div>
+
+                    <label asp-for="DocumentsText" class="form-label"></label>
+                    <textarea asp-for="DocumentsText" class="form-control font-monospace d-none" rows="5" data-publication-documents-raw></textarea>
+                    <input asp-for="DocumentUploadMapText" type="hidden" data-publication-document-upload-map-raw />
+                    <div class="publication-documents-editor" data-publication-documents-editor>
+                        <div class="publication-documents-editor__list" data-publication-documents-list></div>
+                        <button type="button" class="admin-chip publication-documents-editor__add" data-publication-documents-add>Add Document</button>
+                    </div>
+                    <div class="form-text">Manage publication documents as structured items. They will be saved into the compatible `Title | Type | Meta | DownloadUrl` format automatically.</div>
+
+                    <label asp-for="DocumentFiles" class="form-label mt-3">Attached File Buffer</label>
+                    <input asp-for="DocumentFiles" type="file" class="form-control d-none" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt" data-document-upload-input />
+                    <span asp-validation-for="DocumentFiles" class="field-validation-error"></span>
+                    <div class="form-text">Each document row above can choose its own file. Use `Choose File` to attach a new document, `Replace File` to swap it, or `Clear Pending File` before saving.</div>
+
+                    <details class="admin-advanced">
+                        <summary>Additional metadata</summary>
+
+                        <label asp-for="RelatedIntelligenceText" class="form-label">Related Intelligence Links</label>
+                        <textarea asp-for="RelatedIntelligenceText" class="form-control font-monospace d-none" rows="5" data-publication-related-raw></textarea>
+                        <div class="publication-related-editor" data-publication-related-editor>
+                            <div class="publication-related-editor__list" data-publication-related-list></div>
+                            <button type="button" class="admin-chip publication-related-editor__add" data-publication-related-add>Add Related Item</button>
+                        </div>
+                        <div class="form-text mb-3">Manage related intelligence items as structured entries. They will be saved into the compatible `Title | Meta | Url` format automatically.</div>
+
+                        <label asp-for="PublicationInfoText" class="form-label">Publication Info Rows</label>
+                        <textarea asp-for="PublicationInfoText" class="form-control font-monospace d-none" rows="5" data-publication-info-raw></textarea>
+                        <div class="publication-info-editor" data-publication-info-editor>
+                            <div class="publication-info-editor__list" data-publication-info-list></div>
+                            <button type="button" class="admin-chip publication-info-editor__add" data-publication-info-add>Add Info Row</button>
+                        </div>
+                        <div class="form-text">Manage publication info as structured label/value pairs. They will be saved into the compatible `Label | Value` format automatically.</div>
+                    </details>
+                </section>
+
                 </div>
-                </section>
 
-                <section class="admin-publication-form__card admin-publication-form__card--structured">
-                    <div class="admin-form-segment__header">
-                        <div class="admin-panel__eyebrow">Structured Content</div>
-                        <h2 class="admin-form-segment__title">Findings and analytical sections</h2>
+                <aside class="admin-publication-aside">
+                    <section class="admin-preview-card">
+                        <div class="admin-panel__eyebrow">Live Preview</div>
+                        <div class="admin-preview-card__badge-row">
+                            <span class="admin-preview-card__badge" data-preview="type" data-preview-fallback="Type">Type</span>
+                        </div>
+                        <h3 class="admin-preview-card__title" data-preview="title" data-preview-fallback="Untitled publication">Untitled publication</h3>
+                        <p class="admin-preview-card__body" data-preview="description" data-preview-fallback="No description yet.">No description yet.</p>
+                    </section>
+
+                    <section class="admin-publication-form__card">
+                        <div class="admin-form-segment__header">
+                            <div class="admin-panel__eyebrow">Taxonomy</div>
+                            <h2 class="admin-form-segment__title">Countries &amp; Categories</h2>
+                        </div>
+                        <label asp-for="AssignedCountriesText" class="form-label">Assigned Countries</label>
+                        <textarea asp-for="AssignedCountriesText" class="form-control" rows="3"></textarea>
+                        <div class="form-text mb-3">One country per line or comma-separated. Supports country codes, names and `Regional`.</div>
+
+                        <label asp-for="AssignedCategoriesText" class="form-label">Assigned Categories</label>
+                        <textarea asp-for="AssignedCategoriesText" class="form-control" rows="3"></textarea>
+                        <div class="form-text">One category per line or comma-separated. Values are matched against CAFRI content categories.</div>
+                    </section>
+
+                    <section class="admin-publication-form__card">
+                        <div class="admin-form-segment__header">
+                            <div class="admin-panel__eyebrow">Workflow</div>
+                            <h2 class="admin-form-segment__title">Publishing</h2>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label asp-for="Slug" class="form-label">Slug<span class="admin-required-mark">*</span></label>
+                                <input asp-for="Slug" class="form-control" placeholder="e.g. kazakhstan-banking-review-2026" data-preview-target="Slug" data-preview-key="slug" />
+                                <small class="form-text">Used in the public URL. Lowercase, hyphen-separated, must be unique.</small>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="WorkflowStatus" class="form-label">Status<span class="admin-required-mark">*</span></label>
+                                <select asp-for="WorkflowStatus" class="form-select">
+                                    @foreach (var status in Model.AvailableStatuses)
+                                    {
+                                        <option value="@status">@status</option>
+                                    }
+                                </select>
+                                <small class="form-text">Only "Published" is visible on the public site.</small>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="DisplayOrder" class="form-label"></label>
+                                <input asp-for="DisplayOrder" class="form-control" />
+                                <small class="form-text">Lower numbers appear first in listings.</small>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check">
+                                    <input asp-for="IsPublished" class="form-check-input" />
+                                    <label asp-for="IsPublished" class="form-check-label"></label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check">
+                                    <input asp-for="RequiresReview" class="form-check-input" />
+                                    <label asp-for="RequiresReview" class="form-check-label"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </aside>
+                </div>
+
+                <details class="admin-advanced admin-advanced--full">
+                    <summary>Advanced / Legacy compatibility</summary>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="PdfDownloadUrl" class="form-label">Legacy Download Link</label>
+                            <input asp-for="PdfDownloadUrl" class="form-control" />
+                            <small class="form-text">Optional compatibility field for older publication templates.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="DetailsJson" class="form-label">Legacy JSON Fallback</label>
+                            <textarea asp-for="DetailsJson" class="form-control font-monospace" rows="6"></textarea>
+                            <small class="form-text">Existing advanced blocks are preserved, but primary editing should now happen through the structured fields above.</small>
+                        </div>
                     </div>
-                    <div class="admin-publication-subgrid admin-publication-subgrid--documents">
-                        <section class="admin-publication-subcard">
-                            <div class="admin-publication-subcard__header">
-                                <h3 class="admin-publication-subcard__title">Key Findings</h3>
-                                <p class="admin-publication-subcard__hint">Structured highlight cards shown before the long-form analysis blocks.</p>
-                            </div>
-                            <label asp-for="KeyFindingsText" class="form-label"></label>
-                            <textarea asp-for="KeyFindingsText" class="form-control font-monospace d-none" rows="6" data-publication-findings-raw></textarea>
-                            <div class="publication-findings-editor" data-publication-findings-editor>
-                                <div class="publication-findings-editor__list" data-publication-findings-list></div>
-                                <button type="button" class="admin-chip publication-findings-editor__add" data-publication-findings-add>Add Key Finding</button>
-                            </div>
-                            <div class="form-text">Manage key findings as structured cards. They will be saved into the compatible `Icon | Title | Description` format automatically.</div>
-                        </section>
-
-                        <section class="admin-publication-subcard admin-publication-subcard--wide">
-                            <div class="admin-publication-subcard__header">
-                                <h3 class="admin-publication-subcard__title">Analytical Sections</h3>
-                                <p class="admin-publication-subcard__hint">Long-form article sections, paragraphs, bullet points and optional callout blocks.</p>
-                            </div>
-                            <label asp-for="SectionsText" class="form-label"></label>
-                            <textarea asp-for="SectionsText" class="form-control font-monospace d-none" rows="8" data-publication-sections-raw></textarea>
-                            <div class="publication-sections-editor" data-publication-sections-editor>
-                                <div class="publication-sections-editor__list" data-publication-sections-list></div>
-                                <button type="button" class="admin-chip publication-sections-editor__add" data-publication-sections-add>Add Section</button>
-                            </div>
-                            <div class="form-text">Manage article sections as structured blocks. Paragraphs and bullet points accept one item per line and will be saved into the compatible pipe format automatically.</div>
-                        </section>
-
-                        <section class="admin-publication-subcard admin-publication-subcard--wide">
-                            <div class="admin-publication-subcard__header">
-                                <h3 class="admin-publication-subcard__title">Charts</h3>
-                                <p class="admin-publication-subcard__hint">Configure chart cards for the `Data & Charts` section. Series are entered visually and saved into `DetailsJson`.</p>
-                            </div>
-                            <label asp-for="ChartsText" class="form-label"></label>
-                            <textarea asp-for="ChartsText" class="form-control font-monospace d-none" rows="8" data-publication-charts-raw></textarea>
-                            <div class="publication-charts-editor" data-publication-charts-editor>
-                                <div class="publication-charts-editor__list" data-publication-charts-list></div>
-                                <button type="button" class="admin-chip publication-charts-editor__add" data-publication-charts-add>Add Chart</button>
-                            </div>
-                            <div class="form-text">Each chart supports title, subtitle, type, suffix, labels, and one or more data series.</div>
-                        </section>
-
-                        <section class="admin-publication-subcard admin-publication-subcard--wide">
-                            <div class="admin-publication-subcard__header">
-                                <h3 class="admin-publication-subcard__title">Transit Data Table</h3>
-                                <p class="admin-publication-subcard__hint">Rows for the `Transit Data & Performance` table under the charts block.</p>
-                            </div>
-                            <label asp-for="TableRowsText" class="form-label"></label>
-                            <textarea asp-for="TableRowsText" class="form-control font-monospace d-none" rows="8" data-publication-table-raw></textarea>
-                            <div class="publication-table-editor" data-publication-table-editor>
-                                <div class="publication-table-editor__list" data-publication-table-list></div>
-                                <button type="button" class="admin-chip publication-table-editor__add" data-publication-table-add>Add Table Row</button>
-                            </div>
-                            <div class="form-text">Manage corridor rows visually. They will be saved into the compatible `Corridor | Countries | Route | Volume | Growth | Status` format.</div>
-                        </section>
-                    </div>
-                </section>
-
-                <section class="admin-publication-form__card admin-publication-form__card--documents">
-                    <div class="admin-form-segment__header">
-                        <div class="admin-panel__eyebrow">Documents</div>
-                        <h2 class="admin-form-segment__title">Download formats, document library and related links</h2>
-                    </div>
-                    <div class="admin-publication-subgrid admin-publication-subgrid--documents">
-                        <section class="admin-publication-subcard admin-publication-subcard--documents">
-                            <div class="admin-publication-subcard__header">
-                                <h3 class="admin-publication-subcard__title">Download Files</h3>
-                                <p class="admin-publication-subcard__hint">Configure the files shown in the download modal and upload supported formats.</p>
-                            </div>
-                            <label asp-for="DocumentsText" class="form-label"></label>
-                            <textarea asp-for="DocumentsText" class="form-control font-monospace d-none" rows="5" data-publication-documents-raw></textarea>
-                            <input asp-for="DocumentUploadMapText" type="hidden" data-publication-document-upload-map-raw />
-                            <div class="publication-documents-editor" data-publication-documents-editor>
-                                <div class="publication-documents-editor__list" data-publication-documents-list></div>
-                                <button type="button" class="admin-chip publication-documents-editor__add" data-publication-documents-add>Add Document</button>
-                            </div>
-                            <div class="form-text">Manage publication documents as structured items. They will be saved into the compatible `Title | Type | Meta | DownloadUrl` format automatically.</div>
-
-                            <div class="admin-publication-subcard__divider"></div>
-
-                            <label asp-for="DocumentFiles" class="form-label">Attached File Buffer</label>
-                            <input asp-for="DocumentFiles" type="file" class="form-control d-none" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt" data-document-upload-input />
-                            <span asp-validation-for="DocumentFiles" class="field-validation-error"></span>
-                            <div class="form-text">Each document row above can choose its own file. Use `Choose File` to attach a new document, `Replace File` to swap it, or `Clear Pending File` before saving.</div>
-                        </section>
-
-                        <section class="admin-publication-subcard admin-publication-subcard--related">
-                            <div class="admin-publication-subcard__header">
-                                <h3 class="admin-publication-subcard__title">Related Intelligence</h3>
-                                <p class="admin-publication-subcard__hint">Attach related analytical materials that should be shown on the detail page.</p>
-                            </div>
-                            <label asp-for="RelatedIntelligenceText" class="form-label"></label>
-                            <textarea asp-for="RelatedIntelligenceText" class="form-control font-monospace d-none" rows="5" data-publication-related-raw></textarea>
-                            <div class="publication-related-editor" data-publication-related-editor>
-                                <div class="publication-related-editor__list" data-publication-related-list></div>
-                                <button type="button" class="admin-chip publication-related-editor__add" data-publication-related-add>Add Related Item</button>
-                            </div>
-                            <div class="form-text">Manage related intelligence items as structured entries. They will be saved into the compatible `Title | Meta | Url` format automatically.</div>
-                        </section>
-
-                        <section class="admin-publication-subcard admin-publication-subcard--info">
-                            <div class="admin-publication-subcard__header">
-                                <h3 class="admin-publication-subcard__title">Publication Info</h3>
-                                <p class="admin-publication-subcard__hint">Short label/value rows for metadata panels on the public detail page.</p>
-                            </div>
-                            <label asp-for="PublicationInfoText" class="form-label"></label>
-                            <textarea asp-for="PublicationInfoText" class="form-control font-monospace d-none" rows="5" data-publication-info-raw></textarea>
-                            <div class="publication-info-editor" data-publication-info-editor>
-                                <div class="publication-info-editor__list" data-publication-info-list></div>
-                                <button type="button" class="admin-chip publication-info-editor__add" data-publication-info-add>Add Info Row</button>
-                            </div>
-                            <div class="form-text">Manage publication info as structured label/value pairs. They will be saved into the compatible `Label | Value` format automatically.</div>
-                        </section>
-
-                        <section class="admin-publication-subcard admin-publication-subcard--legacy">
-                            <div class="admin-publication-subcard__header">
-                                <h3 class="admin-publication-subcard__title">Legacy JSON Fallback</h3>
-                                <p class="admin-publication-subcard__hint">Advanced compatibility block. Use only when a page still relies on older JSON structures.</p>
-                            </div>
-                            <label asp-for="DetailsJson" class="form-label"></label>
-                            <textarea asp-for="DetailsJson" class="form-control font-monospace" rows="8"></textarea>
-                            <div class="form-text">Existing advanced blocks are preserved, but primary editing should now happen through the structured fields above.</div>
-                        </section>
-                    </div>
-                </section>
+                </details>
                 </div>
 
                 <div class="admin-editor-actions">
@@ -503,6 +496,13 @@
     <script src="~/js/admin-media-editors.js" asp-append-version="true"></script>
     <script>
         (() => {
+            const escapeValue = (value) =>
+                String(value ?? "")
+                    .replace(/&/g, "&amp;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;");
+
             const countryCode = document.getElementById("CountryCode");
             const countryLabel = document.getElementById("CountryLabel");
             const publishedMonth = document.getElementById("PublishedMonth");
@@ -692,13 +692,6 @@
             };
 
             const buildDocumentRow = (item = {}) => {
-                const escapeValue = (value) =>
-                    String(value ?? "")
-                        .replace(/&/g, "&amp;")
-                        .replace(/"/g, "&quot;")
-                        .replace(/</g, "&lt;")
-                        .replace(/>/g, "&gt;");
-
                 const row = document.createElement("div");
                 row.className = "publication-document-row";
                 row.setAttribute("data-document-row", "");
@@ -845,13 +838,6 @@
             };
 
             const buildRelatedRow = (item = {}) => {
-                const escapeValue = (value) =>
-                    String(value ?? "")
-                        .replace(/&/g, "&amp;")
-                        .replace(/"/g, "&quot;")
-                        .replace(/</g, "&lt;")
-                        .replace(/>/g, "&gt;");
-
                 const row = document.createElement("div");
                 row.className = "publication-related-row";
                 row.setAttribute("data-related-row", "");
@@ -947,13 +933,6 @@
             };
 
             const buildInfoRow = (item = {}) => {
-                const escapeValue = (value) =>
-                    String(value ?? "")
-                        .replace(/&/g, "&amp;")
-                        .replace(/"/g, "&quot;")
-                        .replace(/</g, "&lt;")
-                        .replace(/>/g, "&gt;");
-
                 const row = document.createElement("div");
                 row.className = "publication-info-row";
                 row.setAttribute("data-info-row", "");
@@ -1047,13 +1026,6 @@
             };
 
             const buildFindingRow = (item = {}) => {
-                const escapeValue = (value) =>
-                    String(value ?? "")
-                        .replace(/&/g, "&amp;")
-                        .replace(/"/g, "&quot;")
-                        .replace(/</g, "&lt;")
-                        .replace(/>/g, "&gt;");
-
                 const row = document.createElement("div");
                 row.className = "publication-finding-row";
                 row.setAttribute("data-finding-row", "");
@@ -1169,13 +1141,6 @@
             };
 
             const buildSectionRow = (item = {}) => {
-                const escapeValue = (value) =>
-                    String(value ?? "")
-                        .replace(/&/g, "&amp;")
-                        .replace(/"/g, "&quot;")
-                        .replace(/</g, "&lt;")
-                        .replace(/>/g, "&gt;");
-
                 const row = document.createElement("div");
                 row.className = "publication-section-row";
                 row.setAttribute("data-section-row", "");
@@ -1334,13 +1299,6 @@
             };
 
             const buildChartRow = (item = {}) => {
-                const escapeValue = (value) =>
-                    String(value ?? "")
-                        .replace(/&/g, "&amp;")
-                        .replace(/"/g, "&quot;")
-                        .replace(/</g, "&lt;")
-                        .replace(/>/g, "&gt;");
-
                 const row = document.createElement("div");
                 row.className = "publication-chart-row";
                 row.setAttribute("data-chart-row", "");
@@ -1464,13 +1422,6 @@
             };
 
             const buildTableRow = (item = {}) => {
-                const escapeValue = (value) =>
-                    String(value ?? "")
-                        .replace(/&/g, "&amp;")
-                        .replace(/"/g, "&quot;")
-                        .replace(/</g, "&lt;")
-                        .replace(/>/g, "&gt;");
-
                 const row = document.createElement("div");
                 row.className = "publication-table-row";
                 row.setAttribute("data-table-row", "");
@@ -1559,7 +1510,22 @@
             };
 
             const initExecutiveSummaryEditor = () => {
-                if (!summaryRaw || !summarySurface || !summaryEditor || typeof Quill === "undefined") {
+                if (!summaryRaw || !summarySurface || !summaryEditor) {
+                    return;
+                }
+
+                if (typeof Quill === "undefined") {
+                    // Quill failed to load from the CDN — fall back to a plain editable
+                    // surface so edits still reach the hidden field on submit instead of
+                    // silently being dropped.
+                    summarySurface.contentEditable = "true";
+                    summarySurface.addEventListener("input", syncExecutiveSummary);
+                    summaryRaw.form?.addEventListener("submit", syncExecutiveSummary);
+
+                    const warning = document.createElement("div");
+                    warning.className = "form-text text-warning";
+                    warning.textContent = "Rich text toolbar failed to load. Editing in plain fallback mode — formatting buttons are unavailable.";
+                    summaryEditor.insertAdjacentElement("afterend", warning);
                     return;
                 }
 

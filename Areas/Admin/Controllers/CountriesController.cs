@@ -233,7 +233,7 @@ public sealed class CountriesController : Controller
 
             if (!stillUsed)
             {
-                _mediaStorage.DeleteImage(url);
+                await _mediaStorage.DeleteImageAsync(url);
             }
         }
     }

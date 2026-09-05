@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAFRI — Publication</title>
+<style>
+:root{
+  --bg:#f7f8fa;--surface:#fff;--surface-soft:#f1f3f5;--border:#e4e7eb;
+  --text:#17191c;--muted:#6f767e;--accent:#1d5cff;--accent-soft:#edf3ff;
+  --green:#18864b;--orange:#d97706;--shadow:0 8px 30px rgba(20,25,30,.06);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif;line-height:1.55}
+a{color:inherit;text-decoration:none}
+.container{width:min(1180px,calc(100% - 48px));margin:auto}
+header{height:72px;background:rgba(255,255,255,.94);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.nav{height:72px;display:flex;align-items:center;gap:42px}
+.logo{font-weight:800;font-size:21px;letter-spacing:-.7px}
+.logo span{color:var(--accent)}
+.menu{display:flex;gap:28px;font-size:14px;color:#555d66}
+.menu a:first-child{color:var(--text);font-weight:600}
+.search{margin-left:auto;border:1px solid var(--border);background:#fafbfc;border-radius:9px;padding:9px 14px;color:var(--muted);font-size:13px}
+main{padding:34px 0 70px}
+.breadcrumbs{font-size:13px;color:var(--muted);margin-bottom:30px}
+.breadcrumbs span{margin:0 7px;color:#a1a7ad}
+.layout{display:grid;grid-template-columns:minmax(0,790px) 300px;gap:52px}
+.badge{display:inline-flex;padding:6px 10px;border-radius:6px;background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+h1{font-size:43px;line-height:1.1;letter-spacing:-1.5px;margin:17px 0 13px}
+.subtitle{font-size:18px;color:var(--muted);max-width:740px;margin-bottom:20px}
+.meta{display:flex;gap:20px;color:var(--muted);font-size:13px;margin-bottom:28px}
+.hero{width:100%;height:360px;object-fit:cover;border-radius:12px;display:block}
+.summary{margin:30px 0;background:#fff;border:1px solid var(--border);border-left:4px solid var(--accent);padding:24px 26px;border-radius:9px;box-shadow:var(--shadow)}
+.summary-title{font-size:12px;text-transform:uppercase;letter-spacing:.7px;font-weight:800;color:var(--accent);margin-bottom:8px}
+.summary p{margin:0;font-size:16px}
+.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:28px 0 36px}
+.fact{background:#fff;border:1px solid var(--border);border-radius:9px;padding:16px}
+.fact-label{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.5px}
+.fact-value{font-size:14px;font-weight:650;margin-top:6px}
+.article p{font-size:16px;margin:0 0 20px}
+.article h2{font-size:25px;letter-spacing:-.5px;margin:38px 0 13px}
+.article ul{padding-left:21px;margin-top:0}
+.article li{margin:8px 0}
+.resources{margin-top:42px;padding-top:30px;border-top:1px solid var(--border)}
+.resources-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;margin-bottom:13px}
+.resource{display:grid;grid-template-columns:42px 1fr auto;align-items:center;gap:15px;background:#fff;border:1px solid var(--border);padding:16px 18px;border-radius:9px;margin-bottom:10px;transition:.15s}
+.resource:hover{border-color:#c5ceda;transform:translateY(-1px)}
+.icon{width:42px;height:42px;border-radius:8px;background:var(--surface-soft);display:grid;place-items:center;font-size:18px}
+.resource-name{font-weight:700;font-size:14px}
+.resource-description{font-size:12px;color:var(--muted);margin-top:2px}
+.resource-action{font-size:13px;color:var(--accent);font-weight:650}
+.sidebar{position:relative}
+.side-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:14px}
+.side-title{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);font-weight:800;margin-bottom:13px}
+.source-name{font-weight:750;font-size:16px}
+.source-type{font-size:12px;color:var(--muted);margin:3px 0 15px}
+.source-link{font-size:13px;color:var(--accent);font-weight:650}
+.tags{display:flex;flex-wrap:wrap;gap:7px}
+.tag{padding:5px 8px;background:var(--surface-soft);border-radius:5px;font-size:12px}
+.importance{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:650}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--orange)}
+.related{margin-top:55px}
+.related h2{font-size:24px;letter-spacing:-.5px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px}
+.card-cat{font-size:10px;color:var(--accent);font-weight:800;text-transform:uppercase}
+.card h3{font-size:15px;line-height:1.35;margin:9px 0 10px}
+.card-date{font-size:11px;color:var(--muted)}
+footer{border-top:1px solid var(--border);padding:30px 0;color:var(--muted);font-size:12px}
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}.sidebar{display:grid;grid-template-columns:1fr 1fr;gap:12px}.side-card{margin:0}
+  .facts{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:650px){
+  .container{width:min(100% - 28px,1180px)}.menu{display:none}.search{display:none}
+  h1{font-size:32px}.hero{height:240px}.facts,.cards,.sidebar{grid-template-columns:1fr}
+  .resource{grid-template-columns:42px 1fr}.resource-action{grid-column:2}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="container nav">
+    <div class="logo">CAF<span>RI</span></div>
+    <nav class="menu">
+      <a href="#">Intelligence</a><a href="#">Map</a><a href="#">Publications</a><a href="#">Countries</a>
+    </nav>
+    <div class="search">⌕ &nbsp; Search intelligence</div>
+  </div>
+</header>
+
+<main class="container">
+  <div class="breadcrumbs">Publications <span>/</span> Economy <span>/</span> Kyrgyzstan</div>
+
+  <div class="layout">
+    <article>
+      <div class="badge">Infrastructure</div>
+      <h1>Kyrgyzstan and Uzbekistan Advance New Regional Railway Project</h1>
+      <div class="subtitle">The proposed railway is expected to strengthen regional connectivity and create a new trade corridor across Central Asia.</div>
+      <div class="meta"><span>28 August 2026</span><span>•</span><span>6 min read</span><span>•</span><span>CAFRI Intelligence</span></div>
+
+      <img class="hero" src="https://images.unsplash.com/photo-1474487548417-781cb71495f3?auto=format&fit=crop&w=1400&q=80" alt="Railway">
+
+      <section class="summary">
+        <div class="summary-title">Intelligence Summary</div>
+        <p>Kyrgyzstan and Uzbekistan are moving forward with a strategic railway initiative designed to improve freight connectivity, reduce transport bottlenecks and strengthen Central Asia's position as a regional transit hub.</p>
+      </section>
+
+      <section class="facts">
+        <div class="fact"><div class="fact-label">Countries</div><div class="fact-value">Kyrgyzstan · Uzbekistan</div></div>
+        <div class="fact"><div class="fact-label">Sector</div><div class="fact-value">Infrastructure</div></div>
+        <div class="fact"><div class="fact-label">Topic</div><div class="fact-value">Regional connectivity</div></div>
+        <div class="fact"><div class="fact-label">Importance</div><div class="fact-value">High</div></div>
+      </section>
+
+      <div class="article">
+        <p>The development of new transport infrastructure has become a central element of economic cooperation in Central Asia. The proposed railway would connect key logistics routes and potentially provide an alternative path for regional freight.</p>
+        <p>For Kyrgyzstan, the project could improve access to international markets while supporting investment around logistics, manufacturing and related services. Uzbekistan is also expected to benefit from stronger links to eastern and southern trade routes.</p>
+
+        <h2>Regional implications</h2>
+        <p>The project should be assessed not only as a transport initiative but also as part of a broader effort to integrate regional supply chains. Improved rail connectivity can lower transit friction and make cross-border trade more predictable.</p>
+        <ul>
+          <li>Potential reduction in regional freight transit times.</li>
+          <li>Improved access to logistics infrastructure.</li>
+          <li>New opportunities for cross-border investment.</li>
+          <li>Greater integration of Central Asian trade corridors.</li>
+        </ul>
+
+        <h2>What to watch</h2>
+        <p>Further developments will depend on financing arrangements, construction timelines, intergovernmental agreements and the final route configuration.</p>
+      </div>
+
+      <section class="resources">
+        <div class="resources-title">Publication resources</div>
+
+        <a class="resource" href="/publications/123/full-publication.pdf" download>
+          <div class="icon">↓</div>
+          <div>
+            <div class="resource-name">Download full publication</div>
+            <div class="resource-description">CAFRI publication · PDF · 2.4 MB</div>
+          </div>
+          <div class="resource-action">Download PDF →</div>
+        </a>
+
+        <a class="resource" href="https://www.reuters.com/" target="_blank" rel="noopener noreferrer">
+          <div class="icon">↗</div>
+          <div>
+            <div class="resource-name">Read original article</div>
+            <div class="resource-description">Reuters · Original media source</div>
+          </div>
+          <div class="resource-action">Open source →</div>
+        </a>
+      </section>
+    </article>
+
+    <aside class="sidebar">
+      <div class="side-card">
+        <div class="side-title">Original source</div>
+        <div class="source-name">Reuters</div>
+        <div class="source-type">International media</div>
+        <a class="source-link" href="https://www.reuters.com/" target="_blank" rel="noopener noreferrer">Open original article →</a>
+      </div>
+
+      <div class="side-card">
+        <div class="side-title">Intelligence</div>
+        <div class="importance"><span class="dot"></span> High importance</div>
+      </div>
+
+      <div class="side-card">
+        <div class="side-title">Countries</div>
+        <div class="tags"><span class="tag">Kyrgyzstan</span><span class="tag">Uzbekistan</span></div>
+      </div>
+
+      <div class="side-card">
+        <div class="side-title">Topics</div>
+        <div class="tags"><span class="tag">Railway</span><span class="tag">Infrastructure</span><span class="tag">Trade</span><span class="tag">Logistics</span></div>
+      </div>
+    </aside>
+  </div>
+
+  <section class="related">
+    <h2>Related publications</h2>
+    <div class="cards">
+      <a class="card" href="#"><div class="card-cat">Trade</div><h3>Central Asian transport corridors gain strategic importance</h3><div class="card-date">24 Aug 2026</div></a>
+      <a class="card" href="#"><div class="card-cat">Investment</div><h3>Regional infrastructure investment outlook</h3><div class="card-date">19 Aug 2026</div></a>
+      <a class="card" href="#"><div class="card-cat">Uzbekistan</div><h3>New logistics initiatives reshape regional trade</h3><div class="card-date">14 Aug 2026</div></a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">© 2026 CAFRI · Central Asia Financial & Regulatory Intelligence</div>
+</footer>
+</body>
+</html>

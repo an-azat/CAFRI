@@ -14,27 +14,45 @@ public static class HomePageContentTextSerializer
             })
             .ToList();
 
+    // Number(0) | Title(1) | Description(2..) | Url | LinkLabel | [wide]
+    // Description is treated as the free-text field: if an editor accidentally types
+    // "|" inside the description, the extra segments are folded back into Description
+    // instead of shifting Url/LinkLabel/IsWide out of position (see bug fix notes).
     public static IReadOnlyList<HomeDirectionCardViewModel> ParseDirections(string? raw) =>
         ParsePipeRows(raw, 5)
-            .Select(parts => new HomeDirectionCardViewModel
+            .Select(parts =>
             {
-                Number = parts[0],
-                Title = parts[1],
-                Description = parts[2],
-                Url = parts[3],
-                LinkLabel = parts[4],
-                IsWide = parts.Length > 5 && string.Equals(parts[5], "wide", StringComparison.OrdinalIgnoreCase)
+                var isWide = parts.Length > 5 && string.Equals(parts[^1], "wide", StringComparison.OrdinalIgnoreCase);
+                var trailingCount = isWide ? 3 : 2; // Url, LinkLabel, [wide]
+                var urlIndex = parts.Length - trailingCount;
+
+                return new HomeDirectionCardViewModel
+                {
+                    Number = parts[0],
+                    Title = parts[1],
+                    Description = string.Join(" | ", parts.Skip(2).Take(urlIndex - 2)),
+                    Url = parts[urlIndex],
+                    LinkLabel = parts[urlIndex + 1],
+                    IsWide = isWide
+                };
             })
             .ToList();
 
+    // Title(0) | Description(1..) | Url | CssClassName
+    // Same fold-back rule as ParseDirections above, applied to Description.
     public static IReadOnlyList<HomeFeatureCardViewModel> ParseFeatureCards(string? raw) =>
         ParsePipeRows(raw, 4)
-            .Select(parts => new HomeFeatureCardViewModel
+            .Select(parts =>
             {
-                Title = parts[0],
-                Description = parts[1],
-                Url = parts[2],
-                CssClassName = parts[3]
+                var urlIndex = parts.Length - 2;
+
+                return new HomeFeatureCardViewModel
+                {
+                    Title = parts[0],
+                    Description = string.Join(" | ", parts.Skip(1).Take(urlIndex - 1)),
+                    Url = parts[urlIndex],
+                    CssClassName = parts[urlIndex + 1]
+                };
             })
             .ToList();
 

@@ -22,34 +22,42 @@ public sealed class DbCountryContentService : ICountryContentService
         _dbContext = dbContext;
     }
 
-    public CountriesPageViewModel GetIndexPage()
+    public async Task<CountriesPageViewModel> GetIndexPageAsync(CancellationToken cancellationToken = default)
     {
-        var publishedIndicatorCount = _dbContext.CountryIndicators.AsNoTracking().Count(x => x.IsPublished);
-        var indicatorCategories = _dbContext.CountryIndicators
+        var publishedIndicatorCount = await _dbContext.CountryIndicators.AsNoTracking().CountAsync(x => x.IsPublished, cancellationToken);
+        var indicatorCategories = await _dbContext.CountryIndicators
             .AsNoTracking()
             .Where(x => x.IsPublished)
             .Select(x => x.Category)
             .Distinct()
             .OrderBy(x => x)
-            .ToList();
+            .ToListAsync(cancellationToken);
 
-        var countryRows = _dbContext.CountryContents
+        var countryRows = await _dbContext.CountryContents
             .AsNoTracking()
             .Where(x => x.IsPublished)
             .OrderBy(x => x.DisplayOrder)
             .ThenBy(x => x.Name)
-            .ToList();
+            .ToListAsync(cancellationToken);
 
-        var indicators = _dbContext.CountryIndicators
+        var indicators = await _dbContext.CountryIndicators
             .AsNoTracking()
             .Where(x => x.IsPublished)
             .OrderBy(x => x.DisplayOrder)
-            .ToList();
+            .ToListAsync(cancellationToken);
 
         var selectedIndicatorName = indicators
             .Select(x => x.Name)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault();
+
+        var gdpGrowthYears = indicators
+            .Where(x => string.Equals(x.Name, "Real GDP Growth", StringComparison.OrdinalIgnoreCase))
+            .Select(x => x.YearLabel)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        var selectedGdpGrowthYear = gdpGrowthYears.LastOrDefault() ?? string.Empty;
 
         var countries = countryRows
             .Select(x =>
@@ -108,6 +116,8 @@ public sealed class DbCountryContentService : ICountryContentService
                 new() { Icon = "chart", Value = publishedIndicatorCount.ToString(), Title = "Indicators Tracked", Description = "Financial, regulatory, and macroeconomic data" }
             ],
             Countries = countries,
+            GdpGrowthYears = gdpGrowthYears,
+            SelectedGdpGrowthYear = selectedGdpGrowthYear,
             CompareFeatures = indicatorCategories.Select(category => new CountryCompareFeatureViewModel
             {
                 Icon = category.Contains("bank", StringComparison.OrdinalIgnoreCase) ? "bank" :
@@ -126,25 +136,107 @@ public sealed class DbCountryContentService : ICountryContentService
         };
     }
 
-    public CountryProfilePageViewModel? GetDetails(string slug)
+    public async Task<CountryProfilePageViewModel?> GetDetailsAsync(string slug, CancellationToken cancellationToken = default)
     {
-        var entity = _dbContext.CountryContents
+        var entity = await _dbContext.CountryContents
             .AsNoTracking()
-            .FirstOrDefault(x => x.IsPublished && x.Slug == slug);
+            .FirstOrDefaultAsync(x => x.IsPublished && x.Slug == slug, cancellationToken);
 
         if (entity is null)
         {
             return null;
         }
 
-        var details = JsonSerializer.Deserialize<CountryProfilePageViewModel>(entity.DetailsJson, JsonOptions);
+        CountryProfilePageViewModel? details;
+        try
+        {
+            details = JsonSerializer.Deserialize<CountryProfilePageViewModel>(entity.DetailsJson, JsonOptions);
+        }
+        catch (JsonException)
+        {
+            return BuildFallbackDetails(entity);
+        }
+
         if (details is null)
         {
-            return null;
+            return BuildFallbackDetails(entity);
         }
 
         details.HeroGallery = ContentImageTextSerializer.Parse(entity.HeroGalleryJson);
 
         return details;
+    }
+
+    // Mirrors the BuildFallbackDetails pattern used by DbIntelligenceContentService and
+    // DbPublicationContentService: if DetailsJson is missing or fails to deserialize, degrade
+    // to a minimal-but-valid profile built from the base CountryContent row instead of 404ing
+    // the whole page.
+    private static CountryProfilePageViewModel BuildFallbackDetails(Domain.Content.CountryContent entity)
+    {
+        var heroGallery = ContentImageTextSerializer.Parse(entity.HeroGalleryJson);
+
+        var country = new CountryOverviewCardViewModel
+        {
+            Code = entity.Code,
+            Name = entity.Name,
+            Capital = entity.Capital,
+            Summary = entity.Summary,
+            Gdp = entity.Gdp,
+            Population = entity.Population,
+            BankAssets = entity.BankAssets,
+            Slug = entity.Slug,
+            HeroClassName = entity.HeroClassName,
+            HeroImageUrl = heroGallery
+                .Select(item => item.ImageUrl)
+                .FirstOrDefault(url => !string.IsNullOrWhiteSpace(url)) ?? string.Empty,
+            IndicatorLabel = "Indicator",
+            IndicatorValue = "No data",
+            Indicators = [],
+            Metrics =
+            [
+                new() { Icon = "chart", Label = "GDP (2025)", Value = entity.Gdp },
+                new() { Icon = "people", Label = "Population", Value = entity.Population },
+                new() { Icon = "bank", Label = "Bank Assets", Value = entity.BankAssets }
+            ]
+        };
+
+        var emptyChart = new CountryChartSeriesViewModel { Title = string.Empty, ValueSuffix = string.Empty };
+
+        return new CountryProfilePageViewModel
+        {
+            Country = country,
+            HeroDescription = string.IsNullOrWhiteSpace(entity.Summary)
+                ? $"A detailed profile for {entity.Name} is being prepared."
+                : entity.Summary,
+            Currency = "Data unavailable",
+            RiskRating = "N/A",
+            RiskOutlook = "Data unavailable",
+            DoingBusinessRank = "N/A",
+            DoingBusinessSource = "Data unavailable",
+            OverviewText = string.IsNullOrWhiteSpace(entity.Summary)
+                ? $"A detailed profile for {entity.Name} is being prepared. Please check back soon for full financial, regulatory, and macroeconomic coverage."
+                : entity.Summary,
+            HeroGallery = heroGallery,
+            HeroIndicators =
+            [
+                new() { Icon = "capital", Label = "Capital", Value = entity.Capital },
+                new() { Icon = "population", Label = "Population (2025)", Value = entity.Population },
+                new() { Icon = "currency", Label = "GDP (2025)", Value = entity.Gdp }
+            ],
+            KeyIndicators = [],
+            Tabs = [new() { Label = "Overview", IsActive = true }],
+            Highlights = [],
+            MacroSummaryCards = [],
+            MacroIndicatorRows = [],
+            GdpGrowthChart = emptyChart,
+            InflationChart = emptyChart,
+            FinancialSectorSnapshot = [],
+            BankingAssetsChart = emptyChart,
+            TopBanks = [],
+            LatestUpdates = [],
+            RelatedPublications = [],
+            KeyInstitutions = [],
+            ExploreLinks = []
+        };
     }
 }

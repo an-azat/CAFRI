@@ -35,6 +35,32 @@ public sealed class ContentMediaStorageService
         ".txt"
     };
 
+    // Server-controlled Content-Type, keyed by extension — never trust the client-supplied
+    // IFormFile.ContentType header for the value stored against the object in R2/S3.
+    private static readonly Dictionary<string, string> ContentTypeByExtension = new(StringComparer.OrdinalIgnoreCase)
+    {
+        [".jpg"] = "image/jpeg",
+        [".jpeg"] = "image/jpeg",
+        [".jfif"] = "image/jpeg",
+        [".png"] = "image/png",
+        [".bmp"] = "image/bmp",
+        [".webp"] = "image/webp",
+        [".gif"] = "image/gif",
+        [".avif"] = "image/avif",
+        [".pdf"] = "application/pdf",
+        [".doc"] = "application/msword",
+        [".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        [".xls"] = "application/vnd.ms-excel",
+        [".xlsx"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        [".ppt"] = "application/vnd.ms-powerpoint",
+        [".pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        [".csv"] = "text/csv",
+        [".txt"] = "text/plain"
+    };
+
+    private const long MaxImageSizeBytes = 10 * 1024 * 1024; // 10 MB
+    private const long MaxDocumentSizeBytes = 25 * 1024 * 1024; // 25 MB
+
     private readonly IWebHostEnvironment _environment;
     private readonly ContentMediaOptions _options;
     private readonly Lazy<IAmazonS3?> _s3Client;
@@ -51,7 +77,7 @@ public sealed class ContentMediaStorageService
 
     public async Task<string?> SaveImageAsync(IFormFile? file, string section, CancellationToken cancellationToken = default)
     {
-        if (file is null || file.Length == 0 || !IsSupportedImage(file))
+        if (file is null || file.Length == 0 || !IsSupportedImage(file) || !await HasValidImageSignatureAsync(file, cancellationToken))
         {
             return null;
         }
@@ -93,7 +119,7 @@ public sealed class ContentMediaStorageService
 
     public bool IsSupportedImage(IFormFile? file)
     {
-        if (file is null || file.Length == 0)
+        if (file is null || file.Length == 0 || file.Length > MaxImageSizeBytes)
         {
             return false;
         }
@@ -104,13 +130,43 @@ public sealed class ContentMediaStorageService
 
     public bool IsSupportedDocument(IFormFile? file)
     {
-        if (file is null || file.Length == 0)
+        if (file is null || file.Length == 0 || file.Length > MaxDocumentSizeBytes)
         {
             return false;
         }
 
         var extension = Path.GetExtension(file.FileName);
         return !string.IsNullOrWhiteSpace(extension) && AllowedDocumentExtensions.Contains(extension);
+    }
+
+    // Extension-based checks alone trust the filename; a renamed .html-as-.jpg would pass them.
+    // Sniff the first bytes against each format's known magic number before persisting the file.
+    private static async Task<bool> HasValidImageSignatureAsync(IFormFile file, CancellationToken cancellationToken)
+    {
+        var extension = Path.GetExtension(file.FileName);
+        var buffer = new byte[16];
+
+        await using var stream = file.OpenReadStream();
+        var bytesRead = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken);
+        stream.Position = 0;
+
+        if (bytesRead < 4)
+        {
+            return false;
+        }
+
+        return extension.ToLowerInvariant() switch
+        {
+            ".png" => buffer[0] == 0x89 && buffer[1] == 0x50 && buffer[2] == 0x4E && buffer[3] == 0x47,
+            ".jpg" or ".jpeg" or ".jfif" => buffer[0] == 0xFF && buffer[1] == 0xD8 && buffer[2] == 0xFF,
+            ".gif" => buffer[0] == 0x47 && buffer[1] == 0x49 && buffer[2] == 0x46 && buffer[3] == 0x38,
+            ".bmp" => buffer[0] == 0x42 && buffer[1] == 0x4D,
+            ".webp" => bytesRead >= 12 &&
+                buffer[0] == 0x52 && buffer[1] == 0x49 && buffer[2] == 0x46 && buffer[3] == 0x46 &&
+                buffer[8] == 0x57 && buffer[9] == 0x45 && buffer[10] == 0x42 && buffer[11] == 0x50,
+            ".avif" => bytesRead >= 8 && buffer[4] == 0x66 && buffer[5] == 0x74 && buffer[6] == 0x79 && buffer[7] == 0x70,
+            _ => false
+        };
     }
 
     public async Task<string?> SaveDocumentAsync(IFormFile? file, string section, CancellationToken cancellationToken = default)
@@ -129,9 +185,11 @@ public sealed class ContentMediaStorageService
     public string GetAllowedDocumentExtensionsLabel() =>
         string.Join(", ", AllowedDocumentExtensions.OrderBy(x => x));
 
-    public void DeleteImage(string? url) => DeleteStoredFile(url, AllowedImageExtensions);
+    public Task DeleteImageAsync(string? url, CancellationToken cancellationToken = default) =>
+        DeleteStoredFileAsync(url, AllowedImageExtensions, cancellationToken);
 
-    public void DeleteDocument(string? url) => DeleteStoredFile(url, AllowedDocumentExtensions);
+    public Task DeleteDocumentAsync(string? url, CancellationToken cancellationToken = default) =>
+        DeleteStoredFileAsync(url, AllowedDocumentExtensions, cancellationToken);
 
     public string GetMediaRootPath()
     {
@@ -149,14 +207,14 @@ public sealed class ContentMediaStorageService
         return Path.GetFullPath(Path.Combine(webRootPath, "uploads", "content"));
     }
 
-    public IReadOnlyList<StoredContentImageViewModel> GetStoredImages()
+    public Task<IReadOnlyList<StoredContentImageViewModel>> GetStoredImagesAsync(CancellationToken cancellationToken = default)
     {
         return UsesRemoteStorage
-            ? GetStoredImagesFromRemote()
-            : GetStoredImagesFromLocal();
+            ? GetStoredImagesFromRemoteAsync(cancellationToken)
+            : Task.FromResult(GetStoredImagesFromLocal());
     }
 
-    private void DeleteStoredFile(string? url, IReadOnlySet<string> allowedExtensions)
+    private async Task DeleteStoredFileAsync(string? url, IReadOnlySet<string> allowedExtensions, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(url))
         {
@@ -165,7 +223,7 @@ public sealed class ContentMediaStorageService
 
         if (UsesRemoteStorage && IsRemoteUrl(url))
         {
-            DeleteRemoteObject(url);
+            await DeleteRemoteObjectAsync(url, cancellationToken);
             return;
         }
 
@@ -226,7 +284,7 @@ public sealed class ContentMediaStorageService
             .ToList();
     }
 
-    private IReadOnlyList<StoredContentImageViewModel> GetStoredImagesFromRemote()
+    private async Task<IReadOnlyList<StoredContentImageViewModel>> GetStoredImagesFromRemoteAsync(CancellationToken cancellationToken)
     {
         var client = _s3Client.Value;
         var bucketName = _options.BucketName;
@@ -240,11 +298,11 @@ public sealed class ContentMediaStorageService
 
         do
         {
-            var response = client.ListObjectsV2Async(new ListObjectsV2Request
+            var response = await client.ListObjectsV2Async(new ListObjectsV2Request
             {
                 BucketName = bucketName,
                 ContinuationToken = continuationToken
-            }).GetAwaiter().GetResult();
+            }, cancellationToken);
 
             foreach (var item in response.S3Objects.Where(x => AllowedImageExtensions.Contains(Path.GetExtension(x.Key))))
             {
@@ -307,6 +365,11 @@ public sealed class ContentMediaStorageService
             return null;
         }
 
+        var extension = Path.GetExtension(file.FileName);
+        var contentType = extension is not null && ContentTypeByExtension.TryGetValue(extension, out var mapped)
+            ? mapped
+            : "application/octet-stream";
+
         await using var stream = file.OpenReadStream();
         var request = new PutObjectRequest
         {
@@ -314,7 +377,7 @@ public sealed class ContentMediaStorageService
             Key = objectKey,
             InputStream = stream,
             AutoCloseStream = false,
-            ContentType = string.IsNullOrWhiteSpace(file.ContentType) ? "application/octet-stream" : file.ContentType,
+            ContentType = contentType,
             DisablePayloadSigning = true,
             DisableDefaultChecksumValidation = true
         };
@@ -323,7 +386,7 @@ public sealed class ContentMediaStorageService
         return BuildRemotePublicUrl(objectKey);
     }
 
-    private void DeleteRemoteObject(string url)
+    private async Task DeleteRemoteObjectAsync(string url, CancellationToken cancellationToken)
     {
         var client = _s3Client.Value;
         var bucketName = _options.BucketName;
@@ -333,11 +396,11 @@ public sealed class ContentMediaStorageService
             return;
         }
 
-        client.DeleteObjectAsync(new DeleteObjectRequest
+        await client.DeleteObjectAsync(new DeleteObjectRequest
         {
             BucketName = bucketName,
             Key = objectKey
-        }).GetAwaiter().GetResult();
+        }, cancellationToken);
     }
 
     private bool IsRemoteUrl(string url)

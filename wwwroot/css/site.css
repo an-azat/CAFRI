@@ -1657,6 +1657,7 @@ button.site-ghost-button {
   display: inline-flex;
   align-items: center;
   gap: 0.42rem;
+  min-height: 24px;
   color: #6ea6ff;
   font-weight: 600;
   text-decoration: none;
@@ -2066,8 +2067,7 @@ button.site-ghost-button {
 .countries-map-shell,
 .country-card,
 .compare-countries,
-.compare-feature-item,
-.countries-map-tooltip {
+.compare-feature-item {
   border: 1px solid rgba(115, 154, 204, 0.16);
   border-radius: 1rem;
   background: rgba(8, 27, 53, 0.74);
@@ -2075,13 +2075,14 @@ button.site-ghost-button {
 }
 
 .countries-hero {
-  display: grid;
-  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr);
-  gap: 1.25rem;
   padding: 1.35rem;
   background:
     radial-gradient(circle at top left, rgba(14, 95, 248, 0.18), transparent 24%),
     linear-gradient(180deg, rgba(8, 27, 53, 0.85), rgba(8, 27, 53, 0.72));
+}
+
+.countries-explorer {
+  margin-top: 1.25rem;
 }
 
 .countries-hero-content {
@@ -2110,8 +2111,7 @@ button.site-ghost-button {
 
 .country-stats-card__icon,
 .compare-feature-item__icon,
-.country-metrics__icon,
-.countries-map-tooltip__eyebrow {
+.country-metrics__icon {
   color: #6ea6ff;
 }
 
@@ -2149,152 +2149,452 @@ button.site-ghost-button {
   overflow: hidden;
 }
 
-.countries-map {
+.countries-map-frame {
   position: relative;
-  min-height: 100%;
   border-radius: 0.9rem;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 50% 40%, rgba(49, 100, 200, 0.18), transparent 32%),
-    linear-gradient(180deg, rgba(6, 19, 40, 0.65), rgba(6, 19, 40, 0.65));
 }
 
-.countries-map svg {
-  display: block;
+.countries-map {
   width: 100%;
-  height: auto;
+  aspect-ratio: 4 / 3;
+  min-height: 320px;
+  background: #e9eef5;
 }
 
-.countries-map-region {
+.countries-map-frame:fullscreen {
+  background: #0b1f35;
+}
+
+.countries-map-frame:fullscreen .countries-map {
+  aspect-ratio: auto;
+  height: 100vh;
+}
+
+.countries-map-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.countries-map-toolbar__title h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.countries-map-year-select {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(169, 181, 200, 0.9);
+}
+
+.countries-map-year-select select {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid rgba(115, 154, 204, 0.28);
+  border-radius: 0.6rem;
+  background: rgba(8, 27, 53, 0.6);
+  color: #ffffff;
+  font-weight: 700;
   cursor: pointer;
 }
 
-.countries-map-region path {
-  stroke-width: 2;
-  transition: fill 180ms ease, stroke 180ms ease, filter 180ms ease;
-}
-
-.countries-map-region text {
-  fill: rgba(247, 250, 255, 0.9);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  pointer-events: none;
-}
-
-.countries-map-region--kazakhstan path {
-  fill: rgba(54, 111, 255, 0.34);
-  stroke: rgba(121, 164, 255, 0.86);
-}
-
-.countries-map-region--uzbekistan path {
-  fill: rgba(117, 74, 255, 0.3);
-  stroke: rgba(166, 138, 255, 0.86);
-}
-
-.countries-map-region--kyrgyzstan path {
-  fill: rgba(245, 117, 54, 0.28);
-  stroke: rgba(255, 176, 122, 0.86);
-}
-
-.countries-map-region--tajikistan path {
-  fill: rgba(202, 84, 241, 0.28);
-  stroke: rgba(229, 156, 255, 0.86);
-}
-
-.countries-map-region--turkmenistan path {
-  fill: rgba(20, 184, 166, 0.24);
-  stroke: rgba(94, 234, 212, 0.86);
-}
-
-.countries-map-region:hover path,
-.countries-map-region.is-active path,
-.countries-map-region:focus path {
-  filter: brightness(1.12);
-  stroke: #dce8ff;
-}
-
-.countries-map-tooltip {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  z-index: 4;
-  width: min(18rem, calc(100% - 2rem));
-  padding: 1rem;
-  pointer-events: none;
-  background: rgba(5, 17, 35, 0.95);
-}
-
-.countries-map-tooltip__eyebrow {
-  margin-bottom: 0.45rem;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.countries-map-tooltip__title {
-  margin: 0 0 0.75rem;
-  color: #ffffff;
-  font-size: 1.2rem;
-}
-
-.countries-map-tooltip__meta {
+.countries-map-body {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.7rem 1rem;
-  margin: 0 0 0.8rem;
+  grid-template-columns: minmax(0, 12.5rem) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
 }
 
-.countries-map-tooltip__meta dt {
-  margin-bottom: 0.2rem;
-  color: rgba(169, 181, 200, 0.74);
+.countries-map-sidebar {
+  display: grid;
+  gap: 1.1rem;
+  padding: 1rem;
+  border: 1px solid rgba(115, 154, 204, 0.16);
+  border-radius: 0.9rem;
+  background: rgba(8, 27, 53, 0.55);
+}
+
+.countries-map-sidebar__group h3 {
+  margin: 0 0 0.6rem;
+  color: #ffffff;
   font-size: 0.78rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 
-.countries-map-tooltip__meta dd {
+.countries-map-style-option,
+.countries-map-overlay-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: rgba(169, 181, 200, 0.9);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.countries-map-style-option:last-child,
+.countries-map-overlay-option:last-child {
+  margin-bottom: 0;
+}
+
+.countries-map-style-option input,
+.countries-map-overlay-option input {
+  accent-color: #2563eb;
+  cursor: pointer;
+}
+
+.countries-map-legend {
+  position: absolute;
+  z-index: 1000;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(115, 154, 204, 0.2);
+  border-radius: 0.9rem;
+  background: rgba(8, 27, 53, 0.78);
+  backdrop-filter: blur(6px);
+  pointer-events: none;
+}
+
+.countries-map-legend__title {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.countries-map-legend ul {
+  display: grid;
+  gap: 0.35rem;
   margin: 0;
-  color: rgba(247, 250, 255, 0.92);
+  padding: 0;
+  list-style: none;
 }
 
-.countries-map-tooltip__summary {
-  margin: 0 0 0.85rem;
-  color: rgba(169, 181, 200, 0.92);
-  line-height: 1.65;
+.countries-map-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(169, 181, 200, 0.9);
+  font-size: 0.75rem;
 }
 
-.countries-map-tooltip__link,
+.countries-map-legend__swatch {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  flex: none;
+}
+
+.countries-map-legend__swatch--high { background: #10b981; }
+.countries-map-legend__swatch--good { background: #2563eb; }
+.countries-map-legend__swatch--mid { background: #eab308; }
+.countries-map-legend__swatch--low { background: #f97316; }
+.countries-map-legend__swatch--negative { background: #ef4444; }
+.countries-map-legend__swatch--none { background: #94a3b8; }
+
 .country-card__link {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
+  margin-top: 0.3rem;
   color: #6ea6ff;
   font-weight: 600;
   text-decoration: none;
 }
 
-.countries-map-tooltip__link span,
 .country-card__link span {
   transition: transform 180ms ease;
 }
 
-.countries-map-tooltip__link:hover span,
-.countries-map-tooltip__link:focus span,
 .country-card__link:hover span,
 .country-card__link:focus span {
   transform: translateX(3px);
 }
 
 .countries-map-fallback {
-  padding: 1rem;
+  position: absolute;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 1.5rem;
+  text-align: center;
+  background: #e9eef5;
+}
+
+.countries-map-fallback h2 {
+  margin: 0;
+  font-size: 1rem;
+  color: #0b1f35;
+}
+
+.countries-map-fallback p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.countries-map-reset-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid rgba(115, 154, 204, 0.28);
+  border-radius: 0.6rem;
+  background: transparent;
+  color: rgba(169, 181, 200, 0.9);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 150ms ease, color 150ms ease;
+}
+
+.countries-map-reset-btn svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  fill: currentColor;
+}
+
+.countries-map-reset-btn:hover,
+.countries-map-reset-btn:focus-visible {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.countries-map-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.85rem 0 0;
+  color: rgba(169, 181, 200, 0.9);
+  font-size: 0.82rem;
+}
+
+.countries-map-hint svg {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  fill: currentColor;
+  opacity: 0.75;
+}
+
+.countries-grid-section {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.countries-grid-section__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.countries-grid-section__title {
+  margin: 0 0 0.35rem;
+  color: #ffffff;
+  font-size: clamp(1.5rem, 2.5vw, 1.9rem);
+  font-weight: 800;
+}
+
+.countries-grid-section__description {
+  margin: 0;
+  color: rgba(169, 181, 200, 0.9);
+}
+
+.countries-grid-section__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.countries-compare-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid rgba(115, 154, 204, 0.28);
+  border-radius: 0.6rem;
+  background: transparent;
+  color: rgba(169, 181, 200, 0.9);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 150ms ease, color 150ms ease;
+}
+
+.countries-compare-btn svg {
+  width: 1rem;
+  height: 1rem;
+  fill: currentColor;
+}
+
+.countries-compare-btn:hover,
+.countries-compare-btn:focus-visible {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.countries-grid-nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.countries-grid-nav__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 1px solid rgba(115, 154, 204, 0.28);
+  border-radius: 0.6rem;
+  background: transparent;
+  color: rgba(169, 181, 200, 0.9);
+  cursor: pointer;
+  transition: border-color 150ms ease, color 150ms ease;
+}
+
+.countries-grid-nav__btn svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.countries-grid-nav__btn:hover,
+.countries-grid-nav__btn:focus-visible {
+  border-color: #2563eb;
+  color: #2563eb;
 }
 
 .countries-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 1rem;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(15.5rem, 1fr);
+  gap: 1.25rem;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  padding-bottom: 0.25rem;
+}
+
+.countries-grid .country-card {
+  scroll-snap-align: start;
+}
+
+.countries-grid .country-metrics {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem 1rem;
+}
+
+@media (min-width: 1200px) {
+  .countries-grid {
+    grid-auto-flow: initial;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    overflow-x: visible;
+  }
+
+  .countries-grid-nav {
+    display: none;
+  }
+}
+
+/* Leaflet chrome: match the app's rounded, shadowed control style instead of
+   Leaflet's stock square buttons. */
+.countries-map .leaflet-control {
+  border-radius: 0.6rem;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(15, 39, 66, 0.14);
+}
+
+.countries-map .leaflet-bar a {
+  width: 2rem;
+  height: 2rem;
+  line-height: 2rem;
+  color: #33506e;
+}
+
+.countries-map .leaflet-bar a svg {
+  width: 1rem;
+  height: 1rem;
+  vertical-align: middle;
+}
+
+.countries-map .leaflet-control-scale-line {
+  border-color: #33506e;
+  color: #33506e;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.countries-map .leaflet-tooltip.map-country-tooltip {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  pointer-events: none;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.countries-map .leaflet-tooltip.map-country-tooltip::before {
+  display: none;
+}
+
+.map-country-tooltip__name {
+  display: block;
+  color: #0b1f35;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.85), 0 0 6px rgba(255, 255, 255, 0.65);
+}
+
+.map-country-tooltip__growth {
+  display: block;
+  margin-top: 0.1rem;
+  color: rgba(11, 31, 53, 0.85);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.85), 0 0 6px rgba(255, 255, 255, 0.65);
+}
+
+.countries-map .leaflet-tooltip.map-capital-label {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0 0 0 0.3rem;
+  color: #5c7898;
+  font-size: 0.68rem;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.countries-map .leaflet-tooltip.map-capital-label::before {
+  display: none;
+}
+
+.map-neighbor-label {
+  color: rgba(51, 80, 110, 0.55);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .country-card {
@@ -2471,15 +2771,15 @@ button.site-ghost-button {
   line-height: 1.65;
 }
 
-@media (max-width: 1399.98px) {
-  .countries-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
 @media (max-width: 1199.98px) {
-  .countries-hero {
+  .countries-map-body {
     grid-template-columns: 1fr;
+  }
+
+  .countries-map-sidebar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
   }
 
   .compare-countries {
@@ -2488,37 +2788,26 @@ button.site-ghost-button {
 }
 
 @media (max-width: 991.98px) {
-  .countries-grid,
   .compare-feature-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .countries-map-tooltip {
-    position: static;
-    width: 100%;
-    margin-top: 1rem;
   }
 }
 
 @media (max-width: 767.98px) {
   .countries-hero,
-  .countries-map-shell,
   .compare-countries {
     padding: 1rem;
   }
 
   .country-stats-grid,
-  .countries-grid,
   .compare-feature-grid {
     grid-template-columns: 1fr;
   }
 
-  .countries-map-region text {
-    font-size: 10px;
-  }
-
-  .countries-map-tooltip__meta {
-    grid-template-columns: 1fr;
+  /* The interactive map needs real width to be usable; on narrow viewports
+     the country cards below cover the same information. */
+  .countries-explorer {
+    display: none;
   }
 }
 
@@ -2735,10 +3024,35 @@ button.site-ghost-button {
   font-weight: 800;
 }
 
+/* Tone reflects how strong the underlying rating letter grade actually is
+   (see CountryProfilePageViewModel.RiskRatingTone) instead of always showing
+   the same "positive" color regardless of the country's real rating. */
+.country-risk-card__badge--positive {
+  background: rgba(16, 185, 129, 0.2);
+  color: #a7f3d0;
+}
+
+.country-risk-card__badge--neutral {
+  background: rgba(37, 99, 235, 0.18);
+  color: #93c5fd;
+}
+
+.country-risk-card__badge--caution {
+  background: rgba(217, 119, 6, 0.2);
+  color: #fcd34d;
+}
+
+.country-risk-card__badge--negative {
+  background: rgba(220, 38, 38, 0.2);
+  color: #fca5a5;
+}
+
 .country-risk-card__value {
   color: #ffffff;
-  font-size: 2rem;
+  font-size: clamp(1.35rem, 2.4vw + 0.6rem, 2rem);
   font-weight: 800;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .country-risk-card__meta {
@@ -3162,117 +3476,6 @@ button.site-ghost-button {
   }
 }
 
-.interactive-map-basemap-label {
-  fill: rgba(210, 225, 245, 0.35);
-  font-size: 14px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.interactive-map-country {
-  cursor: pointer;
-}
-
-.interactive-map-country path {
-  stroke: rgba(160, 210, 255, 0.55);
-  stroke-width: 1.3;
-  transition: fill 180ms ease, stroke 180ms ease, filter 180ms ease;
-}
-
-.map-country--kazakhstan path { fill: rgba(22, 91, 190, 0.72); }
-.map-country--uzbekistan path { fill: rgba(21, 156, 156, 0.72); }
-.map-country--kyrgyzstan path { fill: rgba(217, 154, 20, 0.72); }
-.map-country--tajikistan path { fill: rgba(201, 74, 90, 0.72); }
-.map-country--turkmenistan path { fill: rgba(98, 66, 165, 0.72); }
-
-
-.interactive-map-country text {
-  fill: #f7faff;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.65);
-  pointer-events: none;
-}
-
-.interactive-map-country circle {
-  fill: #ffffff;
-  filter: drop-shadow(0 0 8px rgba(255,255,255,0.8));
-  pointer-events: none;
-}
-
-.interactive-map-city-label {
-  fill: rgba(235, 242, 255, 0.82) !important;
-  font-size: 5.5px !important;
-  font-weight: 500 !important;
-  letter-spacing: 0.02em !important;
-}
-
-.interactive-map-country:hover path,
-.interactive-map-country.is-active path,
-.interactive-map-country:focus path {
-  stroke: #7dbbff;
-  stroke-width: 2;
-  filter: drop-shadow(0 0 18px rgba(50, 140, 255, 0.55));
-}
-
-.interactive-map-country.is-active path {
-  stroke: #ffffff;
-  filter: drop-shadow(0 0 28px rgba(50, 140, 255, 0.75));
-}
-
-.interactive-map-tooltip {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  z-index: 5;
-  width: min(18rem, calc(100% - 2rem));
-  padding: 0.95rem 1rem;
-  backdrop-filter: blur(12px);
-  background: rgba(3, 15, 32, 0.96);
-}
-
-.interactive-map-tooltip__code {
-  margin-bottom: 0.35rem;
-  color: #7dbbff;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.interactive-map-tooltip__title {
-  margin: 0 0 0.75rem;
-  color: #fff;
-  font-size: 1.18rem;
-}
-
-.interactive-map-tooltip__meta {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.65rem 1rem;
-  margin: 0 0 0.75rem;
-}
-
-.interactive-map-tooltip__meta dt {
-  margin-bottom: 0.15rem;
-  color: rgba(167, 180, 200, 0.72);
-  font-size: 0.78rem;
-  text-transform: uppercase;
-}
-
-.interactive-map-tooltip__meta dd {
-  margin: 0;
-  color: #f7faff;
-}
-
-.interactive-map-tooltip__summary {
-  margin: 0 0 0.75rem;
-  color: rgba(167, 180, 200, 0.9);
-  line-height: 1.6;
-}
-
-.interactive-map-tooltip__link,
 .quick-country-card a {
   display: inline-flex;
   align-items: center;
@@ -3586,15 +3789,23 @@ button.site-ghost-button {
 .article-hero,
 .article-tabs,
 .article-section,
-.key-change-card,
-.impact-card,
-.document-download-card,
 .sidebar-card,
 .article-premium-banner {
   border: 1px solid rgba(120, 160, 210, 0.2);
   border-radius: 1rem;
   background: rgba(8, 27, 55, 0.75);
   box-shadow: 0 20px 45px rgba(1, 8, 20, 0.22);
+}
+
+/* The mockup's evidence/source rows are plain flat bordered boxes — no
+   shadow, no hover-lift. Only the big hero/main/sidebar containers get a
+   shadow there. */
+.key-change-card,
+.impact-card,
+.document-download-card {
+  border: 1px solid rgba(120, 160, 210, 0.2);
+  border-radius: 0.7rem;
+  background: rgba(8, 27, 55, 0.75);
 }
 
 .article-hero {
@@ -3634,6 +3845,7 @@ button.site-ghost-button {
   margin: 0 0 0.8rem;
   color: #f7faff;
   font-size: clamp(2rem, 4vw, 3.4rem);
+  font-weight: 700;
   line-height: 1.08;
   letter-spacing: -0.04em;
 }
@@ -3660,11 +3872,22 @@ button.site-ghost-button {
 }
 
 .article-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   border: 1px solid rgba(120, 160, 210, 0.18);
   border-radius: 0.75rem;
   padding: 0.65rem 0.9rem;
   color: rgba(247, 250, 255, 0.82);
   background: rgba(3, 15, 32, 0.48);
+  font-weight: 650;
+}
+
+.article-actions svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: currentColor;
+  flex: 0 0 auto;
 }
 
 .article-actions button:hover,
@@ -3672,6 +3895,18 @@ button.site-ghost-button {
 .article-actions button.is-active {
   color: #7dbbff;
   border-color: rgba(20, 118, 255, 0.3);
+}
+
+.article-actions .is-primary {
+  color: #ffffff;
+  background: linear-gradient(135deg, #0b63f6, #1476ff);
+  border-color: transparent;
+}
+
+.article-actions .is-primary:hover,
+.article-actions .is-primary:focus {
+  color: #ffffff;
+  border-color: transparent;
 }
 
 .article-hero-image {
@@ -3769,6 +4004,62 @@ button.site-ghost-button {
 .article-sidebar {
   display: grid;
   gap: 1rem;
+}
+
+/* The reference mockup wraps the whole article body in ONE card and keeps the
+   individual sections flat inside it, instead of each section having its own
+   boxed card. .article-section is shared with Publications (already flattened
+   there via .page-publication-details), so scope this to Intelligence only. */
+.page-intelligence-detail .article-main {
+  border: 1px solid rgba(120, 160, 210, 0.2);
+  border-radius: 1rem;
+  background: rgba(8, 27, 55, 0.75);
+  box-shadow: 0 20px 45px rgba(1, 8, 20, 0.22);
+  padding: 1.85rem;
+}
+
+/* Bootstrap's default h1-h6 font-weight (500) leaks through wherever a
+   heading class doesn't set its own — the mockup's headings are bold/800,
+   ours were rendering visibly thinner. Scoped to Intelligence since
+   .article-section h2 / .sidebar-card h2 are shared with Publications/Countries. */
+.page-intelligence-detail .article-hero,
+body.theme-home .page-intelligence-detail .article-hero {
+  padding: 1.85rem;
+}
+
+.page-intelligence-detail .article-section h2 {
+  font-weight: 800;
+}
+
+.page-intelligence-detail .article-section {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  margin: 2.5rem 0 0;
+}
+
+.page-intelligence-detail .article-section:first-of-type {
+  margin-top: 0;
+}
+
+.article-assessment {
+  margin-top: 0.75rem;
+  padding: 1.25rem 1.4rem;
+  border: 1px solid rgba(120, 160, 210, 0.2);
+  border-left: 4px solid #1476ff;
+  border-radius: 0.9rem;
+  background: rgba(8, 27, 55, 0.55);
+}
+
+.article-section .article-assessment p {
+  margin: 0 0 0.75rem;
+  color: #dbe6f4;
+}
+
+.article-section .article-assessment p:last-child {
+  margin-bottom: 0;
 }
 
 .article-section,
@@ -4853,7 +5144,6 @@ button.site-ghost-button {
   color: #dbe8ff;
 }
 
-.publication-hero,
 .publication-tabs,
 .kpi-grid,
 .article-section,
@@ -4866,10 +5156,7 @@ button.site-ghost-button {
 }
 
 .publication-hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.88fr);
-  gap: 1rem;
-  padding: 1rem;
+  display: block;
 }
 
 .publication-hero-content,
@@ -4922,17 +5209,32 @@ button.site-ghost-button {
   gap: 0.65rem;
 }
 
-.publication-actions button {
+.publication-actions button,
+.publication-actions a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   border: 1px solid rgba(120, 160, 210, 0.24);
   border-radius: 999px;
-  padding: 0.7rem 1rem;
+  padding: 0.7rem 1.15rem;
   color: #dbe8ff;
   background: rgba(4, 15, 31, 0.44);
+  text-decoration: none;
+  font-weight: 650;
   transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
 }
 
+.publication-actions svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: currentColor;
+  flex: 0 0 auto;
+}
+
 .publication-actions button:hover,
-.publication-actions button:focus {
+.publication-actions button:focus,
+.publication-actions a:hover,
+.publication-actions a:focus {
   border-color: rgba(47, 139, 255, 0.55);
   color: #ffffff;
 }
@@ -5695,7 +5997,8 @@ body.is-modal-open {
     padding-bottom: 0.1rem;
   }
 
-  .publication-actions button {
+  .publication-actions button,
+  .publication-actions a {
     width: 100%;
     justify-content: center;
   }
@@ -5726,6 +6029,112 @@ body.is-modal-open {
 
   .publication-info-list dd {
     text-align: left;
+  }
+}
+
+.publication-hero__image {
+  width: 100%;
+  max-height: 22rem;
+  object-fit: cover;
+  border-radius: 1rem;
+  margin: 1rem 0 0;
+}
+
+.publication-facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+.publication-fact {
+  padding: 1rem;
+  border: 1px solid rgba(120, 160, 210, 0.2);
+  border-radius: 0.75rem;
+  background: rgba(8, 27, 55, 0.55);
+}
+
+.publication-fact__label {
+  color: #a7b4c8;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.publication-fact__value {
+  margin-top: 0.4rem;
+  color: #f7faff;
+  font-size: 0.92rem;
+  font-weight: 650;
+}
+
+.publication-summary {
+  margin: 1.5rem 0;
+  padding: 1.25rem 1.4rem;
+  border: 1px solid rgba(120, 160, 210, 0.2);
+  border-left: 4px solid #1476ff;
+  border-radius: 0.9rem;
+  background: rgba(8, 27, 55, 0.55);
+}
+
+.publication-summary__label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #7bb2ff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.publication-summary p {
+  margin: 0 0 0.75rem;
+  color: #dbe6f4;
+  line-height: 1.7;
+}
+
+.publication-summary p:last-child {
+  margin-bottom: 0;
+}
+
+.publication-findings-inline {
+  margin: 1.75rem 0;
+}
+
+.publication-findings-inline__label {
+  display: block;
+  margin-bottom: 0.85rem;
+  color: #7bb2ff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.publication-sidebar-card__source-name {
+  margin: 0 0 0.6rem;
+  color: #ffffff;
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.publication-sidebar-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.publication-sidebar-tag {
+  padding: 0.4rem 0.7rem;
+  border-radius: 0.6rem;
+  background: rgba(4, 15, 31, 0.3);
+  color: #dbe8ff;
+  font-size: 0.82rem;
+}
+
+@media (max-width: 650px) {
+  .publication-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -6387,6 +6796,16 @@ body.theme-home {
   color: #ffffff;
 }
 
+/* Keep the dark card dark on hover — the generic .home-v2-article-card:hover rule
+   above sets background: #ffffff, which combined with this card's white/light-blue
+   text (color: #ffffff / #dbeafe below) made the text disappear into the background
+   on hover. Same selector specificity, so source order decides; this must stay after
+   the generic hover rule to win. */
+.home-v2-article-card--main:hover,
+.home-v2-article-card--main:focus-within {
+  background: #142c48;
+}
+
 .home-v2-article-card__meta {
   display: flex;
   flex-wrap: wrap;
@@ -6942,6 +7361,30 @@ body.theme-home .article-premium-banner {
   box-shadow: 0 16px 40px rgba(15, 39, 66, 0.06);
 }
 
+body.theme-home .page-intelligence-detail .article-main {
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  box-shadow: 0 16px 40px rgba(15, 39, 66, 0.06);
+  border-radius: 1.5rem;
+}
+
+body.theme-home .page-intelligence-detail .article-section {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+body.theme-home .article-assessment {
+  border-color: #e5e7eb;
+  border-left-color: #2563eb;
+  background: #f8fbff;
+}
+
+body.theme-home .article-section .article-assessment p {
+  color: #1f2937;
+}
+
 body.theme-home .article-hero {
   grid-template-columns: minmax(0, 1.18fr) minmax(19rem, 0.92fr);
   gap: 1.25rem;
@@ -6985,6 +7428,19 @@ body.theme-home .article-actions button.is-active {
   border-color: #bfdbfe;
   background: #f8fbff;
   color: #2563eb;
+}
+
+body.theme-home .article-actions .is-primary {
+  background: #0b1f35;
+  color: #ffffff;
+  border-color: transparent;
+}
+
+body.theme-home .article-actions .is-primary:hover,
+body.theme-home .article-actions .is-primary:focus {
+  background: #0b1f35;
+  color: #ffffff;
+  border-color: transparent;
 }
 
 body.theme-home .article-hero-image {
@@ -7071,12 +7527,6 @@ body.theme-home .article-empty-block,
 body.theme-home .article-related-card {
   border-color: #e5e7eb;
   background: #f8fafc;
-}
-
-body.theme-home .key-change-card:hover,
-body.theme-home .impact-card:hover {
-  border-color: #bfdbfe;
-  box-shadow: 0 16px 34px rgba(15, 39, 66, 0.08);
 }
 
 body.theme-home .timeline-item::before {
@@ -7575,7 +8025,6 @@ body.theme-home .publication-breadcrumbs .is-active {
   color: #2563eb;
 }
 
-body.theme-home .publication-hero,
 body.theme-home .publication-tabs,
 body.theme-home .kpi-grid,
 body.theme-home .article-section,
@@ -7584,13 +8033,6 @@ body.theme-home .related-publications {
   border: 1px solid #e5e7eb;
   background: #ffffff;
   box-shadow: 0 16px 40px rgba(15, 39, 66, 0.06);
-}
-
-body.theme-home .publication-hero {
-  grid-template-columns: minmax(0, 1.18fr) minmax(19rem, 0.92fr);
-  gap: 1.25rem;
-  padding: 1.25rem;
-  border-radius: 1.8rem;
 }
 
 body.theme-home .publication-hero__title {
@@ -7622,14 +8064,17 @@ body.theme-home .publication-meta--hero {
   color: #7b8698;
 }
 
-body.theme-home .publication-actions button {
+body.theme-home .publication-actions button,
+body.theme-home .publication-actions a {
   border-color: #d9e1ee;
   background: #ffffff;
   color: #4b5563;
 }
 
 body.theme-home .publication-actions button:hover,
-body.theme-home .publication-actions button:focus {
+body.theme-home .publication-actions button:focus,
+body.theme-home .publication-actions a:hover,
+body.theme-home .publication-actions a:focus {
   border-color: #bfdbfe;
   background: #f8fbff;
   color: #2563eb;
@@ -7916,6 +8361,112 @@ body.theme-home .related-publications {
   }
 }
 
+body.theme-home .publication-fact {
+  border-color: #e5e7eb;
+  background: #f8fafc;
+}
+
+body.theme-home .publication-fact__label {
+  color: #7b8698;
+}
+
+body.theme-home .publication-fact__value {
+  color: #0b1f35;
+}
+
+body.theme-home .publication-summary {
+  border-color: #e5e7eb;
+  border-left-color: #2563eb;
+  background: #f8fbff;
+}
+
+body.theme-home .publication-summary__label {
+  color: #2563eb;
+}
+
+body.theme-home .publication-summary p {
+  color: #1f2937;
+}
+
+body.theme-home .publication-findings-inline__label {
+  color: #2563eb;
+}
+
+body.theme-home .publication-sidebar-card__source-name {
+  color: #0b1f35;
+}
+
+body.theme-home .publication-sidebar-tag {
+  border: 1px solid #e5e7eb;
+  background: #f8fafc;
+  color: #1f2937;
+}
+
+/* Flatten the boxed article sections on the publication detail page into plain
+   flowing typography (title + content, no card chrome), matching the simple
+   editorial layout of the reference mockup. Scoped to .page-publication-details
+   so Intelligence Details (which reuses .article-section/.related-publications)
+   keeps its own boxed look untouched. */
+body.theme-home .page-publication-details .article-section {
+  margin: 2.75rem 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.theme-home .page-publication-details .article-section:first-of-type {
+  margin-top: 0;
+}
+
+body.theme-home .page-publication-details .article-section h2 {
+  font-size: 1.6rem;
+  letter-spacing: -0.02em;
+}
+
+body.theme-home .page-publication-details .related-publications {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.theme-home .page-publication-details .publication-hero__image {
+  border-radius: 0.75rem;
+}
+
+body.theme-home .page-publication-details .publication-finding-card {
+  border-left: 3px solid #2563eb;
+  background: #f8fbff;
+}
+
+body.theme-home .page-publication-details .document-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.65rem;
+}
+
+body.theme-home .page-publication-details .document-card {
+  border-radius: 0.85rem;
+}
+
+/* .site-main--home strips top padding for pages with a true full-bleed hero
+   banner (the home page). The publication detail page shares theme-home only
+   for its light color palette, not that full-bleed layout, so its breadcrumbs
+   and title need the same clearance under the fixed header as every other
+   non-home page. */
+body.theme-home .page-publication-details {
+  padding-top: 8.25rem;
+}
+
+@media (max-width: 991.98px) {
+  body.theme-home .page-publication-details {
+    padding-top: 5.5rem;
+  }
+}
+
 body.theme-home .page-countries {
   display: grid;
   gap: 2rem;
@@ -7949,35 +8500,69 @@ body.theme-home .countries-map-shell {
   box-shadow: 0 18px 42px rgba(15, 39, 66, 0.08);
 }
 
-body.theme-home .countries-map {
-  background: transparent;
+body.theme-home .countries-map-toolbar__title h2 {
+  color: #0b1f35;
 }
 
-body.theme-home .countries-map-region text,
-body.theme-home .interactive-map-country text {
-  fill: #33506e;
-  text-shadow: none;
+body.theme-home .countries-map-year-select {
+  color: #6b7280;
 }
 
-body.theme-home .interactive-map-basemap-label {
-  fill: rgba(86, 113, 143, 0.58);
+body.theme-home .countries-map-year-select select {
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #0b1f35;
 }
 
-body.theme-home .interactive-map-city-label {
-  fill: #5c7898 !important;
+body.theme-home .countries-map-sidebar {
+  border: 1px solid #e5e7eb;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 248, 255, 0.98));
+  box-shadow: 0 14px 30px rgba(15, 39, 66, 0.06);
 }
 
-body.theme-home .interactive-map-country circle {
-  fill: #2563eb;
-  filter: drop-shadow(0 0 8px rgba(37, 99, 235, 0.35));
+body.theme-home .countries-map-sidebar__group h3 {
+  color: #0b1f35;
 }
 
-body.theme-home .countries-map-tooltip {
-  display: none;
+body.theme-home .countries-map-style-option,
+body.theme-home .countries-map-overlay-option {
+  color: #33506e;
 }
 
-body.theme-home .interactive-map-tooltip {
-  border-radius: 1.2rem;
+body.theme-home .countries-map-legend {
+  border: 1px solid #e5e7eb;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 14px 30px rgba(15, 39, 66, 0.08);
+}
+
+body.theme-home .countries-map-legend__title {
+  color: #0b1f35;
+}
+
+body.theme-home .countries-map-legend li {
+  color: #6b7280;
+}
+
+body.theme-home .countries-grid-section__title {
+  color: #0b1f35;
+}
+
+body.theme-home .countries-grid-section__description {
+  color: #6b7280;
+}
+
+body.theme-home .countries-compare-btn,
+body.theme-home .countries-grid-nav__btn {
+  border-color: #e5e7eb;
+  color: #33506e;
+}
+
+body.theme-home .countries-compare-btn:hover,
+body.theme-home .countries-compare-btn:focus-visible,
+body.theme-home .countries-grid-nav__btn:hover,
+body.theme-home .countries-grid-nav__btn:focus-visible {
+  border-color: #2563eb;
+  color: #2563eb;
 }
 
 body.theme-home .access-request-page {
@@ -8386,18 +8971,6 @@ body.theme-home .sidebar-card__item p {
   color: #6b7280;
 }
 
-body.theme-home .countries-map-shell {
-  border: 1px solid #e5e7eb;
-  border-radius: 2rem;
-  overflow: hidden;
-  background: #ffffff;
-  box-shadow: 0 16px 40px rgba(15, 39, 66, 0.06);
-}
-
-body.theme-home .countries-grid {
-  gap: 1.15rem;
-}
-
 body.theme-home .country-card:hover,
 body.theme-home .country-card:focus-within,
 body.theme-home .quick-country-card:hover,
@@ -8518,9 +9091,24 @@ body.theme-home .country-key-indicators {
   background: #f8fafc;
 }
 
-body.theme-home .country-risk-card__badge {
+body.theme-home .country-risk-card__badge--positive {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+body.theme-home .country-risk-card__badge--neutral {
   background: #eaf2ff;
   color: #2563eb;
+}
+
+body.theme-home .country-risk-card__badge--caution {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+body.theme-home .country-risk-card__badge--negative {
+  background: #fee2e2;
+  color: #b91c1c;
 }
 
 body.theme-home .country-tabs {
@@ -8619,7 +9207,6 @@ body.theme-home .table-card__footnote {
 
 @media (max-width: 991.98px) {
   body.theme-home .country-stats-grid,
-  body.theme-home .countries-grid,
   body.theme-home .compare-feature-grid,
   body.theme-home .country-profile-indicators,
   body.theme-home .country-metric-grid,
@@ -8639,7 +9226,6 @@ body.theme-home .table-card__footnote {
   }
 
   body.theme-home .country-stats-grid,
-  body.theme-home .countries-grid,
   body.theme-home .compare-feature-grid,
   body.theme-home .country-profile-indicators,
   body.theme-home .country-metric-grid,
@@ -8823,45 +9409,6 @@ body.theme-home .country-profile-hero {
   margin-top: 1.5rem;
 }
 
-body.theme-home .interactive-map-basemap-label {
-  fill: rgba(86, 113, 143, 0.58);
-}
-
-body.theme-home .interactive-map-country text {
-  fill: #33506e;
-}
-
-body.theme-home .interactive-map-city-label {
-  fill: #5c7898;
-}
-
-body.theme-home .interactive-map-country circle {
-  fill: #2563eb;
-}
-
-body.theme-home .interactive-map-legend {
-  border-radius: 1.2rem;
-}
-
-body.theme-home .interactive-map-tooltip {
-  color: #1f2937;
-}
-
-body.theme-home .interactive-map-tooltip__code {
-  color: #2563eb;
-}
-
-body.theme-home .interactive-map-tooltip__title,
-body.theme-home .interactive-map-tooltip__meta dd {
-  color: #0b1f35;
-}
-
-body.theme-home .interactive-map-tooltip__meta dt,
-body.theme-home .interactive-map-tooltip__summary {
-  color: #6b7280;
-}
-
-body.theme-home .interactive-map-tooltip__link,
 body.theme-home .quick-country-card a {
   color: #2563eb;
 }

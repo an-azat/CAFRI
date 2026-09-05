@@ -17,24 +17,23 @@
             <span>@Model.AnalysisType</span>
         </div>
 
+        @{
+            var canDownload = Model.AvailableDownloads.Any(x => x.IsDownloadable);
+        }
         <div class="article-actions">
-            @foreach (var action in Model.Actions)
-            {
-                var normalizedLabel = action.Label.Trim().ToLowerInvariant();
-                var actionType = normalizedLabel.Contains("download") ? "download"
-                    : normalizedLabel.Contains("share") ? "share"
-                    : normalizedLabel.Contains("print") ? "print"
-                    : normalizedLabel.Contains("save") ? "save"
-                    : normalizedLabel.Contains("cite") ? "cite"
-                    : "default";
-                <button
-                    type="button"
-                    data-content-action="@actionType"
-                    data-content-title="@Model.Title"
-                    data-download-trigger="@(actionType == "download" ? "true" : "false")">
-                    @action.Label
-                </button>
-            }
+            <button
+                type="button"
+                class="is-primary"
+                data-content-action="download"
+                data-content-title="@Model.Title"
+                data-download-trigger="true"
+                disabled="@(!canDownload ? "disabled" : null)">
+                <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" /></svg>
+                Download Files
+            </button>
+            <button type="button" data-content-action="save" data-content-title="@Model.Title">
+                Save
+            </button>
         </div>
     </div>
 

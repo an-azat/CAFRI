@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using CAFRI.Domain.Content;
 using CAFRI.Infrastructure.Content;
 using CAFRI.Infrastructure.Persistence;
@@ -159,9 +161,10 @@ public sealed class PublicationImportsController : ControllerBase
 
     private bool AuthorizeRequest()
     {
+        // Fail closed: an unconfigured key must lock the endpoint down, not open it up.
         if (string.IsNullOrWhiteSpace(_options.ApiKey))
         {
-            return true;
+            return false;
         }
 
         var provided = Request.Headers["X-CAFRI-Api-Key"].FirstOrDefault();
@@ -175,7 +178,10 @@ public sealed class PublicationImportsController : ControllerBase
             }
         }
 
-        return string.Equals(provided, _options.ApiKey, StringComparison.Ordinal);
+        var providedBytes = Encoding.UTF8.GetBytes(provided ?? string.Empty);
+        var expectedBytes = Encoding.UTF8.GetBytes(_options.ApiKey);
+        return providedBytes.Length == expectedBytes.Length &&
+            CryptographicOperations.FixedTimeEquals(providedBytes, expectedBytes);
     }
 
     private async Task<PublicationContentItem?> FindDuplicateAsync(

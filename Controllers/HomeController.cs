@@ -22,10 +22,10 @@ public sealed class HomeController : Controller
         _logger = logger;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
-        var page = _homeContentService.GetHomePage();
-        var countries = _countryContentService.GetIndexPage().Countries;
+        var page = await _homeContentService.GetHomePageAsync(cancellationToken);
+        var countries = (await _countryContentService.GetIndexPageAsync(cancellationToken)).Countries;
 
         var model = new HomePageViewModel
         {
