@@ -575,8 +575,8 @@ public sealed class IntelligenceController : Controller
             documentRows.Add(
             [
                 model.DocumentTitle.Trim(),
-                model.DocumentSubtitle.Trim(),
-                model.DocumentMeta.Trim(),
+                model.DocumentSubtitle?.Trim() ?? string.Empty,
+                model.DocumentMeta?.Trim() ?? string.Empty,
                 string.IsNullOrWhiteSpace(model.DocumentDownloadUrl) ? "#" : model.DocumentDownloadUrl.Trim()
             ]);
         }
@@ -603,7 +603,7 @@ public sealed class IntelligenceController : Controller
             _dbContext.IntelligenceOfficialDocumentEntries.AddRange(uploadedDocuments);
         }
 
-        var highlightRows = model.KeyHighlightsText
+        var highlightRows = (model.KeyHighlightsText ?? string.Empty)
             .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         _dbContext.IntelligenceHighlightEntries.AddRange(highlightRows.Select((text, index) => new IntelligenceHighlightEntry
         {

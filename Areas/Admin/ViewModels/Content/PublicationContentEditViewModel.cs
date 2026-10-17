@@ -90,7 +90,7 @@ public sealed class PublicationContentEditViewModel
 
     [StringLength(160)]
     [Display(Name = "Author")]
-    public string AuthorLabel { get; init; } = string.Empty;
+    public string? AuthorLabel { get; init; } = string.Empty;
 
     [StringLength(160)]
     [Display(Name = "Document Label")]

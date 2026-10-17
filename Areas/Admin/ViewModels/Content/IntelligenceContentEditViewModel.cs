@@ -40,39 +40,41 @@ public sealed class IntelligenceContentEditViewModel
 
     public string? DetailsJson { get; init; }
 
-    public string OverviewLead { get; init; } = string.Empty;
+    // Optional editor fields are nullable: with <Nullable>enable</Nullable> MVC treats a non-nullable
+    // string as implicitly [Required], so an empty textarea (e.g. no download files) failed validation.
+    public string? OverviewLead { get; init; } = string.Empty;
 
-    public string OverviewBody { get; init; } = string.Empty;
+    public string? OverviewBody { get; init; } = string.Empty;
 
-    public string EffectiveDate { get; init; } = string.Empty;
+    public string? EffectiveDate { get; init; } = string.Empty;
 
-    public string AppliesTo { get; init; } = string.Empty;
+    public string? AppliesTo { get; init; } = string.Empty;
 
-    public string DocumentTitle { get; init; } = string.Empty;
+    public string? DocumentTitle { get; init; } = string.Empty;
 
-    public string DocumentSubtitle { get; init; } = string.Empty;
+    public string? DocumentSubtitle { get; init; } = string.Empty;
 
-    public string DocumentMeta { get; init; } = string.Empty;
+    public string? DocumentMeta { get; init; } = string.Empty;
 
-    public string DocumentDownloadUrl { get; init; } = string.Empty;
+    public string? DocumentDownloadUrl { get; init; } = string.Empty;
 
-    public string DocumentsText { get; init; } = string.Empty;
+    public string? DocumentsText { get; init; } = string.Empty;
 
-    public string KeyChangesText { get; init; } = string.Empty;
+    public string? KeyChangesText { get; init; } = string.Empty;
 
-    public string ImpactAnalysisText { get; init; } = string.Empty;
+    public string? ImpactAnalysisText { get; init; } = string.Empty;
 
-    public string TimelineText { get; init; } = string.Empty;
+    public string? TimelineText { get; init; } = string.Empty;
 
-    public string DocumentInformationText { get; init; } = string.Empty;
+    public string? DocumentInformationText { get; init; } = string.Empty;
 
-    public string KeyHighlightsText { get; init; } = string.Empty;
+    public string? KeyHighlightsText { get; init; } = string.Empty;
 
-    public string RelatedOfficialSourcesText { get; init; } = string.Empty;
+    public string? RelatedOfficialSourcesText { get; init; } = string.Empty;
 
-    public string RelatedIntelligenceText { get; init; } = string.Empty;
+    public string? RelatedIntelligenceText { get; init; } = string.Empty;
 
-    public string MonitoringStatusText { get; init; } = string.Empty;
+    public string? MonitoringStatusText { get; init; } = string.Empty;
 
     public int DisplayOrder { get; init; }
 
