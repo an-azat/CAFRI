@@ -10,7 +10,7 @@ public sealed class PublicationsPageViewModel
 
     public string SelectedTopic { get; init; } = "All Topics";
 
-    public string SelectedTab { get; init; } = "latest";
+    public string SortBy { get; init; } = "Newest";
 
     public int CurrentPage { get; init; } = 1;
 
@@ -18,13 +18,7 @@ public sealed class PublicationsPageViewModel
 
     public int TotalResults { get; init; }
 
-    public int ShowingFrom { get; init; }
-
     public int ShowingTo { get; init; }
-
-    public string Title { get; init; } = "Publications";
-
-    public string Description { get; init; } = string.Empty;
 
     public IReadOnlyList<string> TypeOptions { get; init; } = [];
 
@@ -32,13 +26,12 @@ public sealed class PublicationsPageViewModel
 
     public IReadOnlyList<string> TopicOptions { get; init; } = [];
 
-    public IReadOnlyList<PublicationTabViewModel> Tabs { get; init; } = [];
-
     public IReadOnlyList<PublicationCardViewModel> Publications { get; init; } = [];
 
-    public IReadOnlyList<PublicationCategoryItemViewModel> Categories { get; init; } = [];
-
-    public IReadOnlyList<PublicationListItemViewModel> LatestPublications { get; init; } = [];
-
-    public IReadOnlyList<PublicationBenefitViewModel> Benefits { get; init; } = [];
+    public bool HasActiveFilters =>
+        !string.IsNullOrWhiteSpace(Query) ||
+        SelectedType != "All Types" ||
+        SelectedCountry != "All Countries" ||
+        SelectedTopic != "All Topics" ||
+        SortBy != "Newest";
 }

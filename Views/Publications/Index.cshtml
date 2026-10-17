@@ -4,67 +4,120 @@
     ViewData["PageTheme"] = "theme-home";
 }
 
-<div class="page-publications">
-    <section class="publications-header publications-header--editorial">
-        <div class="publications-header__copy">
-            <span class="home-v2-section__label">Research library</span>
-            <h1 class="publications-header__title">Publications</h1>
-            <p class="publications-header__description">@Model.Description</p>
-        </div>
+<div class="page-publications-library">
+    <section class="pub-hero">
+        <div class="pub-hero__eyebrow">Research &amp; Documents</div>
+        <h1>Publications</h1>
+        <p>Official publications, regulatory updates and research across Central Asia.</p>
     </section>
 
-    <div class="publications-layout">
-        <main class="publications-main">
-            <partial name="_PublicationTabs" model="Model.Tabs" />
-
-            <div class="publications-results-header publications-results-header--editorial">
-                <div class="publications-results-header__count">
-                    @(Model.TotalResults > 0
-                        ? $"Showing {Model.ShowingFrom}-{Model.ShowingTo} of {Model.TotalResults} results"
-                        : "No publications found")
-                </div>
-
-                <div class="publications-results-header__search">
-                    <partial name="_PublicationFilters" model="Model" />
+    <form method="get" action="/publications" class="pub-toolbar" aria-label="Search and filter publications" data-auto-submit-filters>
+        <div class="pub-toolbar__head">
+            <div class="pub-toolbar__title">
+                <span class="pub-toolbar__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M10.5 4a6.5 6.5 0 1 0 4.03 11.6l4.43 4.43 1.06-1.06-4.43-4.43A6.5 6.5 0 0 0 10.5 4Zm0 1.5a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z" /></svg>
+                </span>
+                <div>
+                    <h2>Find publications</h2>
+                    <p>Search documents and filter the library</p>
                 </div>
             </div>
+            <div class="pub-toolbar__count"><strong>@Model.TotalResults</strong> @(Model.TotalResults == 1 ? "result" : "results")</div>
+        </div>
 
-            @if (Model.Publications.Count == 0)
-            {
-                <section class="publications-empty-state">
-                    <h2>No publications found</h2>
-                    <p>Try adjusting your filters or search query.</p>
-                    <a class="home-v2-button home-v2-button--ghost publications-empty-state__button" href="/publications">Reset Filters</a>
-                </section>
-            }
-            else
-            {
-                var gridClass = Model.Publications.Count switch
-                {
-                    1 => "publications-grid publications-grid--single",
-                    2 => "publications-grid publications-grid--double",
-                    _ => "publications-grid"
-                };
+        <div class="pub-toolbar__search">
+            <label class="visually-hidden" for="publications-search">Search publications</label>
+            <input id="publications-search" name="query" type="search" value="@Model.Query" placeholder="Search publications, reports, institutions..." />
+            <button class="pub-toolbar__search-submit" type="submit" aria-label="Search publications">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 4a6.5 6.5 0 1 0 4.03 11.6l4.43 4.43 1.06-1.06-4.43-4.43A6.5 6.5 0 0 0 10.5 4Zm0 1.5a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z" /></svg>
+            </button>
+        </div>
 
-                <div class="@gridClass">
-                    @foreach (var item in Model.Publications)
+        <div class="pub-toolbar__filters">
+            <div class="pub-field">
+                <label for="pub-country">Country</label>
+                <select id="pub-country" name="country">
+                    @foreach (var option in Model.CountryOptions)
                     {
-                        <partial name="_PublicationCard" model="item" />
+                        <option value="@(option == "All Countries" ? string.Empty : option)" selected="@(option == Model.SelectedCountry ? "selected" : null)">@option</option>
                     }
-                </div>
+                </select>
+            </div>
+
+            <div class="pub-field">
+                <label for="pub-topic">Category</label>
+                <select id="pub-topic" name="topic">
+                    @foreach (var option in Model.TopicOptions)
+                    {
+                        <option value="@(option == "All Topics" ? string.Empty : option)" selected="@(string.Equals(option, Model.SelectedTopic, StringComparison.OrdinalIgnoreCase) ? "selected" : null)">@(option == "All Topics" ? "All categories" : option)</option>
+                    }
+                </select>
+            </div>
+
+            <div class="pub-field">
+                <label for="pub-type">Type</label>
+                <select id="pub-type" name="type">
+                    @foreach (var option in Model.TypeOptions)
+                    {
+                        <option value="@(option == "All Types" ? string.Empty : option)" selected="@(option == Model.SelectedType ? "selected" : null)">@(option == "All Types" ? "All types" : option)</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="pub-toolbar__foot">
+            <div class="pub-toolbar__sort">
+                <label for="pub-sort">Sort by</label>
+                <select id="pub-sort" name="sortBy">
+                    <option value="Newest" selected="@(Model.SortBy == "Newest" ? "selected" : null)">Newest first</option>
+                    <option value="Oldest" selected="@(Model.SortBy == "Oldest" ? "selected" : null)">Oldest first</option>
+                    <option value="Title" selected="@(Model.SortBy == "Title" ? "selected" : null)">Title A–Z</option>
+                </select>
+            </div>
+            <noscript><button class="pub-toolbar__reset" type="submit">Apply filters</button></noscript>
+            @if (Model.HasActiveFilters)
+            {
+                <a class="pub-toolbar__reset" href="/publications">Reset filters &#8634;</a>
             }
+        </div>
+    </form>
 
-            <partial name="_PublicationsPagination" model="Model" />
-        </main>
-
-        <partial name="_PublicationSidebar" model="Model" />
+    <div class="pub-section-head">
+        <h2>Latest Publications</h2>
+        <p>Original documents and source material from across the region.</p>
     </div>
 
-    <partial name="_PublicationFilterModal" model="Model" />
+    @if (Model.Publications.Count > 0)
+    {
+        <section class="pub-list" data-load-more-list>
+            @foreach (var item in Model.Publications)
+            {
+                <partial name="_PublicationRow" model="item" />
+            }
+        </section>
 
-    <partial name="_BenefitsStrip" model="Model.Benefits" />
+        <div class="load-more">
+            @if (Model.CurrentPage < Model.TotalPages)
+            {
+                <a class="load-more__button"
+                   data-load-more
+                   href="@Url.Action("Index", "Publications", new
+                   {
+                       query = string.IsNullOrWhiteSpace(Model.Query) ? null : Model.Query,
+                       country = Model.SelectedCountry == "All Countries" ? null : Model.SelectedCountry,
+                       topic = Model.SelectedTopic == "All Topics" ? null : Model.SelectedTopic,
+                       type = Model.SelectedType == "All Types" ? null : Model.SelectedType,
+                       sortBy = Model.SortBy == "Newest" ? null : Model.SortBy,
+                       page = Model.CurrentPage + 1
+                   })">Load more publications <span aria-hidden="true">&darr;</span></a>
+            }
+            <p class="load-more__note" data-load-more-count>Showing @Model.ShowingTo of @Model.TotalResults publications</p>
+        </div>
+    }
+    else
+    {
+        <section class="pub-empty">
+            No publications match your search or filters. <a href="/publications">Reset the filters</a>.
+        </section>
+    }
 </div>
-
-@section Scripts {
-    <script src="~/js/publication-cards.js" asp-append-version="true"></script>
-}

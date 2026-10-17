@@ -47,6 +47,4 @@ public sealed class IntelligencePageViewModel
     public int PageSize { get; init; }
 
     public string SortBy { get; init; } = "Newest";
-
-    public IReadOnlyList<string> ProfessionalAccessBenefits { get; init; } = [];
 }

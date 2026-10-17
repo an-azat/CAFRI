@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CAFRI — Intelligence</title>
+<style>
+:root{--navy:#07192d;--ink:#10233d;--muted:#667891;--line:#dfe6ef;--blue:#245bdb;--bg:#f3f6fb}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,system-ui,"Segoe UI",Arial,sans-serif}a{color:inherit;text-decoration:none}.top{height:30px;background:var(--navy);color:#dce5f1;display:flex;justify-content:space-between;align-items:center;padding:0 4%;font-size:10px}.header{height:60px;background:#46576b;color:white;display:flex;align-items:center;padding:0 4%;gap:35px;position:sticky;top:0;z-index:5}.logo{font-size:19px;font-weight:850;letter-spacing:.08em;margin-right:auto}.nav{display:flex;gap:26px;height:100%;align-items:center;color:#d0d7e1;font-size:12px}.nav a{height:100%;display:flex;align-items:center}.nav .active{color:#fff;border-bottom:2px solid #6fa1ff}.actions{display:flex;align-items:center;gap:9px}.access,.login{border-radius:24px;padding:9px 14px;font-size:11px;font-weight:750;white-space:nowrap}.access{background:#fff;color:#12243b}.login{border:1px solid #8794a4}.page{max-width:1320px;margin:auto;padding:0 30px 65px}.hero{text-align:center;padding:26px 0 20px}.eyebrow,.cat{font-size:10px;letter-spacing:.12em;font-weight:850;color:var(--blue);text-transform:uppercase}.hero h1{font-size:40px;line-height:1.15;letter-spacing:-.04em;font-weight:550;margin:4px 0 8px}.hero p{color:#64758e;font-size:13px;margin:0}.subnav{display:flex;gap:27px;align-items:center;overflow:auto;white-space:nowrap;border-bottom:1px solid #d9e1ed;margin-bottom:24px}.subnav a{padding:13px 0 12px;color:#61728a;font-size:12px;font-weight:700}.subnav a.active{color:var(--blue);border-bottom:2px solid var(--blue)}.subnav span{margin-left:auto;font-size:11px;color:#8290a4}.sectionhead{display:flex;justify-content:space-between;align-items:end;margin:25px 0 14px}.sectionhead h2{font-size:20px;margin:0;letter-spacing:-.025em}.sectionhead p{font-size:12px;color:var(--muted);margin:3px 0 0}.all{color:var(--blue);font-weight:750;font-size:12px;white-space:nowrap}.leadgrid{display:grid;grid-template-columns:1.6fr 1fr;gap:18px}.lead,.sidecard,.card,.trendcard{background:white;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 6px 22px #182b4509}.leadimg{display:block;height:315px;position:relative;overflow:hidden;background:#cad8e8}.leadimg img,.sideimg img,.cardimg img,.trendimg img{width:100%;height:100%;object-fit:cover;display:block}.leadimg:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#08182cbb,transparent 68%)}.label{position:absolute;top:14px;left:14px;z-index:1;background:white;color:var(--blue);border-radius:4px;padding:5px 8px;font-size:9px;font-weight:850;text-transform:uppercase;letter-spacing:.08em}.overlay{position:absolute;z-index:1;bottom:19px;left:22px;right:22px;color:white}.overlay .cat{color:#c1d4ff}.overlay h2{font-size:28px;line-height:1.17;letter-spacing:-.03em;margin:7px 0;max-width:760px;overflow-wrap:normal;word-break:normal}.overlay p{font-size:12px;line-height:1.55;color:#e4ebf4;max-width:650px;margin:0;overflow-wrap:break-word}.leadfoot{padding:14px 19px;display:flex;justify-content:space-between;gap:12px;font-size:11px;color:#758198}.read{font-size:11px;color:var(--blue);font-weight:850;white-space:nowrap}.sidegrid{display:grid;grid-template-rows:1fr 1fr;gap:17px}.sidecard{display:grid;grid-template-columns:42% 1fr}.sideimg{min-height:170px;background:#d8e2ef}.sidecopy{padding:14px;display:flex;flex-direction:column;align-items:start}.sidecopy h3{font-size:15px;line-height:1.3;margin:6px 0}.sidecopy p{font-size:11px;color:var(--muted);margin:0 0 10px}.sidecopy .read{margin-top:auto}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}.cardimg{height:160px;position:relative;background:#dce5f0}.cardbody{padding:14px 15px 15px;display:flex;flex-direction:column;height:calc(100% - 160px)}.meta{display:flex;gap:7px;align-items:center;flex-wrap:wrap;font-size:10px;color:#75839a}.country{background:#e9efff;color:var(--blue);border-radius:12px;padding:3px 7px;font-size:9px;font-weight:850}.card h3{font-size:16px;line-height:1.34;margin:9px 0 7px}.summary{font-size:12px;color:#66758c;margin:0 0 16px}.cardfoot{border-top:1px solid #e9edf3;padding-top:10px;margin-top:auto;display:flex;justify-content:space-between;gap:8px;align-items:center}.source{font-size:10px;color:#7c899d;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.trending{margin-top:36px;background:#eaf0f8;border:1px solid #dce5f0;border-radius:15px;padding:21px}.trendhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.trendhead h2{margin:0;font-size:20px}.trendhead p{font-size:11px;color:#74829a;margin:2px 0 0}.trendgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}.trendimg{height:105px;position:relative;background:#dce5f0}.rank{position:absolute;top:8px;left:8px;background:white;border-radius:4px;padding:4px 6px;font-size:9px;color:var(--blue);font-weight:850}.trendbody{padding:11px}.trendbody .cat{font-size:8px}.trendbody h3{font-size:13px;line-height:1.35;margin:5px 0 7px}.trendmeta{font-size:10px;color:#8591a3}.card,.trendcard{transition:transform .18s,box-shadow .18s}.card:hover,.trendcard:hover{transform:translateY(-3px);box-shadow:0 10px 24px #182b4518}.note{text-align:center;color:#8b97a9;font-size:10px;margin-top:25px}
+@media(max-width:950px){.leadgrid{grid-template-columns:1fr}.sidegrid{grid-template-columns:1fr 1fr;grid-template-rows:auto}.sidecard{grid-template-columns:1fr}.sideimg{height:140px;min-height:0}.grid{grid-template-columns:repeat(2,1fr)}.trendgrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:650px){.top{padding:0 12px}.top span:last-child{display:none}.header{padding:0 14px;gap:12px}.nav{display:none}.page{padding:0 14px 45px}.hero h1{font-size:34px}.subnav{gap:20px}.subnav span{display:none}.leadimg{height:280px}.overlay h2{font-size:23px}.leadfoot{flex-direction:column}.sidegrid{grid-template-columns:1fr}.sidecard{grid-template-columns:40% 1fr}.sideimg{height:auto;min-height:155px}.grid{grid-template-columns:1fr}.cardimg{height:195px}.trendgrid{grid-template-columns:1fr 1fr}.trending{padding:13px}.trendimg{height:90px}.trendbody{padding:9px}}
+
+/* Archive-matched header: centered primary navigation */
+.header{height:60px;display:grid;grid-template-columns:minmax(150px,1fr) auto minmax(230px,1fr);column-gap:20px;position:sticky;top:0;z-index:5;box-shadow:0 5px 18px #07192d14;border-bottom:1px solid #5b6b7f}
+.logo{margin-right:0;justify-self:start;display:flex;align-items:center;gap:10px}
+.logo:before{content:"";display:block;width:7px;height:25px;background:#6d9aff;border-radius:4px}
+.nav{justify-self:center;justify-content:center;gap:7px;white-space:nowrap}
+.nav a{height:auto;padding:10px 13px;border-radius:8px;transition:background .15s,color .15s}
+.nav a:hover{background:#ffffff12;color:#fff}
+.nav .active{background:#ffffff16;box-shadow:inset 0 -2px 0 #79a5ff;border-bottom:0}
+.actions{justify-self:end}
+.access{border-radius:9px;border:1px solid #fff;box-shadow:0 3px 9px #07192d1c}
+.login{border-radius:9px;background:#ffffff08}
+.countries-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:13px}
+.country-card{display:flex;flex-direction:column;min-height:205px;padding:17px 15px 14px;background:#fff;border:1px solid var(--line);border-radius:13px;transition:transform .18s,box-shadow .18s,border-color .18s;position:relative;overflow:hidden}
+.country-card:before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:#8aa6cf}
+.country-card.kyrgyzstan:before{background:#d85d54}.country-card.uzbekistan:before{background:#3694bd}.country-card.tajikistan:before{background:#7b66bd}.country-card.turkmenistan:before{background:#3c9678}
+.country-card:hover{transform:translateY(-3px);box-shadow:0 10px 24px #182b4515;border-color:#c8d5e8}
+.country-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:17px}
+.country-card .flag{display:grid;place-items:center;width:35px;height:35px;border-radius:9px;background:#edf2ff;color:var(--blue);font-size:10px;font-weight:900;letter-spacing:.05em}
+.country-arrow{font-size:17px;color:#8b98aa}
+.country-name{font-size:16px;font-weight:800;letter-spacing:-.02em}
+.country-card p{font-size:11px;line-height:1.5;color:#718096;margin:6px 0 17px}
+.country-bottom{margin-top:auto;padding-top:11px;border-top:1px solid #edf0f4;display:flex;align-items:center;justify-content:space-between;gap:5px;font-size:9px;color:#8491a3}
+.country-bottom strong{font-size:12px;color:#263a55;margin-right:3px}
+.country-link{font-size:10px;font-weight:800;color:var(--blue);white-space:nowrap}
+.country-section-head{margin-top:30px}
+@media(max-width:1100px){.countries-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:950px){.header{grid-template-columns:auto 1fr auto;padding:0 20px;gap:12px}.nav{gap:2px}.nav a{padding:9px 8px}.actions{gap:6px}.access,.login{padding:9px 10px}.countries-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.header{display:flex;justify-content:space-between;padding:0 14px;height:64px}.nav{display:none}.actions{margin-left:auto}.access{display:none}.countries-grid{grid-template-columns:1fr}.country-card{min-height:170px}.country-top{margin-bottom:11px}}
+
+
+/* Latest Intelligence by Country — story lists, not country landing cards */
+.country-intel-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.country-intel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px 15px 12px;min-width:0;display:flex;flex-direction:column;box-shadow:0 5px 18px #182b4507;transition:border-color .15s,box-shadow .15s}
+.country-intel:hover{border-color:#c9d6e8;box-shadow:0 8px 22px #182b4510}
+.country-intel-head{display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:1px solid #edf0f4}
+.country-code{width:34px;height:34px;display:grid;place-items:center;flex:none;border-radius:8px;background:#e9efff;color:#245bdb;font-size:10px;font-weight:900;letter-spacing:.04em}
+.country-code.kg{background:#fff0e5;color:#c65319}.country-code.uz{background:#e6f4fa;color:#187ca5}.country-code.tj{background:#f2eafa;color:#784bb0}.country-code.tm{background:#e5f5ee;color:#26805f}
+.country-intel-head h3{font-size:14px;margin:0;letter-spacing:-.01em}.country-intel-head p{font-size:10px;color:#8994a5;margin:2px 0 0}
+.country-total{margin-left:auto;font-size:9px;color:#74839a;white-space:nowrap;background:#f4f6fa;border-radius:5px;padding:4px 6px}
+.country-story{display:flex;flex-direction:column;align-items:flex-start;padding:12px 0;border-bottom:1px solid #edf0f4;gap:5px}
+.country-story:last-of-type{border-bottom:0}
+.story-date{font-size:9px;color:#8793a5}
+.country-story strong{font-size:12px;line-height:1.4;font-weight:750;color:#1b2e47}
+.country-story:hover strong{color:#245bdb}
+.story-topic{font-size:9px;color:#77869b}.story-topic b{color:#b0bac8;padding:0 3px}
+.country-more{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:11px;color:#245bdb;font-size:10px;font-weight:800}
+.country-more span{font-size:14px}
+@media(max-width:1100px){.country-intel-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.country-intel-grid{grid-template-columns:1fr}.country-intel{padding:14px}.country-section-head{align-items:flex-start}}
+
+</style></head><body>
+<div class="top"><span>Central Asia Financial &amp; Regulatory Intelligence Initiative</span><span>EN / RU · Institutional intelligence · Central Asia</span></div>
+<header class="header"><a class="logo" href="#">CAFRI</a><nav class="nav"><a class="active" href="#">Intelligence</a><a href="#">Map</a><a href="#">Publications</a><a href="#">About</a></nav><div class="actions"><a class="access" href="#">♙ &nbsp; Professional Access</a><a class="login" href="#">Login ↗</a></div></header>
+<main class="page">
+<section class="hero"><div class="eyebrow">Regional intelligence desk</div><h1>Intelligence</h1><p>Regulatory, banking and market intelligence across Central Asia.</p></section>
+<nav class="subnav"><a class="active" href="#latest">Latest Intelligence</a><a href="#topic">By Topic</a><a href="#trending">Trending Now</a><span>Updated daily · 12 intelligence briefs</span></nav>
+<div class="sectionhead" id="latest"><div><h2>Latest Intelligence</h2><p>New developments and analysis from across the region.</p></div><a class="all" href="#archive">View all intelligence →</a></div>
+<section class="leadgrid" id="topic">
+<article class="lead"><a class="leadimg" href="#"><img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1400&q=85" alt="Digital connectivity"><span class="label">Latest analysis</span><div class="overlay"><div class="cat">Telecommunications · Regional</div><h2>Satellite connectivity is reshaping Central Asia’s telecom landscape</h2><p>New low-orbit satellite services could challenge traditional operators and change the economics of connectivity across underserved markets.</p></div></a><div class="leadfoot"><span>15 Oct 2026 · CAFRI Research · 8 min read</span><a class="read" href="#">Read full analysis →</a></div></article>
+<div class="sidegrid">
+<article class="sidecard"><a class="sideimg" href="#"><img src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&w=700&q=80" alt="Digital financial services"></a><div class="sidecopy"><div class="cat">Banking · Uzbekistan</div><h3>Central bank signals a tighter approach to digital lending</h3><p>14 Oct 2026 · Regulatory update</p><a class="read" href="#">Read analysis →</a></div></article>
+<article class="sidecard"><a class="sideimg" href="#"><img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=700&q=80" alt="Commercial buildings"></a><div class="sidecopy"><div class="cat">Investment · Kazakhstan</div><h3>New capital rules may reshape regional financing</h3><p>13 Oct 2026 · Market intelligence</p><a class="read" href="#">Read analysis →</a></div></article>
+</div></section>
+<div class="sectionhead country-section-head" id="countries">
+  <div><h2>Latest Intelligence by Country</h2><p>Recent developments and analysis from across Central Asia.</p></div>
+  <a class="all" href="#">View all intelligence →</a>
+</div>
+<section class="country-intel-grid" aria-label="Latest intelligence by country">
+  <article class="country-intel">
+    <div class="country-intel-head"><span class="country-code kz">KZ</span><div><h3>Kazakhstan</h3><p>Latest country intelligence</p></div><span class="country-total">08 briefs</span></div>
+    <a class="country-story" href="#"><span class="story-date">12 Oct 2026</span><strong>National Bank updates foreign exchange reporting requirements</strong><span class="story-topic">Financial regulation <b>·</b> High impact</span></a>
+    <a class="country-story" href="#"><span class="story-date">08 Oct 2026</span><strong>Regional transport corridor projects enter a new phase</strong><span class="story-topic">Infrastructure <b>·</b> High impact</span></a>
+    <a class="country-more" href="#">View Kazakhstan intelligence <span>→</span></a>
+  </article>
+  <article class="country-intel">
+    <div class="country-intel-head"><span class="country-code kg">KG</span><div><h3>Kyrgyzstan</h3><p>Latest country intelligence</p></div><span class="country-total">06 briefs</span></div>
+    <a class="country-story" href="#"><span class="story-date">10 Oct 2026</span><strong>Kyrgyzstan modernizes customs procedures for EAEU trade</strong><span class="story-topic">Trade &amp; logistics <b>·</b> Medium impact</span></a>
+    <a class="country-story" href="#"><span class="story-date">04 Oct 2026</span><strong>Payment infrastructure reforms put interoperability in focus</strong><span class="story-topic">Banking <b>·</b> High impact</span></a>
+    <a class="country-more" href="#">View Kyrgyzstan intelligence <span>→</span></a>
+  </article>
+  <article class="country-intel">
+    <div class="country-intel-head"><span class="country-code uz">UZ</span><div><h3>Uzbekistan</h3><p>Latest country intelligence</p></div><span class="country-total">09 briefs</span></div>
+    <a class="country-story" href="#"><span class="story-date">11 Oct 2026</span><strong>Central Bank maintains focus on inflation and credit growth</strong><span class="story-topic">Banking <b>·</b> Medium impact</span></a>
+    <a class="country-story" href="#"><span class="story-date">09 Oct 2026</span><strong>GDP growth keeps Uzbekistan in regional investment focus</strong><span class="story-topic">Macroeconomics <b>·</b> High impact</span></a>
+    <a class="country-more" href="#">View Uzbekistan intelligence <span>→</span></a>
+  </article>
+  <article class="country-intel">
+    <div class="country-intel-head"><span class="country-code tj">TJ</span><div><h3>Tajikistan</h3><p>Latest country intelligence</p></div><span class="country-total">04 briefs</span></div>
+    <a class="country-story" href="#"><span class="story-date">07 Oct 2026</span><strong>Regional cooperation agenda expands to financial oversight</strong><span class="story-topic">Investment <b>·</b> Medium impact</span></a>
+    <a class="country-story" href="#"><span class="story-date">30 Sep 2026</span><strong>Energy investment pipeline draws renewed attention</strong><span class="story-topic">Infrastructure <b>·</b> High impact</span></a>
+    <a class="country-more" href="#">View Tajikistan intelligence <span>→</span></a>
+  </article>
+  <article class="country-intel">
+    <div class="country-intel-head"><span class="country-code tm">TM</span><div><h3>Turkmenistan</h3><p>Latest country intelligence</p></div><span class="country-total">03 briefs</span></div>
+    <a class="country-story" href="#"><span class="story-date">03 Oct 2026</span><strong>Regional energy connectivity remains a strategic priority</strong><span class="story-topic">Energy <b>·</b> High impact</span></a>
+    <a class="country-story" href="#"><span class="story-date">25 Sep 2026</span><strong>Trade connectivity projects progress across regional markets</strong><span class="story-topic">Trade &amp; logistics <b>·</b> Medium impact</span></a>
+    <a class="country-more" href="#">View Turkmenistan intelligence <span>→</span></a>
+  </article>
+</section>
+<section class="trending" id="trending"><div class="trendhead"><div><h2>↗ &nbsp;Trending Now</h2><p>Intelligence attracting attention across the region</p></div><a class="all" href="#">View trending →</a></div><div class="trendgrid">
+<a class="trendcard" href="#"><div class="trendimg"><img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80" alt="Connectivity"><span class="rank">01 · TRENDING</span></div><div class="trendbody"><div class="cat">Telecommunications</div><h3>Satellite connectivity and the future of regional telecom</h3><div class="trendmeta">Updated today · Regional</div></div></a>
+<a class="trendcard" href="#"><div class="trendimg"><img src="https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=600&q=80" alt="Financial markets"><span class="rank">02 · TRENDING</span></div><div class="trendbody"><div class="cat">Banking</div><h3>Central Asian banks face a changing regulatory landscape</h3><div class="trendmeta">Updated 1 day ago</div></div></a>
+<a class="trendcard" href="#"><div class="trendimg"><img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80" alt="Investment"><span class="rank">03 · TRENDING</span></div><div class="trendbody"><div class="cat">Investment</div><h3>Where infrastructure capital is flowing in 2026</h3><div class="trendmeta">Updated 2 days ago</div></div></a>
+<a class="trendcard" href="#"><div class="trendimg"><img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80" alt="Technology trade"><span class="rank">04 · TRENDING</span></div><div class="trendbody"><div class="cat">Trade &amp; logistics</div><h3>Customs modernization becomes a regional priority</h3><div class="trendmeta">Updated 3 days ago</div></div></a>
+</div></section><div class="note">Demonstration layout · Sample content and imagery for CAFRI Intelligence</div>
+</main></body></html>

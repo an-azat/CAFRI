@@ -4,28 +4,72 @@
     ViewData["PageTheme"] = "theme-home";
     var showLockedPreview = Model.IsPremium && !Model.CanAccessFullContent;
     var loginUrl = Url.Action("Login", "Account", new { returnUrl = Context.Request.Path + Context.Request.QueryString }) ?? "/Account/Login";
-    var accessCta = new CAFRI.ViewModels.Shared.ProfessionalAccessCtaViewModel
+    var accessGate = new CAFRI.ViewModels.Shared.ContentAccessGateViewModel
     {
-        Title = "Full analysis is available after sign in",
-        Description = "Guests can review only the short preview. Sign in to access the full intelligence material, structured analysis, timeline, official sources, and monitoring context.",
-        ButtonText = "Sign In to Continue",
-        ButtonUrl = loginUrl,
+        Breadcrumbs =
+        [
+            new() { Label = "Intelligence", Url = "/intelligence" },
+            new() { Label = Model.Category, Url = $"/intelligence/archive?category={Uri.EscapeDataString(Model.Category)}" },
+            new() { Label = "Article" }
+        ],
+        Kicker = $"{Model.CountryName} · {Model.Category}",
+        Title = Model.Title,
+        MetaItems = new[] { string.IsNullOrWhiteSpace(Model.PublishedDate) ? null : $"Published {Model.PublishedDate}", Model.ReadingTime, Model.AnalysisType }
+            .Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x!).ToList(),
+        Tags = new[] { Model.Category, Model.CountryName }.Where(x => !string.IsNullOrWhiteSpace(x)).ToList(),
+        CoverImageUrl = Model.HeroImageUrl,
+        CoverLabel = $"CAFRI · {Model.AnalysisType}",
+        CoverTitle = Model.Title,
+        Preview = Model.OverviewLead,
+        GateTitle = "Full analysis is available after sign in",
+        GateDescription = "Sign in to read the full article.",
+        SignInLabel = "Sign in to read full analysis",
+        SignInUrl = loginUrl,
+        DetailRows =
+        [
+            new() { Label = "Coverage", Value = Model.CountryName },
+            new() { Label = "Content type", Value = Model.AnalysisType },
+            new() { Label = "Access", Value = "Sign-in required" },
+            new() { Label = "Published", Value = Model.PublishedDate }
+        ],
+        RelatedTitle = "Related intelligence",
+        RelatedItems = Model.RelatedItems
+            .Select(x => new CAFRI.ViewModels.Shared.GateRelatedItemViewModel { Meta = $"{x.Category} · {x.PublishedLabel}", Title = x.Title, Url = x.Url })
+            .ToList()
+    };
+    var professionalAccessCta = new CAFRI.ViewModels.Shared.ProfessionalAccessCtaViewModel
+    {
+        Title = "Unlock Deeper Intelligence",
+        Description = "Professional Access opens the full CAFRI intelligence library, advanced monitoring workflows, and premium analytical tools.",
+        ButtonText = "Get Professional Access",
+        ButtonUrl = "/access/request",
         Benefits =
         [
-            "Full intelligence articles and regulatory analysis",
-            "Official sources, monitoring status, and related materials",
-            "Structured country and sector intelligence across Central Asia"
+            "Full Regulatory Timeline",
+            "Historical Analysis",
+            "AI Executive Briefs",
+            "Interactive Dashboards",
+            "Full Publication Library",
+            "Export (PDF & Excel)"
         ]
     };
 }
 
+@if (showLockedPreview)
+{
+    <div class="page-access-gate">
+        <partial name="_ContentAccessGate" model="accessGate" />
+    </div>
+}
+else
+{
 <div class="page-intelligence-detail">
     <nav class="article-breadcrumbs" aria-label="Breadcrumb">
         <a href="/">Home</a>
         <span>/</span>
         <a href="/intelligence">Intelligence</a>
         <span>/</span>
-        <a href="/intelligence">@Model.Category</a>
+        <a href="/intelligence/archive?category=@Uri.EscapeDataString(Model.Category)">@Model.Category</a>
         <span>/</span>
         <a href="/countries/@Model.CountryName.ToLowerInvariant()">@Model.CountryName</a>
         <span>/</span>
@@ -34,20 +78,6 @@
 
     <partial name="_ArticleHero" model="Model" />
 
-    @if (showLockedPreview)
-    {
-        <section class="article-premium-banner article-premium-banner--detail">
-            <div class="article-premium-banner__preview">
-                <span class="article-premium-banner__eyebrow">Preview Available</span>
-                <h2>Full material is currently locked</h2>
-                <p>@Model.OverviewLead</p>
-            </div>
-
-            <partial name="_ProfessionalAccessCta" model="accessCta" />
-        </section>
-    }
-    else
-    {
         <div class="article-layout">
             <main class="article-main">
                 <section id="overview" class="article-section article-overview">
@@ -105,6 +135,10 @@
                             @if (Model.AvailableDownloads.Count == 0 || Model.AvailableDownloads.All(x => !x.IsDownloadable))
                             {
                                 <span class="home-v2-button home-v2-button--ghost document-download-card__button-disabled" aria-disabled="true">Unavailable</span>
+                            }
+                            else if (!Model.CanAccessFullContent)
+                            {
+                                <a class="home-v2-button home-v2-button--ghost" href="@loginUrl">Sign in to download</a>
                             }
                             else
                             {
@@ -172,10 +206,15 @@
 
             <partial name="_ArticleSidebar" model="Model" />
         </div>
-    }
-</div>
 
-@if (Model.AvailableDownloads.Count != 0 && Model.AvailableDownloads.Any(x => x.IsDownloadable))
+        @if (User.Identity?.IsAuthenticated != true)
+        {
+            <partial name="_ProfessionalAccessCta" model="professionalAccessCta" />
+        }
+</div>
+}
+
+@if (Model.CanAccessFullContent && Model.AvailableDownloads.Any(x => x.IsDownloadable))
 {
     <div class="content-download-modal" data-download-modal hidden>
         <div class="content-download-modal__backdrop" data-download-close></div>

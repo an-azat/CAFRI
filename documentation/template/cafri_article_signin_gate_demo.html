@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CAFRI — Intelligence Article Access Preview</title>
+<style>
+:root{--navy:#07192d;--ink:#17283f;--muted:#6c7b90;--line:#dfe6ef;--blue:#245bdb;--bg:#f4f7fb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.6 Inter,system-ui,"Segoe UI",Arial,sans-serif}a{color:inherit;text-decoration:none}
+.top{height:27px;background:var(--navy);color:#dce5f1;padding:0 max(20px,calc((100% - 1200px)/2));display:flex;align-items:center;justify-content:space-between;font-size:10px}
+.header{height:68px;background:#46576b;color:#fff;padding:0 max(20px,calc((100% - 1200px)/2));display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px}
+.logo{font-weight:850;letter-spacing:.12em;font-size:20px;display:flex;align-items:center;gap:9px}.logo:before{content:"";height:24px;width:4px;background:#8fb0ff;border-radius:2px}
+.nav{display:flex;align-items:center;gap:8px}.nav a{font-size:12px;color:#d8e0ea;padding:8px 11px;border-radius:6px}.nav a.active{background:#ffffff18;color:#fff}
+.actions{justify-self:end;display:flex;gap:8px;align-items:center}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:7px;padding:9px 13px;font-size:11px;font-weight:750;border:1px solid transparent;cursor:pointer}
+.btn-light{background:#fff;color:#14263d}.btn-outline{background:transparent;border-color:#a9b5c4;color:#fff}
+main{max-width:1040px;margin:0 auto;padding:34px 24px 70px}.breadcrumbs{font-size:11px;color:#78879a;margin-bottom:22px;display:flex;gap:8px;flex-wrap:wrap}.breadcrumbs a{color:#456aa9}
+.kicker{font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+h1{font-size:34px;line-height:1.2;letter-spacing:-.035em;margin:0 0 15px;max-width:850px}
+.meta{display:flex;flex-wrap:wrap;gap:10px 18px;color:#75849a;font-size:11px;align-items:center}.dot{width:4px;height:4px;background:#a6b2c2;border-radius:50%;display:inline-block;margin-right:7px;vertical-align:middle}
+.tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:16px}.tag{background:#eaf0fb;border:1px solid #dce6f7;color:#36578d;padding:4px 8px;border-radius:5px;font-size:10px;font-weight:700}
+.rule{border:0;border-top:1px solid var(--line);margin:25px 0 24px}.article-layout{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:26px;align-items:start}.article-main{min-width:0}
+.cover{height:180px;border-radius:12px;background:linear-gradient(130deg,#10243b,#244c7a);display:flex;align-items:flex-end;padding:20px;color:#fff;position:relative;overflow:hidden;margin-bottom:22px}
+.cover:before,.cover:after{content:"";position:absolute;border:1px solid #ffffff24;border-radius:50%;width:340px;height:340px;right:-70px;top:-180px}.cover:after{width:250px;height:250px;right:40px;top:-120px}
+.cover-label{position:relative;z-index:1;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:#c8d8ee}.cover-title{position:relative;z-index:1;font-size:21px;font-weight:750;max-width:470px;line-height:1.25;margin-top:6px}
+.access-card{border:1px solid #d9e3f0;background:#fff;border-radius:12px;padding:28px 26px;box-shadow:0 8px 28px #102b4b0a;position:relative;overflow:hidden}.access-card:before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,#245bdb,#84aaff)}
+.access-inner{max-width:520px;margin:0 auto;text-align:center}.lock{width:48px;height:48px;border-radius:13px;background:#edf3ff;border:1px solid #dce7ff;color:#245bdb;display:grid;place-items:center;margin:0 auto 15px}.lock svg{width:23px;height:23px}
+.access-eyebrow{font-size:9px;font-weight:850;letter-spacing:.13em;color:#5875a7;text-transform:uppercase;margin-bottom:7px}
+.access-card h2{font-size:22px;line-height:1.3;letter-spacing:-.025em;margin:0 0 10px;color:#13253d}.access-card p{max-width:440px;margin:0 auto;color:#6e7d91;font-size:13px;line-height:1.7}
+.access-actions{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin-top:22px}.primary{background:var(--blue);color:#fff;box-shadow:0 3px 8px #245bdb20}.primary:hover{background:#194bc0}.secondary{background:#fff;border-color:#d6dfeb;color:#233752}.access-note{font-size:10px!important;color:#8b98a9!important;margin-top:15px!important}
+.sidebar{display:flex;flex-direction:column;gap:14px}.side-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px}.side-title{font-size:11px;font-weight:800;letter-spacing:.04em;margin-bottom:12px}
+.side-row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid #edf0f5;font-size:11px}.side-row span:first-child{color:#78869a}.side-row span:last-child{text-align:right;font-weight:650}
+.related{display:flex;flex-direction:column;gap:11px}.related a{font-size:11px;line-height:1.45;color:#314c70;font-weight:650}.related small{display:block;font-size:9px;color:#8b98a9;font-weight:500;margin-bottom:3px}
+.below{margin-top:30px;border-top:1px solid var(--line);padding-top:20px;display:flex;justify-content:space-between;gap:20px;align-items:center}.below h3{font-size:14px;margin:0 0 3px}.below p{font-size:11px;color:#75849a;margin:0}
+@media(max-width:760px){.header{grid-template-columns:1fr auto;height:auto;min-height:64px;padding:10px 18px}.nav{grid-column:1/-1;grid-row:2;overflow:auto;border-top:1px solid #ffffff20;padding-top:8px}.actions{grid-column:2;grid-row:1}.logo{font-size:18px}main{padding:24px 18px 50px}h1{font-size:29px}.article-layout{grid-template-columns:1fr}.sidebar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.access-card{padding:25px 18px}}
+@media(max-width:480px){.top span:last-child{display:none}.header{padding:10px 14px}.actions .btn-light{display:none}.nav a{white-space:nowrap;padding:7px 9px;font-size:11px}main{padding:20px 13px 40px}h1{font-size:26px}.meta{gap:7px 12px}.cover{height:145px;padding:15px}.cover-title{font-size:18px}.access-card{padding:23px 15px}.access-card h2{font-size:20px}.access-card p{font-size:12px}.sidebar{grid-template-columns:1fr}.below{align-items:flex-start;flex-direction:column}}
+</style></head><body>
+<div class="top"><span>Central Asia Financial &amp; Regulatory Intelligence Initiative</span><span>EN / RU · Regional intelligence</span></div>
+<header class="header"><a class="logo" href="#">CAFRI</a><nav class="nav"><a href="#">Intelligence</a><a href="#">Map</a><a href="#">Publications</a><a href="#" class="active">About</a></nav><div class="actions"><a class="btn btn-light" href="#">Professional Access</a><a class="btn btn-outline" href="#">Login ↗</a></div></header>
+<main>
+<div class="breadcrumbs"><a href="#">Intelligence</a><span>›</span><span>Financial Regulation</span><span>›</span><span>Article</span></div>
+<div class="kicker">REGIONAL INTELLIGENCE · FINANCIAL REGULATION</div>
+<h1>Central Asia’s Regulatory Landscape: Key Developments in 2025</h1>
+<div class="meta"><span><i class="dot"></i>Published 14 October 2026</span><span><i class="dot"></i>Reading time: 8 min</span><span><i class="dot"></i>Intelligence Brief</span></div>
+<div class="tags"><span class="tag">Financial Regulation</span><span class="tag">Central Asia</span><span class="tag">Regional Analysis</span></div><hr class="rule">
+<div class="article-layout"><section class="article-main">
+<div class="cover"><div><div class="cover-label">CAFRI · Intelligence Brief</div><div class="cover-title">Central Asia’s Regulatory Landscape</div></div></div>
+<section class="access-card" aria-labelledby="access-title"><div class="access-inner">
+<div class="lock" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M12 14v2"/></svg></div>
+<div class="access-eyebrow">Members-only content</div><h2 id="access-title">Full publication is available after sign in</h2>
+<p>Sign in to access the full intelligence brief, including the analysis, key findings and supporting details.</p>
+<div class="access-actions"><a class="btn primary" href="#">Sign in to read full publication <span aria-hidden="true">→</span></a><a class="btn secondary" href="#">Explore public intelligence</a></div>
+<p class="access-note">You can still review the publication title, date, topics and other public metadata above.</p>
+</div></section>
+<div class="below"><div><h3>Need access to CAFRI intelligence?</h3><p>Professional access may be available for eligible users and partner institutions.</p></div><a class="btn secondary" href="#">Request professional access →</a></div>
+</section><aside class="sidebar">
+<div class="side-card"><div class="side-title">PUBLICATION DETAILS</div><div class="side-row"><span>Coverage</span><span>Central Asia</span></div><div class="side-row"><span>Content type</span><span>Intelligence Brief</span></div><div class="side-row"><span>Access</span><span>Sign-in required</span></div><div class="side-row"><span>Last updated</span><span>14 Oct 2026</span></div></div>
+<div class="side-card"><div class="side-title">RELATED INTELLIGENCE</div><div class="related"><a href="#"><small>MACROECONOMICS · 09 OCT 2026</small>Regional Inflation Trends and Monetary Policy Outlook</a><a href="#"><small>BANKING SECTOR · 02 OCT 2026</small>Digital Banking and Cross-Border Payment Developments</a><a href="#"><small>FINANCIAL REGULATION · 26 SEP 2026</small>Regulatory Changes Across Central Asia</a></div></div>
+</aside></div></main></body></html>

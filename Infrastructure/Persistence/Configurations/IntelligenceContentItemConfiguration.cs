@@ -22,6 +22,7 @@ public sealed class IntelligenceContentItemConfiguration : IEntityTypeConfigurat
         builder.Property(x => x.DetailsJson).HasColumnType("text");
         builder.HasIndex(x => x.Slug).IsUnique();
         builder.HasIndex(x => new { x.IsPublished, x.DisplayOrder });
+        builder.HasIndex(x => new { x.IsTrending, x.TrendingOrder });
 
         builder.HasMany(x => x.Sections).WithOne(x => x.IntelligenceContentItem).HasForeignKey(x => x.IntelligenceContentItemId).OnDelete(DeleteBehavior.Cascade);
         builder.HasMany(x => x.KeyChangeEntries).WithOne(x => x.IntelligenceContentItem).HasForeignKey(x => x.IntelligenceContentItemId).OnDelete(DeleteBehavior.Cascade);

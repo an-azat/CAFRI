@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CAFRI — Intelligence Archive</title>
+<style>
+:root{--navy:#07192d;--ink:#15263d;--muted:#6d7b90;--line:#dfe5ed;--blue:#245bdb;--bg:#f5f7fa}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,system-ui,"Segoe UI",Arial,sans-serif}a{color:inherit;text-decoration:none}
+
+.top{height:28px;background:#07192d;color:#dce5f1;padding:0 4%;display:flex;align-items:center;justify-content:space-between;font-size:10px;letter-spacing:.015em}
+.header{height:60px;background:#46576b;color:white;padding:0 4%;display:grid;grid-template-columns:minmax(150px,1fr) auto minmax(230px,1fr);align-items:center;column-gap:20px;border-bottom:1px solid #5b6b7f;box-shadow:0 5px 18px #07192d14}
+.logo{font-size:20px;font-weight:850;letter-spacing:.09em;justify-self:start;display:flex;align-items:center;gap:10px}
+.logo:before{content:"";display:block;width:7px;height:25px;background:#6d9aff;border-radius:4px}
+.nav{height:100%;display:flex;align-items:center;justify-content:center;gap:7px;color:#d0d7e1;font-size:12px;justify-self:center;white-space:nowrap}
+.nav a{height:auto;display:flex;align-items:center;padding:10px 13px;border-radius:8px;transition:background .15s,color .15s}
+.nav a:hover{background:#ffffff12;color:#fff}
+.nav .active{color:white;background:#ffffff16;box-shadow:inset 0 -2px 0 #79a5ff}
+.rightnav{display:flex;gap:9px;align-items:center;justify-self:end}
+.pill{font-size:11px;font-weight:750;padding:10px 15px;border-radius:9px;white-space:nowrap;transition:transform .15s,background .15s;display:inline-flex;align-items:center;gap:7px}
+.access{background:#fff;color:#15263d;border:1px solid #fff;box-shadow:0 3px 9px #07192d1c}
+.access:hover{background:#eef3fb;transform:translateY(-1px)}
+.login{border:1px solid #a9b5c4;color:#fff;background:#ffffff08}
+.login:hover{background:#ffffff17}
+.wrap{max-width:1240px;margin:auto;padding:0 28px 55px}
+.hero{padding:29px 0 22px;text-align:center}
+.eyebrow{font-size:10px;color:var(--blue);letter-spacing:.13em;text-transform:uppercase;font-weight:850}
+.hero h1{font-size:36px;line-height:1.15;letter-spacing:-.035em;font-weight:600;margin:4px 0 7px}
+.hero p{margin:0;color:var(--muted);font-size:13px}
+.toolbar{display:grid;grid-template-columns:minmax(240px,1fr) 165px 185px 155px auto;gap:9px;align-items:center;background:#fff;border:1px solid #dfe5ed;border-radius:14px;padding:10px; margin:0 0 23px;box-shadow:0 7px 22px #10233d08}
+.toolbar input,.toolbar select{height:42px;border:1px solid #e0e6ef;background:#f9fbfd;border-radius:9px;padding:0 12px;font:inherit;font-size:12px;color:var(--ink);min-width:0;outline:none;transition:border-color .15s,box-shadow .15s,background .15s}
+.toolbar input{width:100%;padding-left:38px;background-color:#f9fbfd}
+.toolbar input:focus,.toolbar select:focus{border-color:#91acee;background:#fff;box-shadow:0 0 0 3px #245bdb14}
+.toolbar .searchwrap{position:relative;min-width:0}
+.toolbar .searchwrap:before{content:"⌕";position:absolute;left:13px;top:7px;font-size:20px;line-height:24px;color:#7b8aa1;pointer-events:none}
+.toolbar select{cursor:pointer;padding-right:28px}
+.toolbar button{height:40px;border:1px solid #dce4ef;background:#fff;color:#52647d;border-radius:9px;font-size:12px;font-weight:750;padding:0 13px;cursor:pointer;transition:background .15s,border-color .15s,color .15s;white-space:nowrap}
+.toolbar button:hover{background:#edf2ff;color:var(--blue);border-color:#cbd8fa}
+.count{font-size:11px;color:#64748b;white-space:nowrap;margin-right:2px;grid-column:1/-1;padding:0 3px 2px}
+.heading{display:flex;align-items:baseline;justify-content:space-between;margin:0 0 13px}
+.heading h2{font-size:18px;margin:0;letter-spacing:-.02em}
+.heading p{font-size:11px;color:var(--muted);margin:0}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.card{display:flex;flex-direction:column;min-width:0;background:#fff;border:1px solid var(--line);border-radius:11px;overflow:hidden;transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 20px #10233d12}
+.image{height:155px;background:#dce5f0;position:relative}
+.image img{display:block;width:100%;height:100%;object-fit:cover}
+.tag{position:absolute;left:11px;top:11px;background:#fff;color:var(--blue);border-radius:5px;padding:4px 7px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.body{padding:13px 14px 14px;display:flex;flex-direction:column;flex:1}
+.meta{font-size:10px;color:#7a879a;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.country{color:var(--blue);font-weight:850}
+.card h3{font-size:15px;line-height:1.35;letter-spacing:-.01em;margin:8px 0 7px}
+.summary{font-size:12px;color:#66758a;margin:0 0 14px}
+.foot{margin-top:auto;padding-top:10px;border-top:1px solid #edf0f4;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.source{font-size:10px;color:#8994a5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.read{font-size:11px;color:var(--blue);font-weight:800;white-space:nowrap}
+.empty{display:none;padding:36px;text-align:center;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:10px}
+.pagination{display:flex;justify-content:center;gap:7px;margin:20px 0 0}
+.pagination button{border:1px solid var(--line);border-radius:7px;background:white;color:#61718a;padding:8px 12px;font-size:11px}
+.pagination .active{background:var(--blue);color:white;border-color:var(--blue)}
+
+.loadmore-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;margin:24px 0 0;padding:4px 0 0;width:100%}.loadmore{min-height:44px;min-width:230px;display:inline-flex;align-items:center;justify-content:center;gap:12px;padding:12px 23px;border:1px solid #245bdb;background:#245bdb;color:#fff;border-radius:10px;font:inherit;font-size:12px;font-weight:800;cursor:pointer;box-shadow:0 4px 10px #245bdb20;transition:background .15s,transform .15s,box-shadow .15s}.loadmore:hover{background:#194bc0;transform:translateY(-1px);box-shadow:0 7px 15px #245bdb2b}.loadmore:disabled{opacity:.55;cursor:default;transform:none}.loadmore-note{margin:0;font-size:11px;color:#7d899b;text-align:center;min-height:16px}
+.trendhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.trendhead h2{font-size:18px;margin:0}
+.trendhead span{font-size:11px;color:var(--muted)}
+
+.trend{display:flex;gap:11px;background:#fff;border:1px solid var(--line);border-radius:9px;padding:12px;align-items:start}
+.rank{width:25px;height:25px;flex:none;background:#edf2ff;color:var(--blue);display:grid;place-items:center;border-radius:6px;font-size:10px;font-weight:850}
+.trend strong{display:block;font-size:12px;line-height:1.35}
+.trend small{display:block;color:#8390a2;font-size:10px;margin-top:5px}
+.footnote{text-align:center;font-size:10px;color:#9aa3b1;margin-top:25px}
+@media(max-width:900px){.header{grid-template-columns:auto 1fr auto;padding:0 20px;column-gap:12px}.nav{gap:2px}.nav a{padding:9px 8px}.rightnav{gap:6px}.pill{padding:9px 10px}.toolbar{grid-template-columns:1fr 1fr}.toolbar .searchwrap{grid-column:1/-1}.count{grid-column:1/-1}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.loadmore{width:100%;max-width:340px;min-width:0}.top{padding:0 12px}.top span:last-child{display:none}.header{display:flex;justify-content:space-between;padding:0 14px;height:64px}.nav{display:none}.rightnav{margin-left:auto}.access{display:none}.wrap{padding:0 13px 40px}.hero h1{font-size:32px}.toolbar{grid-template-columns:1fr 1fr;padding:9px;gap:8px}.toolbar .searchwrap{grid-column:1/-1}.toolbar input{width:100%}.toolbar select{width:100%;min-width:0}.toolbar button{width:100%}.count{width:100%}.grid,.image{height:190px}.heading{align-items:flex-start;gap:8px;flex-direction:column}}
+
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.toolbar{flex-wrap:wrap}.toolbar input{flex-basis:100%}}
+@media(max-width:620px){.loadmore{width:100%;max-width:340px}.top{padding:0 12px}.top span:last-child{display:none}.header{padding:0 14px}.nav{display:none}.wrap{padding:0 13px 40px}.hero h1{font-size:32px}.toolbar{padding:10px}.toolbar select{flex:1;min-width:calc(50% - 8px)}.count{width:100%}.grid,.image{height:190px}.heading{align-items:flex-start;gap:8px;flex-direction:column}}
+
+/* CAFRI archive alignment: match the Intelligence listing hero */
+.hero { text-align: center; }
+.hero h1, .hero p, .hero .eyebrow, .hero .subtitle, .hero .description { text-align: center; }
+.hero .inner, .hero .hero-inner, .hero-content { margin-left: auto; margin-right: auto; }
+
+
+/* Minimal CAFRI archive toolbar */
+.toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  padding: 14px;
+  margin: 0 0 24px;
+  background: #fff;
+  border: 1px solid #dfe5ed;
+  border-radius: 14px;
+  box-shadow: 0 7px 22px #10233d08;
+}
+.toolbar .searchrow, .toolbar .filterrow, .toolbar .toolbar-footer { min-width: 0; }
+.toolbar .searchrow .searchwrap { width: 100%; }
+.toolbar .searchrow input {
+  width: 100%;
+  height: 44px;
+  box-sizing: border-box;
+  padding: 0 15px 0 42px;
+  border: 1px solid #dce4ef;
+  border-radius: 10px;
+  background-color: #fbfcfe;
+  color: #17283f;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s, background .15s;
+}
+.toolbar .searchrow input:focus {
+  border-color: #7898ed;
+  background: #fff;
+  box-shadow: 0 0 0 3px #245bdb12;
+}
+.toolbar .searchwrap:before {
+  content: "⌕";
+  position: absolute;
+  left: 15px;
+  top: 7px;
+  color: #718198;
+  font-size: 23px;
+  line-height: 25px;
+  pointer-events: none;
+}
+.toolbar .filterrow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.toolbar .filterrow select {
+  width: 100%;
+  min-width: 0;
+  height: 42px;
+  box-sizing: border-box;
+  padding: 0 34px 0 12px;
+  border: 1px solid #dce4ef;
+  border-radius: 9px;
+  background-color: #fff;
+  color: #3d4d63;
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+}
+.toolbar .filterrow select:focus { border-color: #7898ed; box-shadow: 0 0 0 3px #245bdb12; }
+.toolbar .toolbar-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 24px;
+  padding-top: 2px;
+}
+.toolbar .count { grid-column: auto; margin: 0; padding: 0 2px; font-size: 11px; color: #738198; }
+.toolbar #reset {
+  height: auto;
+  min-height: 28px;
+  border: 0;
+  background: transparent;
+  color: #245bdb;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 750;
+  padding: 5px 7px;
+}
+.toolbar #reset:hover { background: #f0f4ff; color: #1748b5; }
+@media(max-width:900px) {
+  .toolbar { padding: 12px; }
+  .toolbar .filterrow { gap: 8px; }
+}
+@media(max-width:620px) {
+  .toolbar { gap: 9px; padding: 10px; }
+  .toolbar .filterrow { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .toolbar .filterrow select:last-child { grid-column: 1 / -1; }
+  .toolbar .toolbar-footer { align-items: center; }
+}
+
+</style></head>
+<body>
+<div class="top"><span>Central Asia Financial &amp; Regulatory Intelligence Initiative</span><span>EN / RU · Institutional intelligence · Central Asia</span></div>
+<header class="header"><a class="logo" href="#">CAFRI</a><nav class="nav"><a class="active" href="#">Intelligence</a><a href="#">Map</a><a href="#">Publications</a><a href="#">About</a></nav><div class="rightnav"><a class="pill access" href="#">♙ &nbsp; Professional Access</a><a class="pill login" href="#">Login &nbsp; ↗</a></div></header>
+<main class="wrap">
+<section class="hero"><div class="eyebrow">Research &amp; analysis</div><h1>Intelligence Archive</h1><p>Regulatory, banking and market intelligence across Central Asia.</p></section>
+<div class="toolbar">
+  <div class="searchrow">
+    <div class="searchwrap">
+      <input id="search" type="search" placeholder="Search intelligence..." aria-label="Search intelligence">
+    </div>
+  </div>
+  <div class="filterrow">
+    <select id="country" aria-label="Filter by country">
+      <option value="">All countries</option><option>Kazakhstan</option><option>Uzbekistan</option><option>Kyrgyzstan</option><option>Tajikistan</option><option>Regional</option>
+    </select>
+    <select id="topic" aria-label="Filter by topic">
+      <option value="">All topics</option><option>Banking</option><option>Financial regulation</option><option>Trade &amp; logistics</option><option>Macroeconomics</option><option>Infrastructure</option><option>Investment</option>
+    </select>
+    <select id="sort" aria-label="Sort results">
+      <option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="title">Title A–Z</option>
+    </select>
+  </div>
+  <div class="toolbar-footer">
+    <span class="count" id="count">8 intelligence briefs</span>
+    <button id="reset" type="button" style="display:none">↺ &nbsp; Reset filters</button>
+  </div>
+</div>
+<div class="heading"><h2>All Intelligence</h2><p>Browse the full catalogue</p></div>
+<section class="grid" id="cards">
+<article class="card" data-title="National Bank updates foreign exchange reporting requirements" data-country="Kazakhstan" data-topic="Financial regulation" data-date="2026-10-12"><a class="image" href="#"><img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=900&q=80" alt="Digital network"><span class="tag">Financial regulation</span></a><div class="body"><div class="meta"><span class="country">KZ</span>Kazakhstan · 12 Oct 2026</div><h3>National Bank updates foreign exchange reporting requirements</h3><p class="summary">New reporting obligations for cross-border FX transactions signal closer monitoring of international flows.</p><div class="foot"><span class="source">National Bank of Kazakhstan</span><a class="read" href="#">Read →</a></div></div></article>
+<article class="card" data-title="Central Bank maintains focus on inflation and credit growth" data-country="Uzbekistan" data-topic="Banking" data-date="2026-10-11"><a class="image" href="#"><img src="https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=900&q=80" alt="Financial markets"><span class="tag">Banking</span></a><div class="body"><div class="meta"><span class="country">UZ</span>Uzbekistan · 11 Oct 2026</div><h3>Central Bank maintains focus on inflation and credit growth</h3><p class="summary">Policy signals suggest a continued balancing act between price stability and economic expansion.</p><div class="foot"><span class="source">Central Bank of Uzbekistan</span><a class="read" href="#">Read →</a></div></div></article>
+<article class="card" data-title="Kyrgyzstan modernizes customs procedures for EAEU trade" data-country="Kyrgyzstan" data-topic="Trade & logistics" data-date="2026-10-10"><a class="image" href="#"><img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80" alt="Technology and trade"><span class="tag">Trade &amp; logistics</span></a><div class="body"><div class="meta"><span class="country">KG</span>Kyrgyzstan · 10 Oct 2026</div><h3>Kyrgyzstan modernizes customs procedures for EAEU trade</h3><p class="summary">Updated clearance procedures aim to improve cross-border trade management and compliance.</p><div class="foot"><span class="source">State Customs Service</span><a class="read" href="#">Read →</a></div></div></article>
+<article class="card" data-title="GDP growth keeps Uzbekistan in regional investment focus" data-country="Uzbekistan" data-topic="Macroeconomics" data-date="2026-10-09"><a class="image" href="#"><img src="https://images.unsplash.com/photo-1569025690938-a00729c9e1f9?auto=format&fit=crop&w=900&q=80" alt="City skyline"><span class="tag">Macroeconomics</span></a><div class="body"><div class="meta"><span class="country">UZ</span>Uzbekistan · 09 Oct 2026</div><h3>GDP growth keeps Uzbekistan in regional investment focus</h3><p class="summary">Economic expansion continues to attract attention to services, industry and infrastructure investment.</p><div class="foot"><span class="source">State Statistics Committee</span><a class="read" href="#">Read →</a></div></div></article>
+<article class="card" data-title="Regional transport corridor projects enter a new phase" data-country="Kazakhstan" data-topic="Infrastructure" data-date="2026-10-08"><a class="image" href="#"><img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80" alt="Transport infrastructure"><span class="tag">Infrastructure</span></a><div class="body"><div class="meta"><span class="country">KZ</span>Kazakhstan · 08 Oct 2026</div><h3>Regional transport corridor projects enter a new phase</h3><p class="summary">Financing and construction milestones may strengthen alternative routes connecting regional markets.</p><div class="foot"><span class="source">Government releases</span><a class="read" href="#">Read →</a></div></div></article>
+<article class="card" data-title="Regional cooperation agenda expands to financial oversight" data-country="Tajikistan" data-topic="Investment" data-date="2026-10-07"><a class="image" href="#"><img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=900&q=80" alt="Policy meeting"><span class="tag">Investment</span></a><div class="body"><div class="meta"><span class="country">TJ</span>Tajikistan · 07 Oct 2026</div><h3>Regional cooperation agenda expands to financial oversight</h3><p class="summary">Cross-border dialogue emphasizes coordination, transparency and institutional capacity.</p><div class="foot"><span class="source">Official statements</span><a class="read" href="#">Read →</a></div></div></article>
+<article class="card" data-title="New capital rules may reshape regional financing" data-country="Kazakhstan" data-topic="Banking" data-date="2026-10-06"><a class="image" href="#"><img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=900&q=80" alt="Commercial buildings"><span class="tag">Banking</span></a><div class="body"><div class="meta"><span class="country">KZ</span>Kazakhstan · 06 Oct 2026</div><h3>New capital rules may reshape regional financing</h3><p class="summary">Proposed capital requirements could change funding conditions for banks and corporate borrowers.</p><div class="foot"><span class="source">Regulatory announcements</span><a class="read" href="#">Read →</a></div></div></article>
+<article class="card" data-title="Satellite connectivity and the future of regional telecom" data-country="Regional" data-topic="Infrastructure" data-date="2026-10-05"><a class="image" href="#"><img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80" alt="Telecommunications"><span class="tag">Infrastructure</span></a><div class="body"><div class="meta"><span class="country">CA</span>Regional · 05 Oct 2026</div><h3>Satellite connectivity and the future of regional telecom</h3><p class="summary">Low-orbit satellite services may challenge traditional operators and expand connectivity in underserved markets.</p><div class="foot"><span class="source">Industry analysis</span><a class="read" href="#">Read →</a></div></div></article>
+</section>
+<div class="empty" id="empty">No intelligence briefs match your search or filters. Try resetting the filters.</div>
+\n<div class="loadmore-wrap"><button class="loadmore" id="loadMore" type="button">Load more intelligence <span aria-hidden="true">↓</span></button><p class="loadmore-note" id="loadMoreNote">Showing the latest intelligence briefs</p></div>\n<div class="footnote">Demonstration archive · Sample CAFRI intelligence content</div>
+</main>
+<script>
+const root = document.getElementById('cards');
+const all = [...root.querySelectorAll('.card')];
+const search = document.getElementById('search');
+const country = document.getElementById('country');
+const topic = document.getElementById('topic');
+const sort = document.getElementById('sort');
+const count = document.getElementById('count');
+const empty = document.getElementById('empty');
+const loadMore = document.getElementById('loadMore');
+const loadMoreNote = document.getElementById('loadMoreNote');
+const reset = document.getElementById('reset');
+const pageSize = 6;
+let visibleLimit = pageSize;
+
+function getFilteredItems() {
+  const query = search.value.trim().toLowerCase();
+  const items = all.filter(card => {
+    const matchesSearch = (card.dataset.title + ' ' + card.innerText).toLowerCase().includes(query);
+    const matchesCountry = !country.value || card.dataset.country === country.value;
+    const matchesTopic = !topic.value || card.dataset.topic.toLowerCase() === topic.value.toLowerCase();
+    return matchesSearch && matchesCountry && matchesTopic;
+  });
+
+  if (sort.value === 'oldest') {
+    items.sort((a, b) => a.dataset.date.localeCompare(b.dataset.date));
+  } else if (sort.value === 'title') {
+    items.sort((a, b) => a.dataset.title.localeCompare(b.dataset.title));
+  } else {
+    items.sort((a, b) => b.dataset.date.localeCompare(a.dataset.date));
+  }
+  return items;
+}
+
+function applyFilters() {
+  const items = getFilteredItems();
+  all.forEach(card => { card.style.display = 'none'; });
+  items.forEach((card, index) => {
+    card.style.display = index < visibleLimit ? 'flex' : 'none';
+    root.appendChild(card);
+  });
+
+  count.textContent = `${items.length} intelligence briefs`;
+  empty.style.display = items.length ? 'none' : 'block';
+  const hasActiveFilters = search.value.trim() !== '' || country.value !== '' || topic.value !== '' || sort.value !== 'newest';
+  reset.style.display = hasActiveFilters ? 'inline-flex' : 'none';
+
+  const shown = Math.min(visibleLimit, items.length);
+  loadMore.style.display = items.length > shown ? 'inline-flex' : 'none';
+  loadMoreNote.textContent = items.length
+    ? `Showing ${shown} of ${items.length} intelligence briefs`
+    : 'No results to display';
+}
+
+[search, country, topic, sort].forEach(control => {
+  control.addEventListener('input', () => {
+    visibleLimit = pageSize;
+    applyFilters();
+  });
+  control.addEventListener('change', () => {
+    visibleLimit = pageSize;
+    applyFilters();
+  });
+});
+
+reset.addEventListener('click', () => {
+  search.value = '';
+  country.value = '';
+  topic.value = '';
+  sort.value = 'newest';
+  visibleLimit = pageSize;
+  applyFilters();
+});
+
+loadMore.addEventListener('click', () => {
+  visibleLimit += 3;
+  applyFilters();
+});
+
+applyFilters();
+</script></body></html>

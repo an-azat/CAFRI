@@ -1,0 +1,122 @@
+@model CAFRI.ViewModels.Intelligence.IntelligencePageViewModel
+@{
+    ViewData["Title"] = "Intelligence Archive";
+    ViewData["PageTheme"] = "theme-home";
+
+    var hasActiveFilters =
+        !string.IsNullOrWhiteSpace(Model.SearchTerm) ||
+        Model.CountryFilter != "All Countries" ||
+        Model.CategoryFilter != "All Categories" ||
+        Model.InstitutionFilter != "All Institutions" ||
+        Model.DateRangeFilter != "Any time" ||
+        Model.SortBy != "Newest";
+}
+
+<div class="page-intelligence page-intelligence--archive">
+    <section class="intelligence-header intelligence-header--editorial">
+        <div class="intelligence-header__copy">
+            <span class="home-v2-section__label">Research &amp; analysis</span>
+            <h1 class="intelligence-header__title">Intelligence Archive</h1>
+            <p class="intelligence-header__description">Regulatory, banking and market intelligence across Central Asia.</p>
+        </div>
+    </section>
+
+    <form method="get" action="/intelligence/archive" class="intel-toolbar" aria-label="Filter intelligence" data-auto-submit-filters>
+        <div class="intel-toolbar__search">
+            <label class="visually-hidden" for="intelligence-search">Search intelligence</label>
+            <input id="intelligence-search" name="search" type="search" value="@Model.SearchTerm" placeholder="@Model.SearchPlaceholder" />
+            <button class="intel-toolbar__search-submit" type="submit" aria-label="Search intelligence">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 4a6.5 6.5 0 1 0 4.03 11.6l4.43 4.43 1.06-1.06-4.43-4.43A6.5 6.5 0 0 0 10.5 4Zm0 1.5a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z" /></svg>
+            </button>
+        </div>
+
+        <div class="intel-toolbar__filters">
+            <select name="country" aria-label="Filter by country">
+                @foreach (var option in Model.CountrySelectOptions)
+                {
+                    <option value="@(option == "All Countries" ? string.Empty : option)" selected="@(option == Model.CountryFilter ? "selected" : null)">@option</option>
+                }
+            </select>
+
+            <select name="category" aria-label="Filter by category">
+                @foreach (var option in Model.CategorySelectOptions)
+                {
+                    <option value="@(option == "All Categories" ? string.Empty : option)" selected="@(string.Equals(option, Model.CategoryFilter, StringComparison.OrdinalIgnoreCase) ? "selected" : null)">@option</option>
+                }
+            </select>
+
+            <select name="institution" aria-label="Filter by institution">
+                @foreach (var option in Model.InstitutionSelectOptions)
+                {
+                    <option value="@(option == "All Institutions" ? string.Empty : option)" selected="@(option == Model.InstitutionFilter ? "selected" : null)">@option</option>
+                }
+            </select>
+
+            <select name="dateRange" aria-label="Filter by date range">
+                @foreach (var option in Model.DateRangeOptions)
+                {
+                    <option value="@(option == "Any time" ? string.Empty : option)" selected="@(option == Model.DateRangeFilter ? "selected" : null)">@option</option>
+                }
+            </select>
+
+            <select name="sortBy" aria-label="Sort results">
+                <option value="Newest" selected="@(Model.SortBy == "Newest" ? "selected" : null)">Newest first</option>
+                <option value="Oldest" selected="@(Model.SortBy == "Oldest" ? "selected" : null)">Oldest first</option>
+                <option value="Country" selected="@(Model.SortBy == "Country" ? "selected" : null)">Country A–Z</option>
+            </select>
+        </div>
+
+        <div class="intel-toolbar__footer">
+            <span class="intel-toolbar__count">@Model.TotalResults intelligence @(Model.TotalResults == 1 ? "brief" : "briefs")</span>
+            <noscript><button class="intel-toolbar__apply" type="submit">Apply filters</button></noscript>
+            @if (hasActiveFilters)
+            {
+                <a class="intel-toolbar__reset" href="/intelligence/archive">&#8634;&nbsp; Reset filters</a>
+            }
+        </div>
+    </form>
+
+    <section class="intelligence-content">
+        <div class="intel-section-head">
+            <h2>All Intelligence</h2>
+            <p>Browse the full catalogue</p>
+        </div>
+
+        @if (Model.Items.Count > 0)
+        {
+            <div class="intelligence-grid" data-load-more-list>
+                @foreach (var item in Model.Items)
+                {
+                    <partial name="_IntelligenceCatalogCard" model="item" />
+                }
+            </div>
+
+            <div class="load-more">
+                @if (Model.CurrentPage < Model.TotalPages)
+                {
+                    <a class="load-more__button"
+                       data-load-more
+                       href="@Url.Action("Archive", "Intelligence", new
+                       {
+                           search = Model.SearchTerm,
+                           country = Model.CountryFilter == "All Countries" ? null : Model.CountryFilter,
+                           category = Model.CategoryFilter == "All Categories" ? null : Model.CategoryFilter,
+                           institution = Model.InstitutionFilter == "All Institutions" ? null : Model.InstitutionFilter,
+                           dateRange = Model.DateRangeFilter == "Any time" ? null : Model.DateRangeFilter,
+                           sortBy = Model.SortBy == "Newest" ? null : Model.SortBy,
+                           page = Model.CurrentPage + 1
+                       })">Load more intelligence <span aria-hidden="true">&darr;</span></a>
+                }
+                <p class="load-more__note" data-load-more-count>Showing @Model.ShowingTo of @Model.TotalResults intelligence briefs</p>
+            </div>
+        }
+        else
+        {
+            <section class="intelligence-empty-state">
+                <h2>No intelligence items found</h2>
+                <p>No intelligence briefs match your search or filters.</p>
+                <a class="home-v2-button home-v2-button--ghost intelligence-empty-state__button" href="/intelligence/archive">Reset Filters</a>
+            </section>
+        }
+    </section>
+</div>

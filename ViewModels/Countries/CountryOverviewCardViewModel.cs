@@ -42,17 +42,7 @@ public sealed class CountryOverviewCardViewModel
         _ => "country-badge--default"
     };
 
-    // Centralized here so the country -> flag icon mapping exists in exactly one place
-    // (it used to be duplicated in Views/Home/Index.cshtml as a local function).
-    public string FlagIconUrl => Code switch
-    {
-        "KZ" => "/uploads/img/icons8-казахстан-48.png",
-        "UZ" => "/uploads/img/icons8-узбекистан-48.png",
-        "KG" => "/uploads/img/icons8-киргизия-48.png",
-        "TJ" => "/uploads/img/icons8-таджикистан-48.png",
-        "TM" => "/uploads/img/icons8-туркменистан-циркуляр-48.png",
-        _ => string.Empty
-    };
+    public string FlagIconUrl => CountryFlags.IconUrl(Code);
 
     public string Url => $"/countries/{Slug}";
 

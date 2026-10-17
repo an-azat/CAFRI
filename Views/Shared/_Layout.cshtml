@@ -1,6 +1,10 @@
 @{
     var pageTitle = ViewData["Title"] as string ?? "CAFRI";
     var pageTheme = ViewData["PageTheme"] as string ?? "theme-dark";
+    // Only the home page has a full-bleed hero that sits under the fixed header;
+    // every other page (theme-home included) needs the standard top clearance.
+    var isHomePage = string.Equals(ViewContext.RouteData.Values["controller"]?.ToString(), "Home", StringComparison.OrdinalIgnoreCase)
+        && string.Equals(ViewContext.RouteData.Values["action"]?.ToString(), "Index", StringComparison.OrdinalIgnoreCase);
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -18,7 +22,7 @@
 
     <partial name="_Header" />
 
-    <div class="site-main @(pageTheme == "theme-home" ? "site-main--home" : string.Empty)">
+    <div class="site-main @(isHomePage ? "site-main--home" : string.Empty)">
         <div class="site-container">
             <main role="main">
                 @RenderBody()

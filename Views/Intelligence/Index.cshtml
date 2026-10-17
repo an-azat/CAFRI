@@ -1,75 +1,179 @@
-@model CAFRI.ViewModels.Intelligence.IntelligencePageViewModel
+@model CAFRI.ViewModels.Intelligence.IntelligenceLandingViewModel
 @{
     ViewData["Title"] = "Intelligence";
     ViewData["PageTheme"] = "theme-home";
-    var professionalAccessCta = new CAFRI.ViewModels.Shared.ProfessionalAccessCtaViewModel
-    {
-        Title = "Unlock Deeper Intelligence",
-        Description = "Professional Access opens the full CAFRI intelligence library, advanced monitoring workflows, and premium analytical tools.",
-        ButtonText = "Get Professional Access",
-        ButtonUrl = "/access/request",
-        Benefits = Model.ProfessionalAccessBenefits
-    };
 }
 
 <div class="page-intelligence">
     <section class="intelligence-header intelligence-header--editorial">
         <div class="intelligence-header__copy">
-            <span class="home-v2-section__label">Regulatory monitoring</span>
+            <span class="home-v2-section__label">Regional intelligence desk</span>
             <h1 class="intelligence-header__title">Intelligence</h1>
             <p class="intelligence-header__description">Regulatory, banking and market intelligence across Central Asia.</p>
         </div>
     </section>
 
-    <div class="intelligence-layout">
-        <section class="intelligence-content">
-            <div class="intelligence-results-header intelligence-results-header--editorial">
-                <div class="intelligence-results-header__count">
-                    @(Model.TotalResults > 0
-                        ? $"Showing {Model.ShowingFrom}-{Model.ShowingTo} of {Model.TotalResults} results"
-                        : "No intelligence items found")
-                </div>
+    <nav class="intel-subnav" aria-label="Intelligence sections">
+        <a class="is-active" href="#latest" aria-current="true">Latest Intelligence</a>
+        @if (Model.TrendingItems.Count > 0)
+        {
+            <a href="#trending">Trending Now</a>
+        }
+        <span class="intel-subnav__meta">Updated daily &middot; @Model.TotalPublished intelligence @(Model.TotalPublished == 1 ? "brief" : "briefs")</span>
+    </nav>
 
-                <div class="intelligence-results-header__search">
-                    <partial name="_FilterBar" model="Model" />
+    @if (Model.LeadItem is { } lead)
+    {
+        <section class="intel-section" id="latest">
+            <div class="intel-section-head">
+                <div>
+                    <h2>Latest Intelligence</h2>
+                    <p>New developments and analysis from across the region.</p>
                 </div>
+                <a class="intel-section-head__link" href="/intelligence/archive">View all intelligence &rarr;</a>
+            </div>
 
-                <div class="intelligence-results-header__sort">
-                    <label for="sort-by">Sort by:</label>
-                    <select id="sort-by" onchange="if (this.value) window.location.href=this.value;">
-                        <option value="@Url.Action("Index", "Intelligence", new { search = Model.SearchTerm, country = Model.CountryFilter == "All Countries" ? null : Model.CountryFilter, category = Model.CategoryFilter == "All Categories" ? null : Model.CategoryFilter, institution = Model.InstitutionFilter == "All Institutions" ? null : Model.InstitutionFilter, dateRange = Model.DateRangeFilter == "Any time" ? null : Model.DateRangeFilter, sortBy = "Newest" })" selected="@(Model.SortBy == "Newest" ? "selected" : null)">Newest</option>
-                        <option value="@Url.Action("Index", "Intelligence", new { search = Model.SearchTerm, country = Model.CountryFilter == "All Countries" ? null : Model.CountryFilter, category = Model.CategoryFilter == "All Categories" ? null : Model.CategoryFilter, institution = Model.InstitutionFilter == "All Institutions" ? null : Model.InstitutionFilter, dateRange = Model.DateRangeFilter == "Any time" ? null : Model.DateRangeFilter, sortBy = "Oldest" })" selected="@(Model.SortBy == "Oldest" ? "selected" : null)">Oldest</option>
-                        <option value="@Url.Action("Index", "Intelligence", new { search = Model.SearchTerm, country = Model.CountryFilter == "All Countries" ? null : Model.CountryFilter, category = Model.CategoryFilter == "All Categories" ? null : Model.CategoryFilter, institution = Model.InstitutionFilter == "All Institutions" ? null : Model.InstitutionFilter, dateRange = Model.DateRangeFilter == "Any time" ? null : Model.DateRangeFilter, sortBy = "Country" })" selected="@(Model.SortBy == "Country" ? "selected" : null)">Country</option>
-                    </select>
+            <div class="intel-lead-grid">
+                <article class="intel-lead">
+                    <a class="intel-lead__visual @(string.IsNullOrWhiteSpace(lead.ImageUrl) ? "intel-visual--placeholder" : null)" href="@lead.Url">
+                        @if (!string.IsNullOrWhiteSpace(lead.ImageUrl))
+                        {
+                            <img src="@lead.ImageUrl" alt="" />
+                        }
+                        <span class="intel-visual__label">Latest analysis</span>
+                        <div class="intel-lead__overlay">
+                            <div class="intel-eyebrow">@lead.Category &middot; @lead.CountryName</div>
+                            <h3>@lead.Title</h3>
+                            <p>@lead.Description</p>
+                        </div>
+                    </a>
+                    <div class="intel-lead__footer">
+                        <span>@lead.PublishedLabel &middot; @lead.Source</span>
+                        <a class="intel-read" href="@lead.Url">Read full analysis &rarr;</a>
+                    </div>
+                </article>
+
+                @if (Model.SecondaryItems.Count > 0)
+                {
+                    <div class="intel-side-list">
+                        @foreach (var item in Model.SecondaryItems)
+                        {
+                            <article class="intel-side-card">
+                                <a class="intel-side-card__visual @(string.IsNullOrWhiteSpace(item.ImageUrl) ? "intel-visual--placeholder" : null)" href="@item.Url" tabindex="-1" aria-hidden="true">
+                                    @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                                    {
+                                        <img src="@item.ImageUrl" alt="" loading="lazy" />
+                                    }
+                                    else
+                                    {
+                                        <span class="intel-visual__code">@item.CountryCode</span>
+                                    }
+                                </a>
+                                <div class="intel-side-card__copy">
+                                    <div class="intel-eyebrow">@item.Category &middot; @item.CountryName</div>
+                                    <h3><a href="@item.Url">@item.Title</a></h3>
+                                    <p>@item.PublishedLabel &middot; @item.Source</p>
+                                    <a class="intel-read" href="@item.Url">Read analysis &rarr;</a>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                }
+            </div>
+        </section>
+    }
+    else
+    {
+        <section class="intelligence-empty-state">
+            <h2>No intelligence published yet</h2>
+            <p>New developments will appear here as soon as they are published.</p>
+        </section>
+    }
+
+    @if (Model.Countries.Count > 0)
+    {
+        <section class="intel-section" id="countries">
+            <div class="intel-section-head">
+                <div>
+                    <h2>Latest Intelligence by Country</h2>
+                    <p>Recent developments and analysis from across Central Asia.</p>
+                </div>
+                <a class="intel-section-head__link" href="/intelligence/archive">View all intelligence &rarr;</a>
+            </div>
+
+            <div class="intel-country-grid">
+                @foreach (var country in Model.Countries)
+                {
+                    <article class="intel-country">
+                        <div class="intel-country__head">
+                            @if (string.IsNullOrEmpty(country.FlagIconUrl))
+                            {
+                                <span class="intel-country__code @country.AccentClass">@country.Code</span>
+                            }
+                            else
+                            {
+                                <img class="intel-country__flag" src="@country.FlagIconUrl" alt="@country.Name flag" width="36" height="36" />
+                            }
+                            <div>
+                                <h3>@country.Name</h3>
+                                <p>Latest country intelligence</p>
+                            </div>
+                            <span class="intel-country__total">@country.TotalItems.ToString("00") @(country.TotalItems == 1 ? "brief" : "briefs")</span>
+                        </div>
+
+                        @if (country.LatestItems.Count > 0)
+                        {
+                            @foreach (var item in country.LatestItems)
+                            {
+                                <a class="intel-country__story" href="@item.Url">
+                                    <span class="intel-country__date">@item.PublishedLabel</span>
+                                    <strong>@item.Title</strong>
+                                    <span class="intel-country__topic">@item.Category</span>
+                                </a>
+                            }
+                        }
+                        else
+                        {
+                            <p class="intel-country__empty">No recent intelligence yet.</p>
+                        }
+
+                        <a class="intel-country__more" href="@country.ArchiveUrl">View @country.Name intelligence <span aria-hidden="true">&rarr;</span></a>
+                    </article>
+                }
+            </div>
+        </section>
+    }
+
+    @if (Model.TrendingItems.Count > 0)
+    {
+        <section class="intel-trending" id="trending">
+            <div class="intel-section-head">
+                <div>
+                    <h2><span aria-hidden="true">&#8599;</span>&nbsp; Trending Now</h2>
+                    <p>Intelligence attracting attention across the region</p>
                 </div>
             </div>
 
-            @if (Model.Items.Count > 0)
-            {
-                <div class="intelligence-grid">
-                    @foreach (var item in Model.Items)
-                    {
-                        <partial name="_IntelligenceCatalogCard" model="item" />
-                    }
-                </div>
-
-                <partial name="_Pagination" model="Model" />
-            }
-            else
-            {
-                <section class="intelligence-empty-state">
-                    <h2>No intelligence items found</h2>
-                    <p>Try adjusting your filters or search query.</p>
-                    <a class="home-v2-button home-v2-button--ghost intelligence-empty-state__button" href="@Url.Action("Index", "Intelligence")">Reset Filters</a>
-                </section>
-            }
+            <div class="intel-trending__grid">
+                @for (var i = 0; i < Model.TrendingItems.Count; i++)
+                {
+                    var item = Model.TrendingItems[i];
+                    <a class="intel-trend-card" href="@item.Url">
+                        <div class="intel-trend-card__visual @(string.IsNullOrWhiteSpace(item.ImageUrl) ? "intel-visual--placeholder" : null)">
+                            @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                            {
+                                <img src="@item.ImageUrl" alt="" loading="lazy" />
+                            }
+                            <span class="intel-trend-card__rank">@((i + 1).ToString("00")) &middot; Trending</span>
+                        </div>
+                        <div class="intel-trend-card__body">
+                            <div class="intel-eyebrow">@item.Category</div>
+                            <h3>@item.Title</h3>
+                            <div class="intel-trend-card__meta">@item.PublishedLabel &middot; @item.CountryName</div>
+                        </div>
+                    </a>
+                }
+            </div>
         </section>
-    </div>
-
-    <partial name="_IntelligenceFilterModal" model="Model" />
-
-    @if (User.Identity?.IsAuthenticated != true)
-    {
-        <partial name="_ProfessionalAccessCta" model="professionalAccessCta" />
     }
 </div>

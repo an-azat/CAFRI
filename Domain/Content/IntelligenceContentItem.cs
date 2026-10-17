@@ -15,6 +15,8 @@ public sealed class IntelligenceContentItem
     public string? DetailsJson { get; set; }
     public int DisplayOrder { get; set; }
     public bool IsPublished { get; set; } = true;
+    public bool IsTrending { get; set; }
+    public int TrendingOrder { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
     public DateTimeOffset UpdatedAtUtc { get; set; }
 

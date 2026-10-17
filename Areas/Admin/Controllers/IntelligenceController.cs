@@ -210,6 +210,8 @@ public sealed class IntelligenceController : Controller
             HeroImageUrl = heroImageUrl,
             DisplayOrder = model.DisplayOrder,
             IsPublished = model.IsPublished,
+            IsTrending = model.IsTrending,
+            TrendingOrder = model.TrendingOrder,
             CreatedAtUtc = DateTimeOffset.UtcNow,
             UpdatedAtUtc = DateTimeOffset.UtcNow
         };
@@ -277,6 +279,8 @@ public sealed class IntelligenceController : Controller
             : string.IsNullOrWhiteSpace(model.HeroImageUrl) ? entity.HeroImageUrl : model.HeroImageUrl.Trim();
         entity.DisplayOrder = model.DisplayOrder;
         entity.IsPublished = model.IsPublished;
+        entity.IsTrending = model.IsTrending;
+        entity.TrendingOrder = model.TrendingOrder;
         entity.UpdatedAtUtc = DateTimeOffset.UtcNow;
 
         var uploadedDocuments = await BuildUploadedIntelligenceDocumentsAsync(entity.Id, uploadedDocumentFiles);
@@ -349,6 +353,8 @@ public sealed class IntelligenceController : Controller
             DetailsJson = entity.DetailsJson,
             DisplayOrder = entity.DisplayOrder,
             IsPublished = entity.IsPublished,
+            IsTrending = entity.IsTrending,
+            TrendingOrder = entity.TrendingOrder,
             OverviewLead = entity.Sections.OrderBy(x => x.DisplayOrder).FirstOrDefault(x => x.SectionKey == "overview")?.Body ?? details?.OverviewLead ?? string.Empty,
             OverviewBody = entity.Sections.Where(x => x.SectionKey == "overview").OrderBy(x => x.DisplayOrder).Skip(1).FirstOrDefault()?.Body ?? details?.OverviewBody ?? string.Empty,
             EffectiveDate = entity.DocumentInfoEntries.OrderBy(x => x.DisplayOrder).FirstOrDefault(x => x.Label == "Effective Date")?.Value ?? details?.EffectiveDate ?? string.Empty,
@@ -581,8 +587,9 @@ public sealed class IntelligenceController : Controller
             IntelligenceContentItemId = intelligenceContentItemId,
             Title = parts[0],
             Subtitle = parts[1],
-            Meta = parts[2],
-            DownloadUrl = parts.Length > 3 ? string.Join(" | ", parts.Skip(3)) : "#",
+            // Meta may itself contain " | ", so the URL is the last segment and everything between is meta.
+            Meta = parts.Length > 3 ? string.Join(" | ", parts[2..^1]) : parts[2],
+            DownloadUrl = parts.Length > 3 ? parts[^1] : "#",
             DisplayOrder = index
         }));
 

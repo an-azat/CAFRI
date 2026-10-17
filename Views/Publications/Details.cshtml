@@ -5,21 +5,52 @@
     var showLockedPreview = !Model.CanAccessFullContent;
     var publicationPreviewText = Model.ExecutiveSummaryParagraphs.FirstOrDefault() ?? Model.ShortDescription;
     var loginUrl = Url.Action("Login", "Account", new { returnUrl = Context.Request.Path + Context.Request.QueryString }) ?? "/Account/Login";
-    var accessCta = new CAFRI.ViewModels.Shared.ProfessionalAccessCtaViewModel
+    var accessGate = new CAFRI.ViewModels.Shared.ContentAccessGateViewModel
     {
-        Title = "Full publication is available after sign in",
-        Description = "Guests can review only the short preview. Sign in to access the full report, findings, charts, documents, and related analytical materials.",
-        ButtonText = "Sign In to Continue",
-        ButtonUrl = loginUrl,
-        Benefits =
+        Breadcrumbs =
         [
-            "Full reports, country profiles, and analytical briefs",
-            "Structured findings, documents, and premium research context",
-            "Cross-linked publications and intelligence across the region"
-        ]
+            new() { Label = "Publications", Url = "/publications" },
+            new() { Label = Model.PublicationType, Url = $"/publications?type={Uri.EscapeDataString(Model.PublicationType)}" },
+            new() { Label = "Publication" }
+        ],
+        Kicker = $"{Model.CoverageLabel} · {Model.Topic}",
+        Title = Model.Title,
+        MetaItems = new[] { string.IsNullOrWhiteSpace(Model.PublishedDate) ? null : $"Published {Model.PublishedDate}", Model.ReadingTime, Model.AuthorLabel }
+            .Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x!).ToList(),
+        Tags = new[] { Model.Topic, Model.CoverageLabel }.Concat(Model.CountryLabels)
+            .Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList(),
+        CoverImageUrl = Model.HeroImageUrl,
+        CoverLabel = $"CAFRI · {Model.PublicationType}",
+        CoverTitle = Model.Title,
+        Preview = publicationPreviewText,
+        GateTitle = "Full publication is available after sign in",
+        GateDescription = "Sign in to read the full publication.",
+        SignInLabel = "Sign in to read full publication",
+        SignInUrl = loginUrl,
+        DetailRows = new CAFRI.ViewModels.Shared.GateDetailRowViewModel[]
+            {
+                new() { Label = "Coverage", Value = Model.CoverageLabel },
+                new() { Label = "Content type", Value = Model.PublicationType },
+                new() { Label = "Author", Value = Model.AuthorLabel },
+                new() { Label = "Documents", Value = Model.Documents.Count(x => x.IsDownloadable) is var files && files > 0 ? $"{files} file{(files == 1 ? "" : "s")} after sign in" : "" },
+                new() { Label = "Access", Value = "Sign-in required" }
+            }
+            .Where(x => !string.IsNullOrWhiteSpace(x.Value)).ToList(),
+        RelatedTitle = "Related publications",
+        RelatedItems = Model.RelatedPublications.Take(3)
+            .Select(x => new CAFRI.ViewModels.Shared.GateRelatedItemViewModel { Meta = string.IsNullOrEmpty(x.DateLabel) ? x.Type : $"{x.Type} · {x.DateLabel}", Title = x.Title, Url = x.Url })
+            .ToList()
     };
 }
 
+@if (showLockedPreview)
+{
+    <div class="page-access-gate">
+        <partial name="_ContentAccessGate" model="accessGate" />
+    </div>
+}
+else
+{
 <div class="page-publication-details">
     <nav class="publication-breadcrumbs" aria-label="Breadcrumb">
         <a href="/">Home</a>
@@ -31,22 +62,6 @@
         <span class="is-active">@Model.Title</span>
     </nav>
 
-    @if (showLockedPreview)
-    {
-        <partial name="_PublicationHero" model="Model" />
-
-        <section class="article-premium-banner article-premium-banner--detail">
-            <div class="article-premium-banner__preview">
-                <span class="article-premium-banner__eyebrow">Preview Available</span>
-                <h2>Full publication is currently locked</h2>
-                <p>@publicationPreviewText</p>
-            </div>
-
-            <partial name="_ProfessionalAccessCta" model="accessCta" />
-        </section>
-    }
-    else
-    {
         <div class="publication-layout">
             <main class="publication-main">
                 <partial name="_PublicationHero" model="Model" />
@@ -227,10 +242,10 @@
                 }
             </div>
         </section>
-    }
 </div>
+}
 
-@if (Model.Documents.Any(x => x.IsDownloadable))
+@if (Model.CanAccessFullContent && Model.Documents.Any(x => x.IsDownloadable))
 {
     <div class="content-download-modal" data-download-modal hidden>
         <div class="content-download-modal__backdrop" data-download-close></div>

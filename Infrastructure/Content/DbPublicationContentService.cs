@@ -3,6 +3,7 @@ using CAFRI.Application.Abstractions.Services;
 using CAFRI.Domain.Content;
 using CAFRI.Infrastructure.Persistence;
 using CAFRI.ViewModels.Publications;
+using CAFRI.ViewModels.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace CAFRI.Infrastructure.Content;
@@ -110,17 +111,11 @@ public sealed class DbPublicationContentService : IPublicationContentService
             EF.Functions.ILike(x.Type, selectedTopic));
     }
 
-    private static bool MatchesTopicCategory(Domain.Content.PublicationContentItem item, string selectedTopic)
+    // Older rows keep the file size inside DownloadUrl; surface it next to the type.
+    private static string DocumentMetaWithSize(string meta, string? rawDownloadUrl)
     {
-        if (string.Equals(selectedTopic, "Trade & Logistics", StringComparison.OrdinalIgnoreCase))
-        {
-            return string.Equals(item.Topic, "Trade & Logistics", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(item.Topic, "TRADE & LOGISTICS", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(item.Type, "REPORT", StringComparison.OrdinalIgnoreCase);
-        }
-
-        return string.Equals(item.Topic, selectedTopic, StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(item.Type, selectedTopic, StringComparison.OrdinalIgnoreCase);
+        var size = DocumentLink.SizeLabel(rawDownloadUrl);
+        return size.Length == 0 || meta.Contains(size, StringComparison.OrdinalIgnoreCase) ? meta : $"{meta} | {size}";
     }
 
     public async Task<PublicationsPageViewModel> GetIndexPageAsync(
@@ -128,11 +123,11 @@ public sealed class DbPublicationContentService : IPublicationContentService
         string? type = null,
         string? country = null,
         string? topic = null,
-        string? tab = null,
+        string? sortBy = null,
         int page = 1,
         CancellationToken cancellationToken = default)
     {
-        const int pageSize = 9;
+        const int pageSize = 8;
 
         var categories = await _dbContext.ContentCategories
             .AsNoTracking()
@@ -152,7 +147,12 @@ public sealed class DbPublicationContentService : IPublicationContentService
         var selectedType = string.IsNullOrWhiteSpace(type) ? "All Types" : type.Trim();
         var selectedCountry = string.IsNullOrWhiteSpace(country) ? "All Countries" : country.Trim();
         var selectedTopic = string.IsNullOrWhiteSpace(topic) ? "All Topics" : topic.Trim();
-        var selectedTab = string.IsNullOrWhiteSpace(tab) ? "latest" : tab.Trim().ToLowerInvariant();
+        var selectedSort = sortBy?.Trim() switch
+        {
+            "Oldest" => "Oldest",
+            "Title" => "Title",
+            _ => "Newest"
+        };
 
         var publicationsQuery = _dbContext.PublicationContentItems
             .AsNoTracking()
@@ -202,11 +202,11 @@ public sealed class DbPublicationContentService : IPublicationContentService
             }
         }
 
-        publicationsQuery = selectedTab switch
+        // "Newest" keeps the editorial order used across the site (DisplayOrder, then most recently updated).
+        publicationsQuery = selectedSort switch
         {
-            "most-read" => publicationsQuery.OrderByDescending(x => x.UpdatedAtUtc).ThenBy(x => x.DisplayOrder),
-            "by-country" => publicationsQuery.OrderBy(x => x.CountryLabel).ThenBy(x => x.DisplayOrder).ThenBy(x => x.Title),
-            "by-topic" => publicationsQuery.OrderBy(x => x.Topic).ThenBy(x => x.DisplayOrder).ThenBy(x => x.Title),
+            "Oldest" => publicationsQuery.OrderByDescending(x => x.DisplayOrder).ThenBy(x => x.UpdatedAtUtc),
+            "Title" => publicationsQuery.OrderBy(x => x.Title),
             _ => publicationsQuery.OrderBy(x => x.DisplayOrder).ThenByDescending(x => x.UpdatedAtUtc)
         };
 
@@ -214,26 +214,64 @@ public sealed class DbPublicationContentService : IPublicationContentService
         var totalPages = Math.Max(1, (int)Math.Ceiling(totalResults / (double)pageSize));
         var currentPage = Math.Min(Math.Max(page, 1), totalPages);
 
-        var publications = await publicationsQuery
+        var rows = await publicationsQuery
             .Skip((currentPage - 1) * pageSize)
             .Take(pageSize)
-            .Select(x => new PublicationCardViewModel
+            .Select(x => new
             {
-                Type = x.Type,
-                CountryCode = x.CountryCode,
-                CountryLabel = x.CountryLabel,
-                Title = x.Title,
-                Description = x.Description,
-                Meta = x.Meta,
-                Slug = x.Slug
+                Card = new PublicationCardViewModel
+                {
+                    Type = x.Type,
+                    CountryCode = x.CountryCode,
+                    CountryLabel = x.CountryLabel,
+                    Title = x.Title,
+                    Description = x.Description,
+                    Meta = x.Meta,
+                    Slug = x.Slug,
+                    Topic = x.Topic,
+                    SourceName = x.SourceName,
+                    AuthorLabel = x.AuthorLabel,
+                    SourceUrl = x.SourceUrl,
+                    PdfDownloadUrl = x.PdfDownloadUrl,
+                    DocumentLabel = x.DocumentLabel,
+                    HeroImageUrl = x.HeroImageUrl
+                },
+                Documents = x.DocumentEntries
+                    .OrderBy(d => d.DisplayOrder)
+                    .Select(d => new { d.Type, d.Meta, d.DownloadUrl })
+                    .ToList()
             })
             .ToListAsync(cancellationToken);
 
-        var allPublishedPublications = await _dbContext.PublicationContentItems
+        // Files uploaded in the admin live in the publication's documents; prefer a PDF,
+        // otherwise the first downloadable file, otherwise the legacy PdfDownloadUrl field.
+        var publications = rows
+            .Select(row =>
+            {
+                var downloadable = row.Documents.Where(d => DocumentLink.IsDownloadable(d.DownloadUrl)).ToList();
+                var document = downloadable.FirstOrDefault(d => DocumentLink.Url(d.DownloadUrl).EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+                    ?? downloadable.FirstOrDefault();
+
+                if (document is null)
+                {
+                    return row.Card;
+                }
+
+                var url = DocumentLink.Url(document.DownloadUrl);
+                var extension = Path.GetExtension(url).TrimStart('.').ToUpperInvariant();
+                row.Card.DownloadUrl = url;
+                row.Card.DownloadType = extension.Length > 0 ? extension : document.Type.ToUpperInvariant();
+                row.Card.DownloadSize = DocumentLink.SizeLabel(document.Meta, document.DownloadUrl);
+                return row.Card;
+            })
+            .ToList();
+
+        var types = await _dbContext.PublicationContentItems
             .AsNoTracking()
-            .Include(x => x.CountryAssignments)
-            .Include(x => x.CategoryAssignments)
-            .Where(x => x.WorkflowStatus == PublicationWorkflowStatuses.Published)
+            .Where(x => x.WorkflowStatus == PublicationWorkflowStatuses.Published && x.Type != "")
+            .Select(x => x.Type)
+            .Distinct()
+            .OrderBy(x => x)
             .ToListAsync(cancellationToken);
 
         return new PublicationsPageViewModel
@@ -242,117 +280,15 @@ public sealed class DbPublicationContentService : IPublicationContentService
             SelectedType = selectedType,
             SelectedCountry = selectedCountry,
             SelectedTopic = selectedTopic,
-            SelectedTab = selectedTab,
+            SortBy = selectedSort,
             CurrentPage = currentPage,
             TotalPages = totalPages,
             TotalResults = totalResults,
-            ShowingFrom = publications.Count == 0 ? 0 : ((currentPage - 1) * pageSize) + 1,
             ShowingTo = publications.Count == 0 ? 0 : ((currentPage - 1) * pageSize) + publications.Count,
-            Description = "In-depth reports, country profiles and analytical briefs from the CAFRI team.",
-            TypeOptions = ["All Types", .. allPublishedPublications.Select(x => x.Type).Distinct().Order().ToList()],
+            TypeOptions = ["All Types", .. types],
             CountryOptions = ["All Countries", "Regional", .. countries],
             TopicOptions = ["All Topics", .. categories],
-            Tabs =
-            [
-                new() { Label = "Latest Publications", IsActive = selectedTab == "latest" },
-                new() { Label = "Most Read", IsActive = selectedTab == "most-read" },
-                new() { Label = "By Country", IsActive = selectedTab == "by-country" },
-                new() { Label = "By Topic", IsActive = selectedTab == "by-topic" }
-            ],
-            Publications = publications,
-            Categories =
-            [
-                new()
-                {
-                    Icon = "all",
-                    Label = "All Publications",
-                    Count = allPublishedPublications.Count,
-                    Url = "/publications",
-                    IsActive = string.Equals(selectedType, "All Types", StringComparison.OrdinalIgnoreCase)
-                        && string.Equals(selectedTopic, "All Topics", StringComparison.OrdinalIgnoreCase)
-                },
-                new()
-                {
-                    Icon = "report",
-                    Label = "Reports",
-                    Count = allPublishedPublications.Count(x => x.Type == "REPORT"),
-                    Url = "/publications?type=REPORT",
-                    IsActive = string.Equals(selectedType, "REPORT", StringComparison.OrdinalIgnoreCase)
-                },
-                new()
-                {
-                    Icon = "profile",
-                    Label = "Country Profiles",
-                    Count = allPublishedPublications.Count(x => x.Type == "COUNTRY PROFILE"),
-                    Url = "/publications?type=COUNTRY%20PROFILE",
-                    IsActive = string.Equals(selectedType, "COUNTRY PROFILE", StringComparison.OrdinalIgnoreCase)
-                },
-                new()
-                {
-                    Icon = "brief",
-                    Label = "Analytical Briefs",
-                    Count = allPublishedPublications.Count(x => x.Type == "ANALYTICAL BRIEF"),
-                    Url = "/publications?type=ANALYTICAL%20BRIEF",
-                    IsActive = string.Equals(selectedType, "ANALYTICAL BRIEF", StringComparison.OrdinalIgnoreCase)
-                },
-                new()
-                {
-                    Icon = "note",
-                    Label = "Regulatory Notes",
-                    Count = allPublishedPublications.Count(x => x.Type == "REGULATORY NOTE"),
-                    Url = "/publications?type=REGULATORY%20NOTE",
-                    IsActive = string.Equals(selectedType, "REGULATORY NOTE", StringComparison.OrdinalIgnoreCase)
-                },
-                new()
-                {
-                    Icon = "bank",
-                    Label = "Banking Reviews",
-                    Count = allPublishedPublications.Count(x => x.Type == "BANKING REVIEW"),
-                    Url = "/publications?type=BANKING%20REVIEW",
-                    IsActive = string.Equals(selectedType, "BANKING REVIEW", StringComparison.OrdinalIgnoreCase)
-                },
-                new()
-                {
-                    Icon = "trade",
-                    Label = "Trade & Logistics",
-                    Count = allPublishedPublications.Count(x => MatchesTopicCategory(x, "Trade & Logistics")),
-                    Url = "/publications?topic=Trade%20%26%20Logistics",
-                    IsActive = string.Equals(selectedTopic, "Trade & Logistics", StringComparison.OrdinalIgnoreCase)
-                },
-                new()
-                {
-                    Icon = "shield",
-                    Label = "Sanctions Analysis",
-                    Count = allPublishedPublications.Count(x => x.Type == "SANCTIONS ANALYSIS"),
-                    Url = "/publications?type=SANCTIONS%20ANALYSIS",
-                    IsActive = string.Equals(selectedType, "SANCTIONS ANALYSIS", StringComparison.OrdinalIgnoreCase)
-                },
-                new()
-                {
-                    Icon = "research",
-                    Label = "Research Papers",
-                    Count = allPublishedPublications.Count(x => x.Type == "RESEARCH PAPER"),
-                    Url = "/publications?type=RESEARCH%20PAPER",
-                    IsActive = string.Equals(selectedType, "RESEARCH PAPER", StringComparison.OrdinalIgnoreCase)
-                }
-            ],
-            LatestPublications = allPublishedPublications
-                .OrderByDescending(x => x.UpdatedAtUtc)
-                .ThenByDescending(x => x.CreatedAtUtc)
-                .Take(3)
-                .Select(x => new PublicationListItemViewModel
-            {
-                Title = x.Title,
-                Meta = $"{x.Type} | {x.Meta.Split('|')[0].Trim()}"
-            }).ToList(),
-            Benefits =
-            [
-                new() { Icon = "expert", Title = "Expert Analysis", Description = "Professionally researched by regional specialists" },
-                new() { Icon = "source", Title = "Source-Based", Description = "All intelligence is based on official and reliable sources" },
-                new() { Icon = "ai", Title = "AI-Assisted", Description = "Advanced AI tools enhance analysis and monitoring" },
-                new() { Icon = "insight", Title = "Actionable Insights", Description = "Providing actionable intelligence for informed decisions" },
-                new() { Icon = "updates", Title = "Regular Updates", Description = "Continuous monitoring and timely updates" }
-            ]
+            Publications = publications
         };
     }
 
@@ -525,8 +461,8 @@ public sealed class DbPublicationContentService : IPublicationContentService
                 {
                     Title = x.Title,
                     Type = x.Type,
-                    Meta = x.Meta,
-                    DownloadUrl = x.DownloadUrl ?? "#"
+                    Meta = DocumentMetaWithSize(x.Meta, x.DownloadUrl),
+                    DownloadUrl = DocumentLink.Url(x.DownloadUrl)
                 })
                 .ToList(),
             TableOfContents = item.Sections
@@ -548,8 +484,8 @@ public sealed class DbPublicationContentService : IPublicationContentService
                 .Select(x => new PublicationSidebarLinkItemViewModel
                 {
                     Title = x.Title,
-                    Meta = x.Meta,
-                    Url = x.DownloadUrl ?? "#"
+                    Meta = DocumentMetaWithSize(x.Meta, x.DownloadUrl),
+                    Url = DocumentLink.Url(x.DownloadUrl)
                 })
                 .ToList(),
             RelatedIntelligence = item.RelatedLinks

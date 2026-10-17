@@ -580,11 +580,12 @@
                     .filter(Boolean)
                     .map((line) => {
                         const parts = line.split("|").map((part) => part.trim());
+                        // Meta may itself contain " | " (e.g. "PDF | 431 KB"); the URL is always the last segment.
                         return {
                             title: parts[0] || "",
                             type: parts[1] || "",
-                            meta: parts[2] || "",
-                            url: parts.slice(3).join(" | ") || "#"
+                            meta: parts.length > 3 ? parts.slice(2, -1).join(" | ") : (parts[2] || ""),
+                            url: parts.length > 3 ? (parts[parts.length - 1] || "#") : "#"
                         };
                     });
             };

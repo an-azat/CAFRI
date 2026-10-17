@@ -2,6 +2,7 @@ using System.Text.Json;
 using CAFRI.Application.Abstractions.Services;
 using CAFRI.Infrastructure.Persistence;
 using CAFRI.ViewModels.Intelligence;
+using CAFRI.ViewModels.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace CAFRI.Infrastructure.Content;
@@ -20,7 +21,7 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
         _dbContext = dbContext;
     }
 
-    public async Task<IntelligencePageViewModel> GetIndexPageAsync(
+    public async Task<IntelligencePageViewModel> GetArchivePageAsync(
         string? search = null,
         string? country = null,
         string? category = null,
@@ -30,7 +31,7 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
         int page = 1,
         CancellationToken cancellationToken = default)
     {
-        const int pageSize = 12;
+        const int pageSize = 9;
         var countries = await _dbContext.CountryContents
             .AsNoTracking()
             .Where(x => x.IsPublished)
@@ -100,7 +101,10 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
 
         if (!string.Equals(selectedCategory, "All Categories", StringComparison.OrdinalIgnoreCase))
         {
-            query = query.Where(x => x.Category == selectedCategory);
+            // Items store categories in display case (e.g. "FINANCIAL REGULATION") while the
+            // category list uses title case, so compare case-insensitively.
+            var normalizedCategory = selectedCategory.ToLower();
+            query = query.Where(x => x.Category.ToLower() == normalizedCategory);
         }
 
         if (!string.Equals(selectedInstitution, "All Institutions", StringComparison.OrdinalIgnoreCase))
@@ -156,7 +160,8 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
                 PublishedLabel = x.PublishedLabel,
                 Title = x.Title,
                 Description = x.Description,
-                Source = x.Source
+                Source = x.Source,
+                ImageUrl = x.HeroImageUrl
             })
             .ToListAsync(cancellationToken);
 
@@ -189,16 +194,77 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
             CurrentPage = currentPage,
             TotalPages = totalPages,
             PageSize = pageSize,
-            SortBy = selectedSort,
-            ProfessionalAccessBenefits =
-            [
-                "Full Regulatory Timeline",
-                "Historical Analysis",
-                "AI Executive Briefs",
-                "Interactive Dashboards",
-                "Full Publication Library",
-                "Export (PDF & Excel)"
-            ]
+            SortBy = selectedSort
+        };
+    }
+
+    public async Task<IntelligenceLandingViewModel> GetLandingPageAsync(CancellationToken cancellationToken = default)
+    {
+        const int leadItemCount = 3;
+        const int itemsPerCountry = 2;
+        const int trendingItemCount = 4;
+
+        // "Latest" follows the same editorial order as the archive's default "Newest" sort.
+        var items = await _dbContext.IntelligenceContentItems
+            .AsNoTracking()
+            .Where(x => x.IsPublished)
+            .OrderBy(x => x.DisplayOrder)
+            .ThenBy(x => x.Title)
+            .Select(x => new IntelligenceItemCardViewModel
+            {
+                Slug = x.Slug,
+                Category = x.Category,
+                CountryCode = x.CountryCode,
+                CountryName = x.CountryName,
+                PublishedLabel = x.PublishedLabel,
+                Title = x.Title,
+                Description = x.Description,
+                Source = x.Source,
+                ImageUrl = x.HeroImageUrl
+            })
+            .ToListAsync(cancellationToken);
+
+        // Trending Now is an editorial pick made in the admin, not a popularity metric.
+        var trendingSlugs = await _dbContext.IntelligenceContentItems
+            .AsNoTracking()
+            .Where(x => x.IsPublished && x.IsTrending)
+            .OrderBy(x => x.TrendingOrder)
+            .ThenBy(x => x.DisplayOrder)
+            .Select(x => x.Slug)
+            .Take(trendingItemCount)
+            .ToListAsync(cancellationToken);
+
+        var countries = await _dbContext.CountryContents
+            .AsNoTracking()
+            .Where(x => x.IsPublished)
+            .OrderBy(x => x.Name)
+            .Select(x => new { x.Code, x.Name })
+            .ToListAsync(cancellationToken);
+
+        return new IntelligenceLandingViewModel
+        {
+            TotalPublished = items.Count,
+            LeadItem = items.FirstOrDefault(),
+            SecondaryItems = items.Skip(1).Take(leadItemCount - 1).ToList(),
+            Countries = countries
+                .Select(country =>
+                {
+                    var countryItems = items
+                        .Where(x => string.Equals(x.CountryCode, country.Code, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+
+                    return new IntelligenceCountryDigestViewModel
+                    {
+                        Code = country.Code.ToUpperInvariant(),
+                        Name = country.Name,
+                        TotalItems = countryItems.Count,
+                        LatestItems = countryItems.Take(itemsPerCountry).ToList()
+                    };
+                })
+                .ToList(),
+            TrendingItems = trendingSlugs
+                .Select(slug => items.First(x => x.Slug == slug))
+                .ToList()
         };
     }
 
@@ -222,6 +288,13 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
             return null;
         }
 
+        var details = BuildDetails(entity);
+        details.RelatedItems = await GetRelatedItemsAsync(entity, cancellationToken);
+        return details;
+    }
+
+    private IntelligenceDetailsViewModel BuildDetails(Domain.Content.IntelligenceContentItem entity)
+    {
         if (HasStructuredDetails(entity))
         {
             return BuildStructuredDetails(entity);
@@ -244,6 +317,35 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
         }
 
         return BuildFallbackDetails(entity);
+    }
+
+    // Other published items, same category first, for the sidebar of the guest view.
+    private async Task<IReadOnlyList<IntelligenceItemCardViewModel>> GetRelatedItemsAsync(
+        Domain.Content.IntelligenceContentItem entity,
+        CancellationToken cancellationToken)
+    {
+        const int relatedItemCount = 3;
+        var category = entity.Category.ToLower();
+
+        return await _dbContext.IntelligenceContentItems
+            .AsNoTracking()
+            .Where(x => x.IsPublished && x.Id != entity.Id)
+            .OrderBy(x => x.Category.ToLower() == category ? 0 : 1)
+            .ThenBy(x => x.DisplayOrder)
+            .ThenBy(x => x.Title)
+            .Take(relatedItemCount)
+            .Select(x => new IntelligenceItemCardViewModel
+            {
+                Slug = x.Slug,
+                Category = x.Category,
+                CountryCode = x.CountryCode,
+                CountryName = x.CountryName,
+                PublishedLabel = x.PublishedLabel,
+                Title = x.Title,
+                Description = x.Description,
+                Source = x.Source
+            })
+            .ToListAsync(cancellationToken);
     }
 
     private static string GetHeroImageClassName(string? countryCode) => countryCode switch
@@ -290,7 +392,7 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
                 Title = x.Title,
                 Subtitle = x.Subtitle,
                 Meta = x.Meta,
-                DownloadUrl = x.DownloadUrl ?? "#"
+                DownloadUrl = DocumentLink.Url(x.DownloadUrl)
             })
             .FirstOrDefault()
             ?? new IntelligenceOfficialDocumentViewModel
@@ -372,7 +474,7 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
                     Title = x.Title,
                     Subtitle = x.Subtitle,
                     Meta = x.Meta,
-                    DownloadUrl = x.DownloadUrl ?? "#"
+                    DownloadUrl = DocumentLink.Url(x.DownloadUrl)
                 })
                 .ToList(),
             DocumentInformation = item.DocumentInfoEntries
@@ -448,7 +550,7 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
             DocumentInformation = [ new() { Label = "Category", Value = item.Category }, new() { Label = "Country", Value = item.CountryName }, new() { Label = "Published", Value = item.PublishedLabel }, new() { Label = "Source", Value = item.Source }, new() { Label = "Status", Value = "Monitoring" } ],
             KeyHighlights = [ "Database-backed content source in place", "Fallback detail view available for unpublished deep dives", "Ready for progressive enrichment by editors" ],
             RelatedOfficialSources = [ new() { Title = item.Source, Subtitle = "Primary source reference" } ],
-            RelatedIntelligence = [ new() { Title = "More intelligence items", Subtitle = "Browse the full catalog", Url = "/intelligence" } ],
+            RelatedIntelligence = [ new() { Title = "More intelligence items", Subtitle = "Browse the full catalog", Url = "/intelligence/archive" } ],
             MonitoringStatus = [ new() { Label = "Status", Value = "Monitoring", IsStatus = true }, new() { Label = "Source", Value = item.Source }, new() { Label = "Coverage", Value = item.CountryName } ]
         };
 }

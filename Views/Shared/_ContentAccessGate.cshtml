@@ -1,0 +1,121 @@
+@model CAFRI.ViewModels.Shared.ContentAccessGateViewModel
+
+<div class="access-gate">
+    @if (Model.Breadcrumbs.Count > 0)
+    {
+        <nav class="access-gate__breadcrumbs" aria-label="Breadcrumb">
+            @for (var i = 0; i < Model.Breadcrumbs.Count; i++)
+            {
+                var crumb = Model.Breadcrumbs[i];
+                if (i > 0)
+                {
+                    <span aria-hidden="true">&rsaquo;</span>
+                }
+                if (string.IsNullOrWhiteSpace(crumb.Url))
+                {
+                    <span>@crumb.Label</span>
+                }
+                else
+                {
+                    <a href="@crumb.Url">@crumb.Label</a>
+                }
+            }
+        </nav>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Model.Kicker))
+    {
+        <div class="access-gate__kicker">@Model.Kicker</div>
+    }
+    <h1 class="access-gate__title">@Model.Title</h1>
+
+    @if (Model.MetaItems.Count > 0)
+    {
+        <div class="access-gate__meta">
+            @foreach (var item in Model.MetaItems)
+            {
+                <span><i class="access-gate__dot" aria-hidden="true"></i>@item</span>
+            }
+        </div>
+    }
+
+    @if (Model.Tags.Count > 0)
+    {
+        <div class="access-gate__tags">
+            @foreach (var tag in Model.Tags)
+            {
+                <span class="access-gate__tag">@tag</span>
+            }
+        </div>
+    }
+
+    <hr class="access-gate__rule" />
+
+    <div class="access-gate__layout">
+        <section class="access-gate__main">
+            <div class="access-gate__cover @(string.IsNullOrWhiteSpace(Model.CoverImageUrl) ? null : "access-gate__cover--image")">
+                @if (!string.IsNullOrWhiteSpace(Model.CoverImageUrl))
+                {
+                    <img src="@Model.CoverImageUrl" alt="" />
+                }
+                <div class="access-gate__cover-copy">
+                    <div class="access-gate__cover-label">@Model.CoverLabel</div>
+                    <div class="access-gate__cover-title">@Model.CoverTitle</div>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Preview))
+            {
+                <p class="access-gate__preview">@Model.Preview</p>
+            }
+
+            <section class="access-card" aria-labelledby="access-card-title">
+                <div class="access-card__inner">
+                    <div class="access-card__lock" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /><path d="M12 14v2" /></svg>
+                    </div>
+                    <div class="access-card__eyebrow">Members-only content</div>
+                    <h2 id="access-card-title">@Model.GateTitle</h2>
+                    <p>@Model.GateDescription</p>
+                    <div class="access-card__actions">
+                        <a class="access-btn access-btn--primary" href="@Model.SignInUrl">@Model.SignInLabel <span aria-hidden="true">&rarr;</span></a>
+                    </div>
+                </div>
+            </section>
+
+            <div class="access-gate__request">
+                <div>
+                    <h3>Need access to CAFRI intelligence?</h3>
+                    <p>Professional access may be available for eligible users and partner institutions.</p>
+                </div>
+                <a class="access-btn access-btn--secondary" href="/access/request">Request professional access <span aria-hidden="true">&rarr;</span></a>
+            </div>
+        </section>
+
+        <aside class="access-gate__sidebar">
+            @if (Model.DetailRows.Count > 0)
+            {
+                <div class="access-gate__side-card">
+                    <div class="access-gate__side-title">Details</div>
+                    @foreach (var row in Model.DetailRows)
+                    {
+                        <div class="access-gate__side-row"><span>@row.Label</span><span>@row.Value</span></div>
+                    }
+                </div>
+            }
+
+            @if (Model.RelatedItems.Count > 0)
+            {
+                <div class="access-gate__side-card">
+                    <div class="access-gate__side-title">@Model.RelatedTitle</div>
+                    <div class="access-gate__related">
+                        @foreach (var item in Model.RelatedItems)
+                        {
+                            <a href="@item.Url"><small>@item.Meta</small>@item.Title</a>
+                        }
+                    </div>
+                </div>
+            }
+        </aside>
+    </div>
+</div>

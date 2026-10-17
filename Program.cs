@@ -23,8 +23,12 @@ builder.Services.AddAuthorization(options =>
         policy.RequireAuthenticatedUser()
             .AddRequirements(new ProfessionalAccessRequirement()));
 });
+// Detail pages include many child collections; a single joined query multiplies their rows
+// (14-18 s for one Intelligence article), so load each collection with its own query.
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        npgsql => npgsql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
 builder.Services.Configure<AdminSeedOptions>(
     builder.Configuration.GetSection(AdminSeedOptions.SectionName));
 builder.Services.Configure<ContentMediaOptions>(

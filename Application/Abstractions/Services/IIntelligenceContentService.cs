@@ -4,7 +4,9 @@ namespace CAFRI.Application.Abstractions.Services;
 
 public interface IIntelligenceContentService
 {
-    Task<IntelligencePageViewModel> GetIndexPageAsync(
+    Task<IntelligenceLandingViewModel> GetLandingPageAsync(CancellationToken cancellationToken = default);
+
+    Task<IntelligencePageViewModel> GetArchivePageAsync(
         string? search = null,
         string? country = null,
         string? category = null,

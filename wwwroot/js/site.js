@@ -1,38 +1,61 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const initModal = (modalSelector, openSelector, closeSelector) => {
-        const modal = document.querySelector(modalSelector);
-        if (!modal) {
+    // Listing filter forms (Intelligence archive, Publications) apply as soon as a select changes.
+    document.querySelectorAll("[data-auto-submit-filters]").forEach((form) => {
+        form.querySelectorAll("select").forEach((select) => {
+            select.addEventListener("change", () => form.requestSubmit());
+        });
+    });
+
+    const initLoadMore = () => {
+        const button = document.querySelector("[data-load-more]");
+        const list = document.querySelector("[data-load-more-list]");
+        if (!button || !list) {
             return;
         }
 
-        const openButtons = document.querySelectorAll(openSelector);
-        const closeButtons = modal.querySelectorAll(closeSelector);
+        button.addEventListener("click", async (event) => {
+            event.preventDefault();
+            if (button.getAttribute("aria-busy") === "true") {
+                return;
+            }
 
-        const openModal = () => {
-            modal.hidden = false;
-            document.body.classList.add("is-modal-open");
-        };
+            button.setAttribute("aria-busy", "true");
+            const originalHtml = button.innerHTML;
+            button.textContent = "Loading...";
 
-        const closeModal = () => {
-            modal.hidden = true;
-            document.body.classList.remove("is-modal-open");
-        };
+            try {
+                const response = await fetch(button.href, { headers: { "X-Requested-With": "XMLHttpRequest" } });
+                if (!response.ok) {
+                    throw new Error(`Request failed: ${response.status}`);
+                }
 
-        openButtons.forEach((button) => {
-            button.addEventListener("click", openModal);
-        });
+                const nextPage = new DOMParser().parseFromString(await response.text(), "text/html");
+                nextPage.querySelectorAll("[data-load-more-list] > *").forEach((item) => {
+                    list.appendChild(document.importNode(item, true));
+                });
 
-        closeButtons.forEach((button) => {
-            button.addEventListener("click", closeModal);
-        });
+                const count = document.querySelector("[data-load-more-count]");
+                const nextCount = nextPage.querySelector("[data-load-more-count]");
+                if (count && nextCount) {
+                    // The next page reports how many items have been shown up to and including it,
+                    // which matches the items now on screen.
+                    count.textContent = nextCount.textContent;
+                }
 
-        document.addEventListener("keydown", (event) => {
-            if (event.key === "Escape" && !modal.hidden) {
-                closeModal();
+                const nextButton = nextPage.querySelector("[data-load-more]");
+                if (nextButton) {
+                    button.href = nextButton.getAttribute("href");
+                    button.innerHTML = originalHtml;
+                    button.removeAttribute("aria-busy");
+                } else {
+                    button.remove();
+                }
+            } catch {
+                // Fall back to a regular navigation to the next page.
+                window.location.href = button.href;
             }
         });
     };
 
-    initModal("[data-intelligence-filter-modal]", "[data-intelligence-filter-open]", "[data-intelligence-filter-close]");
-    initModal("[data-publications-filter-modal]", "[data-publications-filter-open]", "[data-publications-filter-close]");
+    initLoadMore();
 });

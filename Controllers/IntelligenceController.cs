@@ -13,7 +13,11 @@ public sealed class IntelligenceController : Controller
     }
 
     [HttpGet("/intelligence")]
-    public async Task<IActionResult> Index(
+    public async Task<IActionResult> Index(CancellationToken cancellationToken) =>
+        View(await _intelligenceContentService.GetLandingPageAsync(cancellationToken));
+
+    [HttpGet("/intelligence/archive")]
+    public async Task<IActionResult> Archive(
         string? search,
         string? country,
         string? category,
@@ -22,7 +26,7 @@ public sealed class IntelligenceController : Controller
         string? sortBy,
         int page,
         CancellationToken cancellationToken) =>
-        View(await _intelligenceContentService.GetIndexPageAsync(search, country, category, institution, dateRange, sortBy, page == 0 ? 1 : page, cancellationToken));
+        View(await _intelligenceContentService.GetArchivePageAsync(search, country, category, institution, dateRange, sortBy, page == 0 ? 1 : page, cancellationToken));
 
     [HttpGet("/intelligence/{slug}")]
     public async Task<IActionResult> Details(string slug, CancellationToken cancellationToken)

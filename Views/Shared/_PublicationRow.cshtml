@@ -1,0 +1,62 @@
+@model CAFRI.ViewModels.Publications.PublicationCardViewModel
+@{
+    var canDownload = User.Identity?.IsAuthenticated == true;
+    var downloadUrl = canDownload
+        ? Model.FileUrl
+        : Url.Action("Login", "Account", new { returnUrl = Model.Url });
+}
+
+<article class="pub-row">
+    <a class="pub-cover @(Model.HasImage ? "pub-cover--image" : Model.CoverVariant)" href="@Model.Url" tabindex="-1" aria-hidden="true">
+        @if (Model.HasImage)
+        {
+            <img src="@Model.HeroImageUrl" alt="" loading="lazy" />
+        }
+        <span class="pub-cover__mark">@Model.Type</span>
+    </a>
+
+    <div class="pub-row__content">
+        <div class="pub-row__meta">
+            <span class="pub-row__source">@Model.SourceLabel</span>
+            @if (!string.IsNullOrEmpty(Model.DateLabel))
+            {
+                <span class="pub-row__dot" aria-hidden="true">&middot;</span>
+                <span>@Model.DateLabel</span>
+            }
+        </div>
+
+        <div class="pub-row__tags">
+            <span class="pub-tag">@Model.CountryLabel</span>
+            @if (!string.IsNullOrWhiteSpace(Model.Topic))
+            {
+                <span class="pub-tag pub-tag--neutral">@Model.Topic</span>
+            }
+        </div>
+
+        <h3 class="pub-row__title"><a href="@Model.Url">@Model.Title</a></h3>
+        <p class="pub-row__summary">@Model.Description</p>
+
+        <div class="pub-row__bottom">
+            @if (Model.HasFile)
+            {
+                <span class="pub-row__filetype"><b>@Model.FileTypeLabel</b> @Model.FileSizeLabel</span>
+            }
+            @if (!string.IsNullOrEmpty(Model.ReadingTime))
+            {
+                <span>@Model.ReadingTime</span>
+            }
+            @if (Model.HasOriginalSource)
+            {
+                <span>Original source available</span>
+            }
+        </div>
+    </div>
+
+    <div class="pub-row__actions">
+        <a class="pub-btn pub-btn--primary" href="@Model.Url">Read publication <span aria-hidden="true">&#8599;</span></a>
+        @if (Model.HasFile)
+        {
+            <a class="pub-btn pub-btn--secondary" href="@downloadUrl" target="@(canDownload ? "_blank" : null)" rel="@(canDownload ? "noopener" : null)" title="@(canDownload ? null : "Sign in to download")">Download @Model.FileTypeLabel <span aria-hidden="true">&darr;</span></a>
+        }
+    </div>
+</article>

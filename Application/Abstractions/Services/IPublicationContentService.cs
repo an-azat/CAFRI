@@ -9,7 +9,7 @@ public interface IPublicationContentService
         string? type = null,
         string? country = null,
         string? topic = null,
-        string? tab = null,
+        string? sortBy = null,
         int page = 1,
         CancellationToken cancellationToken = default);
 

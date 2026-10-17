@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CAFRI — Publications</title>
+<style>
+:root{--navy:#07192d;--ink:#15263d;--muted:#6d7b90;--line:#dfe5ed;--blue:#245bdb;--bg:#f5f7fa}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,system-ui,"Segoe UI",Arial,sans-serif}a{color:inherit;text-decoration:none}
+.top{height:28px;background:var(--navy);color:#dce5f1;padding:0 4%;display:flex;align-items:center;justify-content:space-between;font-size:10px;letter-spacing:.015em}
+.header{height:72px;background:#46576b;color:#fff;padding:0 4%;display:grid;grid-template-columns:minmax(150px,1fr) auto minmax(230px,1fr);align-items:center;column-gap:20px;border-bottom:1px solid #5b6b7f;box-shadow:0 5px 18px #07192d14}
+.logo{font-size:20px;font-weight:850;letter-spacing:.09em;justify-self:start;display:flex;align-items:center;gap:10px}.logo:before{content:"";display:block;width:7px;height:25px;background:#6d9aff;border-radius:4px}
+.nav{height:100%;display:flex;align-items:center;justify-content:center;gap:7px;color:#d0d7e1;font-size:12px;justify-self:center;white-space:nowrap}.nav a{display:flex;align-items:center;padding:10px 13px;border-radius:8px;transition:background .15s,color .15s}.nav a:hover{background:#ffffff12;color:#fff}.nav .active{color:#fff;background:#ffffff16;box-shadow:inset 0 -2px 0 #79a5ff}
+.actions{display:flex;gap:9px;align-items:center;justify-self:end}.pill{font-size:11px;font-weight:750;padding:10px 15px;border-radius:9px;white-space:nowrap;display:inline-flex;align-items:center;gap:7px}.access{background:#fff;color:var(--ink);border:1px solid #fff;box-shadow:0 3px 9px #07192d1c}.login{border:1px solid #a9b5c4;color:#fff;background:#ffffff08}
+.wrap{max-width:1240px;margin:auto;padding:0 28px 60px}
+.hero{text-align:center;padding:32px 0 25px}.eyebrow{font-size:10px;color:var(--blue);letter-spacing:.14em;text-transform:uppercase;font-weight:850}.hero h1{font-size:36px;line-height:1.15;letter-spacing:-.035em;font-weight:600;margin:5px 0 8px}.hero p{margin:0;color:var(--muted);font-size:13px}
+.toolbar{background:#fff;border:1px solid var(--line);border-radius:14px;padding:19px 19px 13px;margin-bottom:23px;box-shadow:0 8px 24px #10233d08}
+.toolbar-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:15px}.toolbar-title{display:flex;align-items:center;gap:11px}.toolbar-icon{width:37px;height:37px;display:grid;place-items:center;border:1px solid #dce6fb;background:#f0f4ff;color:var(--blue);border-radius:10px;font-size:19px}.toolbar-title h2{font-size:15px;line-height:1.2;margin:0 0 3px}.toolbar-title p{font-size:11px;color:#7a879a;margin:0}.result-count{font-size:11px;color:#718096;white-space:nowrap}.result-count strong{font-size:18px;color:var(--ink);margin-right:4px}
+.search{position:relative;margin-bottom:12px}.search:before{content:"⌕";position:absolute;left:14px;top:8px;font-size:21px;line-height:25px;color:#7b8aa1;pointer-events:none}.search input{width:100%;height:44px;border:1px solid #dfe5ed;background:#fbfcfe;border-radius:9px;padding:0 14px 0 42px;font:inherit;font-size:12px;color:var(--ink);outline:none}.search input:focus,.filters select:focus{border-color:#91acee;background:#fff;box-shadow:0 0 0 3px #245bdb14}
+.filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.field{display:flex;flex-direction:column;gap:6px;min-width:0}.field label{font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#8190a4}.field select{height:39px;width:100%;min-width:0;border:1px solid #e0e6ef;background:#f9fbfd;border-radius:8px;padding:0 11px;font:inherit;font-size:11px;color:#24364e;cursor:pointer;outline:none}
+.toolbar-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #edf0f4;margin-top:15px;padding-top:12px}.sort-wrap{display:flex;align-items:center;gap:8px;font-size:10px;color:#7b8799}.sort-wrap select{height:31px;border:1px solid #e0e6ef;background:#fff;border-radius:7px;padding:0 9px;font:inherit;color:#24364e}.reset{border:1px solid #dce4ef;background:#fff;color:#52647d;border-radius:8px;padding:8px 11px;font-size:10px;font-weight:750;cursor:pointer}.reset:hover{background:#edf2ff;color:var(--blue);border-color:#cbd8fa}
+.sectionhead{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:0 0 13px}.sectionhead h2{font-size:19px;letter-spacing:-.025em;margin:0}.sectionhead p{font-size:11px;color:var(--muted);margin:3px 0 0}.view{font-size:11px;color:var(--blue);font-weight:800;white-space:nowrap}
+.list{display:grid;gap:12px}.publication{display:grid;grid-template-columns:104px minmax(0,1fr) auto;gap:16px;align-items:stretch;padding:14px;background:#fff;border:1px solid var(--line);border-radius:12px;transition:border-color .15s,box-shadow .15s}.publication:hover{border-color:#c7d5e9;box-shadow:0 8px 20px #10233d0c}
+.doc-cover{min-height:124px;border-radius:8px;background:linear-gradient(145deg,#dbe5f1,#a5b9d1);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}.doc-cover:before{content:"";position:absolute;width:66px;height:86px;background:#ffffffb8;border:1px solid #fff;border-radius:3px;box-shadow:8px 7px 0 #18365412;transform:rotate(-5deg)}.doc-cover:after{content:"";position:absolute;width:36px;height:2px;background:#9eb2cb;box-shadow:0 10px #c3cfdd,0 20px #c3cfdd,0 30px #c3cfdd;top:46px;left:calc(50% - 18px);z-index:1}.doc-mark{position:absolute;z-index:2;bottom:10px;left:10px;background:#fff;color:var(--blue);font-size:8px;font-weight:900;letter-spacing:.07em;border-radius:4px;padding:4px 5px}.doc-cover.reg{background:linear-gradient(145deg,#d7e0ed,#849bb8)}.doc-cover.report{background:linear-gradient(145deg,#d5e9e6,#83b6b2)}.doc-cover.data{background:linear-gradient(145deg,#e6dfef,#afa0cf)}
+.pub-content{min-width:0;display:flex;flex-direction:column;align-items:flex-start}.meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:10px;color:#7d8ba0}.source-name{color:#4f6685;font-weight:750}.dot{color:#b2bdca}.pub-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}.tag{background:#eef3ff;color:#245bdb;border-radius:4px;padding:3px 6px;font-size:9px;font-weight:800}.tag.neutral{background:#f1f3f6;color:#65758b}.pub-content h3{font-size:15px;line-height:1.35;letter-spacing:-.015em;margin:7px 0 5px}.pub-content p{font-size:11px;color:#68778d;margin:0 0 8px;max-width:760px}.pub-bottom{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:auto;font-size:10px;color:#8793a5}.filetype{display:inline-flex;align-items:center;gap:5px;font-weight:850;color:#526783}.filetype b{font-size:9px;background:#f2f4f7;border-radius:3px;padding:2px 4px;color:#53647b}.pub-actions{display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:8px;min-width:112px}.btn-primary,.btn-secondary{display:flex;align-items:center;justify-content:center;gap:7px;border-radius:8px;padding:9px 10px;font-size:10px;font-weight:800;white-space:nowrap}.btn-primary{background:var(--blue);color:#fff;border:1px solid var(--blue)}.btn-primary:hover{background:#194bc0}.btn-secondary{border:1px solid #dce4ef;background:#fff;color:#52647d}.btn-secondary:hover{background:#f4f7fc}
+.empty{display:none;background:#fff;border:1px solid var(--line);border-radius:12px;text-align:center;padding:35px;color:var(--muted)}.loadmore-wrap{display:flex;flex-direction:column;align-items:center;gap:7px;margin:23px 0 0}.loadmore{height:43px;min-width:220px;border:1px solid var(--blue);border-radius:9px;background:var(--blue);color:#fff;padding:0 22px;font:inherit;font-size:11px;font-weight:800;cursor:pointer}.loadmore:hover{background:#194bc0}.loadmore-note{font-size:10px;color:#8995a6;margin:0}.footnote{text-align:center;color:#9aa3b1;font-size:10px;margin-top:29px}
+@media(max-width:900px){.header{grid-template-columns:auto 1fr auto;padding:0 18px;gap:12px}.nav{gap:2px}.nav a{padding:9px 8px}.pill{padding:9px 10px}.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.publication{grid-template-columns:88px minmax(0,1fr)}.pub-actions{grid-column:2;flex-direction:row;justify-content:flex-start;min-width:0}.btn-primary,.btn-secondary{min-width:105px}}
+@media(max-width:620px){.top{padding:0 12px}.top span:last-child{display:none}.header{display:flex;justify-content:space-between;padding:0 14px;height:64px}.nav{display:none}.access{display:none}.actions{margin-left:auto}.wrap{padding:0 13px 40px}.hero{padding:27px 0 20px}.hero h1{font-size:31px}.toolbar{padding:14px 12px}.toolbar-head{align-items:flex-start}.toolbar-title{gap:8px}.toolbar-title p{max-width:210px}.filters{gap:8px}.toolbar-foot{flex-wrap:wrap}.sort-wrap{flex:1}.sectionhead h2{font-size:17px}.publication{grid-template-columns:72px minmax(0,1fr);gap:11px;padding:10px}.doc-cover{min-height:110px}.pub-content h3{font-size:13px}.pub-content p{font-size:10px}.meta{font-size:9px}.pub-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr}.btn-primary,.btn-secondary{min-width:0}.view{font-size:10px}}
+</style>
+</head>
+<body>
+<div class="top"><span>Central Asia Financial &amp; Regulatory Intelligence Initiative</span><span>EN / RU · Institutional intelligence · Central Asia</span></div>
+<header class="header">
+  <a class="logo" href="#">CAFRI</a>
+  <nav class="nav"><a href="#">Intelligence</a><a href="#">Map</a><a class="active" href="#">Publications</a><a href="#">About</a></nav>
+  <div class="actions"><a class="pill access" href="#">♙ &nbsp; Professional Access</a><a class="pill login" href="#">Login ↗</a></div>
+</header>
+<main class="wrap">
+  <section class="hero">
+    <div class="eyebrow">Research &amp; Documents</div>
+    <h1>Publications</h1>
+    <p>Official publications, regulatory updates and research across Central Asia.</p>
+  </section>
+
+  <section class="toolbar" aria-label="Search and filter publications">
+    <div class="toolbar-head">
+      <div class="toolbar-title"><span class="toolbar-icon">⌕</span><div><h2>Find publications</h2><p>Search source documents and filter the archive</p></div></div>
+      <div class="result-count"><strong id="count">12</strong> results</div>
+    </div>
+    <div class="search"><input id="search" type="search" placeholder="Search publications, reports, institutions..." aria-label="Search publications"></div>
+    <div class="filters">
+      <div class="field"><label for="country">Country</label><select id="country"><option value="">All countries</option><option>Kazakhstan</option><option>Kyrgyzstan</option><option>Uzbekistan</option><option>Tajikistan</option><option>Turkmenistan</option><option>Regional</option></select></div>
+      <div class="field"><label for="category">Category</label><select id="category"><option value="">All categories</option><option>Financial regulation</option><option>Banking</option><option>Macroeconomics</option><option>Trade &amp; logistics</option><option>Infrastructure</option><option>Investment</option><option>Energy</option></select></div>
+      <div class="field"><label for="source">Source</label><select id="source"><option value="">All sources</option><option>Central Bank</option><option>Government</option><option>International organization</option><option>Research institute</option></select></div>
+      <div class="field"><label for="date">Date</label><select id="date"><option value="">Any date</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option></select></div>
+    </div>
+    <div class="toolbar-foot">
+      <div class="sort-wrap"><span>Sort by</span><select id="sort"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="title">Title A–Z</option></select></div>
+      <button class="reset" id="reset" type="button">Reset filters ↺</button>
+    </div>
+  </section>
+
+  <div class="sectionhead"><div><h2>Latest Publications</h2><p>Original documents and source material from across the region.</p></div><a class="view" href="#">Browse all publications →</a></div>
+  <section class="list" id="publications">
+    <article class="publication" data-title="National Bank updates foreign exchange reporting requirements" data-country="Kazakhstan" data-category="Financial regulation" data-source="Central Bank" data-date="2026-10-12">
+      <div class="doc-cover reg"><span class="doc-mark">REGULATION</span></div>
+      <div class="pub-content"><div class="meta"><span class="source-name">National Bank of Kazakhstan</span><span class="dot">·</span><span>12 Oct 2026</span></div><div class="pub-tags"><span class="tag">Kazakhstan</span><span class="tag neutral">Financial regulation</span></div><h3>National Bank updates foreign exchange reporting requirements</h3><p>Official notice outlining updated reporting obligations for cross-border foreign exchange transactions and related compliance requirements.</p><div class="pub-bottom"><span class="filetype"><b>PDF</b> 1.8 MB</span><span>Original source available</span></div></div>
+      <div class="pub-actions"><a class="btn-primary" href="#">Read publication ↗</a><a class="btn-secondary" href="#">Download PDF ↓</a></div>
+    </article>
+    <article class="publication" data-title="Monetary policy review: inflation and credit growth" data-country="Uzbekistan" data-category="Banking" data-source="Central Bank" data-date="2026-10-11">
+      <div class="doc-cover"><span class="doc-mark">REPORT</span></div>
+      <div class="pub-content"><div class="meta"><span class="source-name">Central Bank of Uzbekistan</span><span class="dot">·</span><span>11 Oct 2026</span></div><div class="pub-tags"><span class="tag">Uzbekistan</span><span class="tag neutral">Banking</span></div><h3>Monetary policy review: inflation and credit growth</h3><p>Review of recent inflation dynamics, lending activity and the central bank’s monetary policy priorities.</p><div class="pub-bottom"><span class="filetype"><b>PDF</b> 2.4 MB</span><span>Original source available</span></div></div>
+      <div class="pub-actions"><a class="btn-primary" href="#">Read publication ↗</a><a class="btn-secondary" href="#">Download PDF ↓</a></div>
+    </article>
+    <article class="publication" data-title="Kyrgyzstan modernizes customs procedures for EAEU trade" data-country="Kyrgyzstan" data-category="Trade & logistics" data-source="Government" data-date="2026-10-10">
+      <div class="doc-cover data"><span class="doc-mark">NOTICE</span></div>
+      <div class="pub-content"><div class="meta"><span class="source-name">State Customs Service</span><span class="dot">·</span><span>10 Oct 2026</span></div><div class="pub-tags"><span class="tag">Kyrgyzstan</span><span class="tag neutral">Trade &amp; logistics</span></div><h3>Kyrgyzstan modernizes customs procedures for EAEU trade</h3><p>Official announcement describing changes to customs clearance procedures and cross-border trade administration.</p><div class="pub-bottom"><span class="filetype"><b>PDF</b> 940 KB</span><span>Original source available</span></div></div>
+      <div class="pub-actions"><a class="btn-primary" href="#">Read publication ↗</a><a class="btn-secondary" href="#">Download PDF ↓</a></div>
+    </article>
+    <article class="publication" data-title="GDP growth and investment outlook for Uzbekistan" data-country="Uzbekistan" data-category="Macroeconomics" data-source="Government" data-date="2026-10-09">
+      <div class="doc-cover report"><span class="doc-mark">DATA</span></div>
+      <div class="pub-content"><div class="meta"><span class="source-name">Statistics Agency of Uzbekistan</span><span class="dot">·</span><span>09 Oct 2026</span></div><div class="pub-tags"><span class="tag">Uzbekistan</span><span class="tag neutral">Macroeconomics</span></div><h3>GDP growth and investment outlook for Uzbekistan</h3><p>Statistical release summarizing recent output growth, investment activity and sector-level economic trends.</p><div class="pub-bottom"><span class="filetype"><b>PDF</b> 1.2 MB</span><span>Original source available</span></div></div>
+      <div class="pub-actions"><a class="btn-primary" href="#">Read publication ↗</a><a class="btn-secondary" href="#">Download PDF ↓</a></div>
+    </article>
+    <article class="publication" data-title="Regional transport corridor financing update" data-country="Regional" data-category="Infrastructure" data-source="International organization" data-date="2026-10-08">
+      <div class="doc-cover reg"><span class="doc-mark">REPORT</span></div>
+      <div class="pub-content"><div class="meta"><span class="source-name">Regional Development Institution</span><span class="dot">·</span><span>08 Oct 2026</span></div><div class="pub-tags"><span class="tag">Regional</span><span class="tag neutral">Infrastructure</span></div><h3>Regional transport corridor financing update</h3><p>Project update on transport infrastructure financing, implementation milestones and regional connectivity.</p><div class="pub-bottom"><span class="filetype"><b>PDF</b> 3.1 MB</span><span>Original source available</span></div></div>
+      <div class="pub-actions"><a class="btn-primary" href="#">Read publication ↗</a><a class="btn-secondary" href="#">Download PDF ↓</a></div>
+    </article>
+    <article class="publication" data-title="Energy investment pipeline and regional connectivity" data-country="Turkmenistan" data-category="Energy" data-source="Research institute" data-date="2026-10-07">
+      <div class="doc-cover data"><span class="doc-mark">RESEARCH</span></div>
+      <div class="pub-content"><div class="meta"><span class="source-name">Regional Energy Research Institute</span><span class="dot">·</span><span>07 Oct 2026</span></div><div class="pub-tags"><span class="tag">Turkmenistan</span><span class="tag neutral">Energy</span></div><h3>Energy investment pipeline and regional connectivity</h3><p>Research brief examining planned energy investments and their potential implications for regional infrastructure.</p><div class="pub-bottom"><span class="filetype"><b>PDF</b> 1.6 MB</span><span>Original source available</span></div></div>
+      <div class="pub-actions"><a class="btn-primary" href="#">Read publication ↗</a><a class="btn-secondary" href="#">Download PDF ↓</a></div>
+    </article>
+    <article class="publication" data-title="Banking sector stability assessment" data-country="Kazakhstan" data-category="Banking" data-source="Research institute" data-date="2026-10-06">
+      <div class="doc-cover"><span class="doc-mark">RESEARCH</span></div>
+      <div class="pub-content"><div class="meta"><span class="source-name">Financial Research Institute</span><span class="dot">·</span><span>06 Oct 2026</span></div><div class="pub-tags"><span class="tag">Kazakhstan</span><span class="tag neutral">Banking</span></div><h3>Banking sector stability assessment</h3><p>Research paper reviewing capitalization, credit quality and emerging risks in the banking sector.</p><div class="pub-bottom"><span class="filetype"><b>PDF</b> 2.0 MB</span><span>Original source available</span></div></div>
+      <div class="pub-actions"><a class="btn-primary" href="#">Read publication ↗</a><a class="btn-secondary" href="#">Download PDF ↓</a></div>
+    </article>
+    <article class="publication" data-title="Cross-border investment and trade policy bulletin" data-country="Tajikistan" data-category="Investment" data-source="Government" data-date="2026-10-05">
+      <div class="doc-cover report"><span class="doc-mark">BULLETIN</span></div>
+      <div class="pub-content"><div class="meta"><span class="source-name">Ministry of Economic Development</span><span class="dot">·</span><span>05 Oct 2026</span></div><div class="pub-tags"><span class="tag">Tajikistan</span><span class="tag neutral">Investment</span></div><h3>Cross-border investment and trade policy bulletin</h3><p>Official bulletin covering recent investment policy measures and regional trade cooperation.</p><div class="pub-bottom"><span class="filetype"><b>PDF</b> 1.1 MB</span><span>Original source available</span></div></div>
+      <div class="pub-actions"><a class="btn-primary" href="#">Read publication ↗</a><a class="btn-secondary" href="#">Download PDF ↓</a></div></div>
+    </article>
+    <article class="publication" data-title="Payment systems interoperability framework" data-country="Kyrgyzstan" data-category="Financial regulation" data-source="Central Bank" data-date="2026-10-04">
+      <div class="doc-cover reg"><span class="doc-mark">FRAMEWORK</span></div>
+      <div class="pub-content"><div class="meta"><span class="source-name">National Bank of the Kyrgyz Republic</span><span class="dot">·</span><span>04 Oct 2026</span></div><div class="pub-tags"><span class="tag">Kyrgyzstan</span><span class="tag neutral">Financial regulation</span></div><h3>Payment systems interoperability framework</h3><p>Regulatory document outlining proposed interoperability principles for payment systems and service providers.</p><div class="pub-bottom"><span class="filetype"><b>PDF</b> 1.4 MB</span><span>Original source available</span></div></div>
+      <div class="pub-actions"><a class="btn-primary" href="#">Read publication ↗</a><a class="btn-secondary" href="#">Download PDF ↓</a></div>
+    </article>
+  </section>
+  <div class="empty" id="empty">No publications match your search or filters. Try resetting the filters.</div>
+  <div class="loadmore-wrap"><button class="loadmore" id="loadMore" type="button">Load more publications ↓</button><p class="loadmore-note" id="loadMoreNote">Showing 8 of 8 demo publications</p></div>
+  <div class="footnote">Demonstration archive · Sample CAFRI publication metadata and document labels</div>
+</main>
+<script>
+const root=document.getElementById('publications');
+const all=[...root.querySelectorAll('.publication')];
+const search=document.getElementById('search');
+const country=document.getElementById('country');
+const category=document.getElementById('category');
+const source=document.getElementById('source');
+const date=document.getElementById('date');
+const sort=document.getElementById('sort');
+const count=document.getElementById('count');
+const empty=document.getElementById('empty');
+const loadMore=document.getElementById('loadMore');
+const loadMoreNote=document.getElementById('loadMoreNote');
+const reset=document.getElementById('reset');
+const pageSize=5;
+let visibleLimit=pageSize;
+
+function filtered(){
+  const query=search.value.trim().toLowerCase();
+  const cutoff=date.value ? new Date('2026-10-15T00:00:00').getTime()-Number(date.value)*86400000 : null;
+  const items=all.filter(card=>{
+    const title=card.dataset.title.toLowerCase();
+    const text=(card.innerText+' '+(card.dataset.source||'')).toLowerCase();
+    const cardDate=new Date(card.dataset.date+'T00:00:00').getTime();
+    return (!query || title.includes(query) || text.includes(query))
+      && (!country.value || card.dataset.country===country.value)
+      && (!category.value || card.dataset.category===category.value)
+      && (!source.value || card.dataset.source===source.value)
+      && (!cutoff || cardDate>=cutoff);
+  });
+  if(sort.value==='oldest')items.sort((a,b)=>a.dataset.date.localeCompare(b.dataset.date));
+  else if(sort.value==='title')items.sort((a,b)=>a.dataset.title.localeCompare(b.dataset.title));
+  else items.sort((a,b)=>b.dataset.date.localeCompare(a.dataset.date));
+  return items;
+}
+function apply(){
+  const items=filtered();
+  all.forEach(card=>card.style.display='none');
+  items.forEach((card,i)=>{card.style.display=i<visibleLimit?'grid':'none';root.appendChild(card)});
+  count.textContent=items.length;
+  empty.style.display=items.length?'none':'block';
+  const shown=Math.min(visibleLimit,items.length);
+  loadMore.style.display=items.length>shown?'inline-block':'none';
+  loadMoreNote.textContent=`Showing ${shown} of ${items.length} demo publications`;
+}
+[search,country,category,source,date,sort].forEach(el=>{
+  const refresh=()=>{visibleLimit=pageSize;apply()};
+  el.addEventListener('input',refresh);el.addEventListener('change',refresh);
+});
+reset.addEventListener('click',()=>{search.value='';country.value='';category.value='';source.value='';date.value='';sort.value='newest';visibleLimit=pageSize;apply()});
+loadMore.addEventListener('click',()=>{visibleLimit+=3;apply()});
+apply();
+</script>
+</body>
+</html>

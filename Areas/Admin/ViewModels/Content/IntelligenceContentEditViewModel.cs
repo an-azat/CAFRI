@@ -77,4 +77,10 @@ public sealed class IntelligenceContentEditViewModel
     public int DisplayOrder { get; init; }
 
     public bool IsPublished { get; init; } = true;
+
+    [Display(Name = "Show in Trending Now")]
+    public bool IsTrending { get; init; }
+
+    [Display(Name = "Trending order")]
+    public int TrendingOrder { get; init; }
 }

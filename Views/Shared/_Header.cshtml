@@ -1,15 +1,5 @@
 @{
-    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
-    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
     var requestPath = Context.Request.Path.Value ?? string.Empty;
-
-    string navClass(string controller, string action = "Index")
-    {
-        return string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase) &&
-               string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase)
-            ? "nav-link is-active"
-            : "nav-link";
-    }
 
     string prefixNavClass(string pathPrefix)
     {
@@ -41,7 +31,6 @@
 
                 <div class="collapse navbar-collapse" id="mainNav">
                     <ul class="navbar-nav site-nav__links mx-auto">
-                        <li class="nav-item"><a class="@navClass("Home")" asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
                         <li class="nav-item"><a class="@prefixNavClass("/intelligence")" href="/intelligence">Intelligence</a></li>
                         <li class="nav-item"><a class="@prefixNavClass("/countries")" href="/countries">Map</a></li>
                         <li class="nav-item"><a class="@prefixNavClass("/publications")" href="/publications">Publications</a></li>
@@ -49,11 +38,6 @@
                     </ul>
 
                     <div class="site-nav__actions">
-                        <button class="site-search" type="button" aria-label="Search">
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M10.5 4a6.5 6.5 0 1 0 4.03 11.6l4.43 4.43 1.06-1.06-4.43-4.43A6.5 6.5 0 0 0 10.5 4Zm0 1.5a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z" />
-                            </svg>
-                        </button>
 
                         @if (User.Identity?.IsAuthenticated == true)
                         {
@@ -86,7 +70,7 @@
                         }
                         else
                         {
-                            <a class="site-ghost-button" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
+                            <a class="site-ghost-button" asp-area="" asp-controller="Account" asp-action="Login">Login <span aria-hidden="true">&#8599;</span></a>
                         }
                     </div>
                 </div>

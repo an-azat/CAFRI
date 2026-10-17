@@ -195,49 +195,6 @@
 
   computeGrowth(mapEl.dataset.selectedYear || "");
 
-  const styleOptions = Array.from(document.querySelectorAll("[data-map-style-option]"));
-  styleOptions.forEach((input) => {
-    input.addEventListener("change", () => {
-      if (input.checked) {
-        setTileStyle(input.value);
-      }
-    });
-  });
-
-  const overlayOptions = Array.from(document.querySelectorAll("[data-map-overlay-option]"));
-  overlayOptions.forEach((input) => {
-    input.addEventListener("change", () => {
-      input.closest(".countries-map-overlay-option")?.classList.toggle("is-checked", input.checked);
-    });
-  });
-
-  const categoryOptions = Array.from(document.querySelectorAll("[data-map-category-option]"));
-
-  const resetButton = document.querySelector("[data-map-reset-layers]");
-  if (resetButton) {
-    resetButton.addEventListener("click", () => {
-      categoryOptions.forEach((input) => {
-        input.checked = true;
-      });
-      overlayOptions.forEach((input) => {
-        input.checked = false;
-        input.closest(".countries-map-overlay-option")?.classList.remove("is-checked");
-      });
-      const lightOption = styleOptions.find((input) => input.value === "light");
-      if (lightOption && !lightOption.checked) {
-        lightOption.checked = true;
-        setTileStyle("light");
-      }
-      if (countryLayer) {
-        // Cap fitBounds' own zoom independently of the map's manual-zoom ceiling -
-        // otherwise a wide viewport asks fitBounds for a zoom higher than maxZoom,
-        // it clamps, and the "fit the region" view degenerates into "fill the
-        // screen with whichever country is biggest".
-        map.fitBounds(countryLayer.getBounds(), { padding: [24, 24], maxZoom: 6 });
-      }
-    });
-  }
-
   // Neighboring countries: non-interactive context layer with plain labels.
   const NEIGHBOR_LABELS = {
     RUS: [53.5, 66],

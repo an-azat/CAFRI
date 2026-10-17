@@ -1,6 +1,13 @@
 @model CAFRI.ViewModels.Intelligence.IntelligenceItemCardViewModel
 
-<article class="intelligence-card">
+<article class="intelligence-card @(string.IsNullOrWhiteSpace(Model.ImageUrl) ? null : "intelligence-card--with-image")">
+    @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+    {
+        <a class="intelligence-card__image" href="@Model.Url" tabindex="-1" aria-hidden="true">
+            <img src="@Model.ImageUrl" alt="" loading="lazy" />
+        </a>
+    }
+
     <div class="category-label">@Model.Category</div>
 
     <div class="intelligence-card__country-row">

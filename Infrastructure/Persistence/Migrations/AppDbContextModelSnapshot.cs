@@ -648,6 +648,9 @@ namespace CAFRI.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsPublished")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsTrending")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("PublishedLabel")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -668,6 +671,9 @@ namespace CAFRI.Infrastructure.Persistence.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)");
 
+                    b.Property<int>("TrendingOrder")
+                        .HasColumnType("integer");
+
                     b.Property<DateTimeOffset>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -677,6 +683,8 @@ namespace CAFRI.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.HasIndex("IsPublished", "DisplayOrder");
+
+                    b.HasIndex("IsTrending", "TrendingOrder");
 
                     b.ToTable("IntelligenceContentItems", (string)null);
                 });

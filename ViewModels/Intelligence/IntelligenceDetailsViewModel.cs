@@ -59,4 +59,8 @@ public sealed class IntelligenceDetailsViewModel
     public IReadOnlyList<IntelligenceSidebarLinkViewModel> RelatedIntelligence { get; init; } = [];
 
     public IReadOnlyList<IntelligenceStatusRowViewModel> MonitoringStatus { get; init; } = [];
+
+    // Not part of the stored details JSON; loaded per request for the guest view sidebar.
+    [System.Text.Json.Serialization.JsonIgnore]
+    public IReadOnlyList<IntelligenceItemCardViewModel> RelatedItems { get; set; } = [];
 }

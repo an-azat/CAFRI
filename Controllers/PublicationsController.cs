@@ -18,10 +18,10 @@ public sealed class PublicationsController : Controller
         string? type,
         string? country,
         string? topic,
-        string? tab,
+        string? sortBy,
         int page,
         CancellationToken cancellationToken) =>
-        View(await _publicationContentService.GetIndexPageAsync(query, type, country, topic, tab, page == 0 ? 1 : page, cancellationToken));
+        View(await _publicationContentService.GetIndexPageAsync(query, type, country, topic, sortBy, page == 0 ? 1 : page, cancellationToken));
 
     [HttpGet("/publications/{slug}")]
     public async Task<IActionResult> Details(string slug, CancellationToken cancellationToken)

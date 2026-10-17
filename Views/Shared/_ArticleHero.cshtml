@@ -21,6 +21,9 @@
             var canDownload = Model.AvailableDownloads.Any(x => x.IsDownloadable);
         }
         <div class="article-actions">
+            @* Files are part of the full material, so guests never get a download control. *@
+            @if (Model.CanAccessFullContent)
+            {
             <button
                 type="button"
                 class="is-primary"
@@ -31,6 +34,7 @@
                 <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" /></svg>
                 Download Files
             </button>
+            }
             <button type="button" data-content-action="save" data-content-title="@Model.Title">
                 Save
             </button>

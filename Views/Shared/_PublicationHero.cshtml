@@ -28,6 +28,9 @@
             var hasSourceLink = !string.IsNullOrWhiteSpace(Model.SourceUrl) && Model.SourceUrl != "#";
         }
         <div class="publication-actions">
+            @* Files are part of the full material, so guests never get a download control. *@
+            @if (Model.CanAccessFullContent)
+            {
             <button
                 class="is-primary"
                 type="button"
@@ -38,6 +41,7 @@
                 <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" /></svg>
                 Download Full Report
             </button>
+            }
             @if (hasSourceLink)
             {
                 <a class="is-secondary" href="@Model.SourceUrl" target="_blank" rel="noopener noreferrer">

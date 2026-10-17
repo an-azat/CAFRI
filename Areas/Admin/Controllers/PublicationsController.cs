@@ -1285,14 +1285,19 @@ public sealed class PublicationsController : Controller
             var parts = documentRows[index];
             uploadsByRowIndex.TryGetValue(index, out var uploadedDocument);
 
+            // Rows are "Title | Type | Meta | Url", but the editor's meta itself contains " | "
+            // (e.g. "PDF | 431 KB"), so the URL is the last segment and everything between is meta.
+            var meta = parts.Length > 3 ? string.Join(" | ", parts[2..^1]) : parts[2];
+            var url = parts.Length > 3 ? parts[^1] : "#";
+
             savedDocuments.Add(new PublicationDocumentEntry
             {
                 Id = Guid.NewGuid(),
                 PublicationContentItemId = publicationContentItemId,
                 Title = string.IsNullOrWhiteSpace(parts[0]) ? uploadedDocument?.Title ?? "Publication document" : parts[0],
                 Type = string.IsNullOrWhiteSpace(parts[1]) ? uploadedDocument?.Type ?? string.Empty : parts[1],
-                Meta = string.IsNullOrWhiteSpace(parts[2]) ? uploadedDocument?.Meta ?? string.Empty : parts[2],
-                DownloadUrl = uploadedDocument?.DownloadUrl ?? (parts.Length > 3 ? string.Join(" | ", parts.Skip(3)) : "#"),
+                Meta = string.IsNullOrWhiteSpace(meta) ? uploadedDocument?.Meta ?? string.Empty : meta,
+                DownloadUrl = uploadedDocument?.DownloadUrl ?? url,
                 DisplayOrder = index
             });
         }

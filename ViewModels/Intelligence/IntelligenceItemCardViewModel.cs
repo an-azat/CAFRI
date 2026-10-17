@@ -18,6 +18,8 @@ public sealed class IntelligenceItemCardViewModel
 
     public required string Source { get; init; }
 
+    public string? ImageUrl { get; init; }
+
     public string Url => $"/intelligence/{Slug}";
 
     public string CountryAccentClass => CountryCode switch
