@@ -282,10 +282,10 @@ public sealed class PublicationsController : Controller
             ModelState.AddModelError(nameof(model.ReadingTime), "Select a valid reading time.");
         }
 
-        if (!string.IsNullOrWhiteSpace(model.PublishedMonth) &&
-            !DateTime.TryParseExact(model.PublishedMonth.Trim(), "yyyy-MM", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out _))
+        if (!string.IsNullOrWhiteSpace(model.PublishedAt) &&
+            PublicationMetadataFormatter.ParsePublishedDate(model.PublishedAt) is null)
         {
-            ModelState.AddModelError(nameof(model.PublishedMonth), "Select a valid publication month.");
+            ModelState.AddModelError(nameof(model.PublishedAt), "Select a valid publication date and time.");
         }
 
         if (!string.IsNullOrWhiteSpace(model.SourcePublishedAtUtc) &&
@@ -483,7 +483,7 @@ public sealed class PublicationsController : Controller
         ValidatePublicationModel(model);
         if (!ModelState.IsValid) return View("Edit", BuildEditViewModel(model));
 
-        var normalizedPublishedDate = PublicationMetadataFormatter.NormalizePublishedDate(model.PublishedMonth, model.PublishedDate, model.Meta);
+        var publishedAtUtc = PublicationMetadataFormatter.ParsePublishedDate(model.PublishedAt);
         var normalizedReadingTime = PublicationMetadataFormatter.NormalizeReadingTime(model.ReadingTime, model.Meta);
         var uploadedHeroFile = ResolveSingleFile(model.HeroImageFile, Request.Form.Files.GetFile(nameof(model.HeroImageFile)));
         var heroImageUrl = string.IsNullOrWhiteSpace(model.HeroImageUrl)
@@ -500,19 +500,21 @@ public sealed class PublicationsController : Controller
             Id = Guid.NewGuid(),
             Slug = model.Slug.Trim(),
             WorkflowStatus = PublicationWorkflowStatuses.Normalize(model.WorkflowStatus),
+            Visibility = PublicationVisibility.Normalize(model.Visibility),
             RequiresReview = model.RequiresReview,
             ExternalId = string.IsNullOrWhiteSpace(model.ExternalId) ? null : model.ExternalId.Trim(),
             SourceName = string.IsNullOrWhiteSpace(model.SourceName) ? null : model.SourceName.Trim(),
             SourceUrl = string.IsNullOrWhiteSpace(model.SourceUrl) ? null : PublicationImportHelpers.NormalizeSourceUrl(model.SourceUrl),
             SourceDomain = string.IsNullOrWhiteSpace(model.SourceUrl) ? null : PublicationImportHelpers.ExtractDomain(model.SourceUrl),
+            DetailsLinkUrl = string.IsNullOrWhiteSpace(model.DetailsLinkUrl) ? null : model.DetailsLinkUrl.Trim(),
             Type = model.Type.Trim(),
             CountryCode = model.CountryCode.Trim(),
             CountryLabel = ResolveCountryLabel(model.CountryCode, model.CountryLabel),
             Title = model.Title.Trim(),
             Description = model.Description.Trim(),
-            Meta = PublicationMetadataFormatter.BuildMeta(normalizedPublishedDate, normalizedReadingTime),
+            Meta = PublicationMetadataFormatter.BuildMeta(publishedAtUtc, normalizedReadingTime),
             Topic = PublicationTopicMapper.Normalize(model.Topic, model.Type, model.Title, model.Description),
-            PublishedDate = normalizedPublishedDate,
+            PublishedAtUtc = publishedAtUtc,
             ReadingTime = normalizedReadingTime,
             AuthorLabel = string.IsNullOrWhiteSpace(model.AuthorLabel) ? "CAFRI Research Team" : model.AuthorLabel.Trim(),
             DocumentLabel = string.IsNullOrWhiteSpace(model.DocumentLabel) ? "PDF available | 1.2 MB" : model.DocumentLabel.Trim(),
@@ -579,7 +581,7 @@ public sealed class PublicationsController : Controller
         var entity = await _dbContext.PublicationContentItems.FindAsync(id);
         if (entity is null) return NotFound();
 
-        var normalizedPublishedDate = PublicationMetadataFormatter.NormalizePublishedDate(model.PublishedMonth, model.PublishedDate, model.Meta);
+        var publishedAtUtc = PublicationMetadataFormatter.ParsePublishedDate(model.PublishedAt);
         var normalizedReadingTime = PublicationMetadataFormatter.NormalizeReadingTime(model.ReadingTime, model.Meta);
         var previousUrls = GetPublicationMediaUrls(entity).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var providedHeroFile = ResolveSingleFile(model.HeroImageFile, Request.Form.Files.GetFile(nameof(model.HeroImageFile)));
@@ -592,19 +594,21 @@ public sealed class PublicationsController : Controller
 
         entity.Slug = model.Slug.Trim();
         entity.WorkflowStatus = PublicationWorkflowStatuses.Normalize(model.WorkflowStatus);
+        entity.Visibility = PublicationVisibility.Normalize(model.Visibility);
         entity.RequiresReview = model.RequiresReview;
         entity.ExternalId = string.IsNullOrWhiteSpace(model.ExternalId) ? entity.ExternalId : model.ExternalId.Trim();
         entity.SourceName = string.IsNullOrWhiteSpace(model.SourceName) ? entity.SourceName : model.SourceName.Trim();
         entity.SourceUrl = string.IsNullOrWhiteSpace(model.SourceUrl) ? entity.SourceUrl : PublicationImportHelpers.NormalizeSourceUrl(model.SourceUrl);
         entity.SourceDomain = string.IsNullOrWhiteSpace(model.SourceUrl) ? entity.SourceDomain : PublicationImportHelpers.ExtractDomain(model.SourceUrl);
+        entity.DetailsLinkUrl = string.IsNullOrWhiteSpace(model.DetailsLinkUrl) ? null : model.DetailsLinkUrl.Trim();
         entity.Type = model.Type.Trim();
         entity.CountryCode = model.CountryCode.Trim();
         entity.CountryLabel = ResolveCountryLabel(model.CountryCode, model.CountryLabel);
         entity.Title = model.Title.Trim();
         entity.Description = model.Description.Trim();
-        entity.Meta = PublicationMetadataFormatter.BuildMeta(normalizedPublishedDate, normalizedReadingTime);
+        entity.Meta = PublicationMetadataFormatter.BuildMeta(publishedAtUtc, normalizedReadingTime);
         entity.Topic = PublicationTopicMapper.Normalize(model.Topic, model.Type, model.Title, model.Description);
-        entity.PublishedDate = normalizedPublishedDate;
+        entity.PublishedAtUtc = publishedAtUtc;
         entity.ReadingTime = normalizedReadingTime;
         entity.AuthorLabel = string.IsNullOrWhiteSpace(model.AuthorLabel) ? entity.AuthorLabel : model.AuthorLabel.Trim();
         entity.DocumentLabel = string.IsNullOrWhiteSpace(model.DocumentLabel) ? entity.DocumentLabel : model.DocumentLabel.Trim();
@@ -717,6 +721,7 @@ public sealed class PublicationsController : Controller
         {
             Id = entity.Id,
             Slug = entity.Slug,
+            Visibility = PublicationVisibility.Normalize(entity.Visibility),
             WorkflowStatus = PublicationWorkflowStatuses.Normalize(entity.WorkflowStatus),
             AvailableStatuses = PublicationWorkflowStatuses.All,
             RequiresReview = entity.RequiresReview,
@@ -724,6 +729,7 @@ public sealed class PublicationsController : Controller
             SourceName = entity.SourceName,
             SourceUrl = entity.SourceUrl,
             SourceDomain = entity.SourceDomain,
+            DetailsLinkUrl = entity.DetailsLinkUrl,
             SourcePublishedAtUtc = entity.SourcePublishedAtUtc?.ToString("yyyy-MM-ddTHH:mm:sszzz"),
             Type = entity.Type,
             AvailableTypes = PublicationTopicMapper.CanonicalTypes,
@@ -736,8 +742,7 @@ public sealed class PublicationsController : Controller
             DetailsJson = entity.DetailsJson,
             Topic = PublicationTopicMapper.Normalize(entity.Topic, entity.Type, entity.Title, entity.Description),
             AvailableTopics = PublicationTopicMapper.CanonicalTopics,
-            PublishedMonth = PublicationMetadataFormatter.ToMonthInputValue(string.IsNullOrWhiteSpace(entity.PublishedDate) ? details.PublishedDate : entity.PublishedDate),
-            PublishedDate = string.IsNullOrWhiteSpace(entity.PublishedDate) ? details.PublishedDate : entity.PublishedDate,
+            PublishedAt = PublicationMetadataFormatter.ToDateTimeInputValue(entity.PublishedAtUtc),
             ReadingTime = string.IsNullOrWhiteSpace(entity.ReadingTime) ? details.ReadingTime : entity.ReadingTime,
             AvailableReadingTimes = PublicationMetadataFormatter.CanonicalReadingTimes,
             AuthorLabel = string.IsNullOrWhiteSpace(entity.AuthorLabel) ? details.AuthorLabel : entity.AuthorLabel,
@@ -779,6 +784,7 @@ public sealed class PublicationsController : Controller
         {
             Id = model.Id,
             Slug = model.Slug,
+            Visibility = PublicationVisibility.Normalize(model.Visibility),
             WorkflowStatus = string.IsNullOrWhiteSpace(model.WorkflowStatus) ? PublicationWorkflowStatuses.Draft : model.WorkflowStatus,
             AvailableStatuses = PublicationWorkflowStatuses.All,
             RequiresReview = model.RequiresReview,
@@ -786,6 +792,7 @@ public sealed class PublicationsController : Controller
             SourceName = model.SourceName,
             SourceUrl = model.SourceUrl,
             SourceDomain = model.SourceDomain,
+            DetailsLinkUrl = model.DetailsLinkUrl,
             SourcePublishedAtUtc = model.SourcePublishedAtUtc,
             Type = model.Type,
             AvailableTypes = PublicationTopicMapper.CanonicalTypes,
@@ -800,10 +807,7 @@ public sealed class PublicationsController : Controller
                 ? PublicationTopicMapper.Normalize(model.Topic, model.Type, model.Title, model.Description)
                 : model.Topic,
             AvailableTopics = PublicationTopicMapper.CanonicalTopics,
-            PublishedMonth = string.IsNullOrWhiteSpace(model.PublishedMonth)
-                ? PublicationMetadataFormatter.ToMonthInputValue(model.PublishedDate)
-                : model.PublishedMonth,
-            PublishedDate = model.PublishedDate,
+            PublishedAt = model.PublishedAt,
             ReadingTime = model.ReadingTime,
             AvailableReadingTimes = PublicationMetadataFormatter.CanonicalReadingTimes,
             AuthorLabel = model.AuthorLabel,
@@ -860,7 +864,7 @@ public sealed class PublicationsController : Controller
         PublicationDetailsViewModel fallback)
     {
         var summarySection = entity.Sections
-            .Where(x => x.SectionKey == "executive-summary")
+            .Where(x => x.SectionKey == "executive-summary" && !PublicationSummaryFallback.IsLegacyTemplate(x.ParagraphsText))
             .OrderBy(x => x.DisplayOrder)
             .FirstOrDefault();
 
@@ -872,7 +876,7 @@ public sealed class PublicationsController : Controller
             Topic = entity.Topic,
             CoverageLabel = entity.CountryLabel,
             ShortDescription = entity.Description,
-            PublishedDate = entity.PublishedDate,
+            PublishedDate = PublicationMetadataFormatter.FormatPublishedDate(entity.PublishedAtUtc),
             ReadingTime = entity.ReadingTime,
             AuthorLabel = entity.AuthorLabel,
             DocumentLabel = entity.DocumentLabel,
@@ -1007,13 +1011,13 @@ public sealed class PublicationsController : Controller
             HeroVisualClassName = string.IsNullOrWhiteSpace(details.HeroVisualClassName) ? fallback.HeroVisualClassName : details.HeroVisualClassName,
             HeroImageUrl = string.IsNullOrWhiteSpace(details.HeroImageUrl) ? fallback.HeroImageUrl : details.HeroImageUrl,
             PdfDownloadUrl = string.IsNullOrWhiteSpace(details.PdfDownloadUrl) ? fallback.PdfDownloadUrl : details.PdfDownloadUrl,
-            ExecutiveSummaryHtml = string.IsNullOrWhiteSpace(details.ExecutiveSummaryHtml) ? fallback.ExecutiveSummaryHtml : details.ExecutiveSummaryHtml,
+            ExecutiveSummaryHtml = string.IsNullOrWhiteSpace(details.ExecutiveSummaryHtml) || PublicationSummaryFallback.IsLegacyTemplate(details.ExecutiveSummaryHtml) ? fallback.ExecutiveSummaryHtml : details.ExecutiveSummaryHtml,
             IsPremium = details.IsPremium || fallback.IsPremium,
             CanAccessFullContent = details.CanAccessFullContent || fallback.CanAccessFullContent,
             Actions = details.Actions.Count == 0 ? fallback.Actions : details.Actions,
             Tabs = details.Tabs.Count == 0 ? fallback.Tabs : details.Tabs,
             Kpis = details.Kpis.Count == 0 ? fallback.Kpis : details.Kpis,
-            ExecutiveSummaryParagraphs = details.ExecutiveSummaryParagraphs.Count == 0 ? fallback.ExecutiveSummaryParagraphs : details.ExecutiveSummaryParagraphs,
+            ExecutiveSummaryParagraphs = PublicationSummaryFallback.RemoveLegacyTemplate(details.ExecutiveSummaryParagraphs) is { Count: > 0 } summaryParagraphs ? summaryParagraphs : fallback.ExecutiveSummaryParagraphs,
             ExecutiveHighlights = details.ExecutiveHighlights.Count == 0 ? fallback.ExecutiveHighlights : details.ExecutiveHighlights,
             KeyFindings = details.KeyFindings.Count == 0 ? fallback.KeyFindings : details.KeyFindings,
             Sections = details.Sections.Count == 0 ? fallback.Sections : details.Sections,
@@ -1048,7 +1052,7 @@ public sealed class PublicationsController : Controller
             Topic = entity.Topic,
             CoverageLabel = entity.CountryLabel,
             ShortDescription = entity.Description,
-            PublishedDate = entity.PublishedDate,
+            PublishedDate = PublicationMetadataFormatter.FormatPublishedDate(entity.PublishedAtUtc),
             ReadingTime = entity.ReadingTime,
             AuthorLabel = entity.AuthorLabel,
             DocumentLabel = entity.DocumentLabel,
@@ -1083,7 +1087,7 @@ public sealed class PublicationsController : Controller
 
     private static PublicationDetailsViewModel BuildDefaultDetails(PublicationContentItem item)
     {
-        var publishedDate = string.IsNullOrWhiteSpace(item.PublishedDate) ? item.Meta.Split('|')[0].Trim() : item.PublishedDate;
+        var publishedDate = PublicationMetadataFormatter.FormatPublishedDate(item.PublishedAtUtc);
         var readingTime = string.IsNullOrWhiteSpace(item.ReadingTime) ? PublicationMetadataFormatter.NormalizeReadingTime(null, item.Meta) : item.ReadingTime;
 
         return new PublicationDetailsViewModel
@@ -1118,11 +1122,7 @@ public sealed class PublicationsController : Controller
                 new() { Label = "Update Cycle", Value = "Monthly", Detail = "Monitoring cadence", Tone = "positive" },
                 new() { Label = "Access Level", Value = "Public", Detail = "Web article available", Tone = "accent" }
             ],
-            ExecutiveSummaryParagraphs =
-            [
-                $"{item.Title} provides a structured analytical overview of current developments relevant to {item.CountryLabel}. The page is designed as an online publication rather than a simple download screen, with summary findings, embedded data blocks, and related materials presented directly on the platform.",
-                "This fallback detail layout is now generated from database content, so the page remains usable even before a full custom detail JSON has been authored in the admin panel."
-            ],
+            ExecutiveSummaryParagraphs = PublicationSummaryFallback.BuildParagraphs(item.Description),
             ExecutiveHighlights =
             [
                 "Core summary available directly on the page",

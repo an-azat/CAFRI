@@ -22,6 +22,8 @@ public sealed class AccessRequestsController : Controller
         _userManager = userManager;
     }
 
+    private string CurrentAdminId => _userManager.GetUserId(User) ?? "unknown-admin";
+
     private async Task IssueActivationTokenAsync(
         AccessRequest request,
         string userId,
@@ -196,7 +198,7 @@ public sealed class AccessRequestsController : Controller
             return NotFound();
         }
 
-        if (request.Status == AccessRequestStatus.Approved && request.Grants.Any())
+        if (request.Status == AccessRequestStatus.Approved && request.Grants.Any(x => x.Status == AccessGrantStatus.Active && (x.ExpiresAtUtc == null || x.ExpiresAtUtc > DateTimeOffset.UtcNow)))
         {
             return RedirectToAction(nameof(Details), new { id });
         }
@@ -243,10 +245,10 @@ public sealed class AccessRequestsController : Controller
         request.ApplicationUserId = user.Id;
         request.Status = AccessRequestStatus.Approved;
         request.ReviewedAtUtc = DateTimeOffset.UtcNow;
-        request.ReviewedByUserId ??= "system-admin-review";
+        request.ReviewedByUserId = CurrentAdminId;
         request.UpdatedAtUtc = DateTimeOffset.UtcNow;
 
-        if (!request.Grants.Any())
+        if (!request.Grants.Any(x => x.Status == AccessGrantStatus.Active && (x.ExpiresAtUtc == null || x.ExpiresAtUtc > DateTimeOffset.UtcNow)))
         {
             _dbContext.ProfessionalAccessGrants.Add(new ProfessionalAccessGrant
             {
@@ -257,7 +259,7 @@ public sealed class AccessRequestsController : Controller
                 GrantedAtUtc = DateTimeOffset.UtcNow,
                 StartsAtUtc = DateTimeOffset.UtcNow,
                 AccessRequestId = request.Id,
-                GrantedByUserId = "system-admin-review",
+                GrantedByUserId = CurrentAdminId,
                 Notes = "Approved through the CAFRI admin access request workflow."
             });
         }
@@ -413,7 +415,7 @@ public sealed class AccessRequestsController : Controller
 
         grant.Status = AccessGrantStatus.Revoked;
         grant.RevokedAtUtc = DateTimeOffset.UtcNow;
-        grant.RevokedByUserId = "system-admin-review";
+        grant.RevokedByUserId = CurrentAdminId;
         grant.ExpiresAtUtc = DateTimeOffset.UtcNow;
         grant.Notes = "Grant revoked by admin review workflow.";
         request.UpdatedAtUtc = DateTimeOffset.UtcNow;

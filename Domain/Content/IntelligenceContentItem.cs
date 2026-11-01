@@ -7,7 +7,7 @@ public sealed class IntelligenceContentItem
     public string Category { get; set; } = string.Empty;
     public string CountryCode { get; set; } = string.Empty;
     public string CountryName { get; set; } = string.Empty;
-    public string PublishedLabel { get; set; } = string.Empty;
+    public DateTimeOffset? PublishedAtUtc { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string Source { get; set; } = string.Empty;

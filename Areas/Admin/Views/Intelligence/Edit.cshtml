@@ -63,8 +63,9 @@
                         <input asp-for="Source" class="form-control" data-preview-target="Source" data-preview-key="source" />
                     </div>
                     <div class="col-md-6">
-                        <label asp-for="PublishedLabel" class="form-label"></label>
-                        <input asp-for="PublishedLabel" class="form-control" data-preview-target="PublishedLabel" data-preview-key="publishedLabel" />
+                        <label asp-for="PublishedAt" class="form-label"></label>
+                        <input asp-for="PublishedAt" type="datetime-local" class="form-control" />
+                        <span asp-validation-for="PublishedAt" class="text-danger"></span>
                     </div>
                     <div class="col-12">
                         <div class="form-check">

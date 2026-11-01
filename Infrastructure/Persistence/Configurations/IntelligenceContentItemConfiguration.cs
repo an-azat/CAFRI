@@ -14,7 +14,7 @@ public sealed class IntelligenceContentItemConfiguration : IEntityTypeConfigurat
         builder.Property(x => x.Category).HasMaxLength(120).IsRequired();
         builder.Property(x => x.CountryCode).HasMaxLength(10).IsRequired();
         builder.Property(x => x.CountryName).HasMaxLength(120).IsRequired();
-        builder.Property(x => x.PublishedLabel).HasMaxLength(100).IsRequired();
+        builder.HasIndex(x => x.PublishedAtUtc);
         builder.Property(x => x.Title).HasMaxLength(300).IsRequired();
         builder.Property(x => x.Description).HasMaxLength(2000).IsRequired();
         builder.Property(x => x.Source).HasMaxLength(300).IsRequired();

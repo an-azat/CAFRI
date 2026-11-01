@@ -1,14 +1,14 @@
 @model CAFRI.ViewModels.Publications.PublicationDetailsViewModel
 
 <aside class="publication-sidebar">
-    @if (!string.IsNullOrWhiteSpace(Model.SourceName))
+    @if (!string.IsNullOrWhiteSpace(Model.SourceName) || !string.IsNullOrEmpty(Model.ExternalLinkUrl))
     {
         <section class="publication-sidebar-card">
             <h2>Original Source</h2>
-            <p class="publication-sidebar-card__source-name">@Model.SourceName</p>
-            @if (!string.IsNullOrWhiteSpace(Model.SourceUrl) && Model.SourceUrl != "#")
+            <p class="publication-sidebar-card__source-name">@Model.ExternalLinkLabel</p>
+            @if (!string.IsNullOrEmpty(Model.ExternalLinkUrl))
             {
-                <a class="publication-sidebar-card__link" href="@Model.SourceUrl" target="_blank" rel="noopener noreferrer">Open original source <span>&rarr;</span></a>
+                <a class="publication-sidebar-card__link" href="@Model.ExternalLinkUrl" target="_blank" rel="noopener noreferrer">Open original source <span>&rarr;</span></a>
             }
         </section>
     }
@@ -47,7 +47,12 @@
                 @foreach (var item in Model.PublicationInfo)
                 {
                     <dt>@item.Label</dt>
-                    <dd>@item.Value</dd>
+                    <dd>@(item.Label switch
+                        {
+                            "Access" => CAFRI.Domain.Content.PublicationVisibility.GetAccessLabel(Model.Visibility),
+                            "Published" when !string.IsNullOrWhiteSpace(Model.PublishedDate) => Model.PublishedDate,
+                            _ => item.Value
+                        })</dd>
                 }
             </dl>
         </section>

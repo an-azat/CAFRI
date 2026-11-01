@@ -19,8 +19,10 @@ public sealed class IntelligenceContentEditViewModel
     [Required, StringLength(120)]
     public string CountryName { get; init; } = string.Empty;
 
-    [Required, StringLength(100)]
-    public string PublishedLabel { get; init; } = string.Empty;
+    // datetime-local value ("yyyy-MM-ddTHH:mm"), interpreted as UTC.
+    [Required]
+    [Display(Name = "Published Date & Time (UTC)")]
+    public string PublishedAt { get; init; } = string.Empty;
 
     [Required, StringLength(300)]
     public string Title { get; init; } = string.Empty;

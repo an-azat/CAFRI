@@ -5,6 +5,7 @@ public sealed class PublicationContentItem
     public Guid Id { get; set; }
     public string Slug { get; set; } = string.Empty;
     public string WorkflowStatus { get; set; } = PublicationWorkflowStatuses.Draft;
+    public string Visibility { get; set; } = PublicationVisibility.SignedIn;
     public bool RequiresReview { get; set; }
     public string? ExternalId { get; set; }
     public string? SourceName { get; set; }
@@ -17,7 +18,7 @@ public sealed class PublicationContentItem
     public string Description { get; set; } = string.Empty;
     public string Meta { get; set; } = string.Empty;
     public string Topic { get; set; } = string.Empty;
-    public string PublishedDate { get; set; } = string.Empty;
+    public DateTimeOffset? PublishedAtUtc { get; set; }
     public string ReadingTime { get; set; } = string.Empty;
     public string AuthorLabel { get; set; } = string.Empty;
     public string DocumentLabel { get; set; } = string.Empty;
@@ -25,6 +26,7 @@ public sealed class PublicationContentItem
     public string? HeroImageUrl { get; set; }
     public string? GalleryJson { get; set; }
     public string? PdfDownloadUrl { get; set; }
+    public string? DetailsLinkUrl { get; set; }
     public string? DetailsJson { get; set; }
     public int DisplayOrder { get; set; }
     public bool IsPublished { get; set; } = true;

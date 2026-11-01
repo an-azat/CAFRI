@@ -3,8 +3,10 @@
     ViewData["Title"] = Model.Title;
     ViewData["PageTheme"] = "theme-home";
     var showLockedPreview = !Model.CanAccessFullContent;
-    var publicationPreviewText = Model.ExecutiveSummaryParagraphs.FirstOrDefault() ?? Model.ShortDescription;
+    var publicationPreviewText = CAFRI.Infrastructure.Content.PublicationSummaryFallback.BuildPreview(Model.ExecutiveSummaryParagraphs, Model.ShortDescription);
     var loginUrl = Url.Action("Login", "Account", new { returnUrl = Context.Request.Path + Context.Request.QueryString }) ?? "/Account/Login";
+    var isSignedIn = User.Identity?.IsAuthenticated == true;
+    string DownloadUrl(string rawUrl) => $"/publications/{Uri.EscapeDataString(Model.Slug)}/download?file={Uri.EscapeDataString(CAFRI.ViewModels.Shared.DocumentLink.Url(rawUrl))}";
     var accessGate = new CAFRI.ViewModels.Shared.ContentAccessGateViewModel
     {
         Breadcrumbs =
@@ -23,17 +25,18 @@
         CoverLabel = $"CAFRI · {Model.PublicationType}",
         CoverTitle = Model.Title,
         Preview = publicationPreviewText,
-        GateTitle = "Full publication is available after sign in",
-        GateDescription = "Sign in to read the full publication.",
-        SignInLabel = "Sign in to read full publication",
-        SignInUrl = loginUrl,
+        GateTitle = isSignedIn ? "Your professional access is not active" : "Full publication is available after sign in",
+        GateDescription = isSignedIn ? "Your access has expired or was revoked. Request access to continue reading." : "Sign in to read the full publication.",
+        SignInLabel = isSignedIn ? "Request professional access" : "Sign in to read full publication",
+        SignInUrl = isSignedIn ? "/access/request" : loginUrl,
         DetailRows = new CAFRI.ViewModels.Shared.GateDetailRowViewModel[]
             {
                 new() { Label = "Coverage", Value = Model.CoverageLabel },
                 new() { Label = "Content type", Value = Model.PublicationType },
                 new() { Label = "Author", Value = Model.AuthorLabel },
                 new() { Label = "Documents", Value = Model.Documents.Count(x => x.IsDownloadable) is var files && files > 0 ? $"{files} file{(files == 1 ? "" : "s")} after sign in" : "" },
-                new() { Label = "Access", Value = "Sign-in required" }
+                new() { Label = "Access", Value = "Sign-in required" },
+                new() { Label = "Source", Value = string.IsNullOrEmpty(Model.ExternalLinkUrl) ? "" : $"{Model.ExternalLinkLabel} ↗", Url = Model.ExternalLinkUrl }
             }
             .Where(x => !string.IsNullOrWhiteSpace(x.Value)).ToList(),
         RelatedTitle = "Related publications",
@@ -220,7 +223,7 @@ else
                     <div class="document-list">
                         @foreach (var item in Model.Documents)
                         {
-                            <partial name="_PublicationDocumentCard" model="item" />
+                            <partial name="_PublicationDocumentCard" model="new CAFRI.ViewModels.Publications.PublicationDocumentCardViewModel { Title = item.Title, Type = item.Type, Meta = item.Meta, DownloadUrl = item.IsDownloadable ? DownloadUrl(item.DownloadUrl) : item.DownloadUrl }" />
                         }
                     </div>
                 </section>
@@ -262,7 +265,7 @@ else
                 {
                     var optionId = $"publication-download-{item.Title.GetHashCode()}";
                     <label class="content-download-modal__option" for="@optionId">
-                        <input id="@optionId" type="radio" name="publication-download-option" value="@item.DownloadUrl" @(item == Model.Documents.First(x => x.IsDownloadable) ? "checked" : null) />
+                        <input id="@optionId" type="radio" name="publication-download-option" value="@DownloadUrl(item.DownloadUrl)" @(item == Model.Documents.First(x => x.IsDownloadable) ? "checked" : null) />
                         <span class="content-download-modal__option-copy">
                             <strong>@item.Title</strong>
                             <span>@item.Type</span>

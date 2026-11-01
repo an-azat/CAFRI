@@ -12,9 +12,11 @@ public sealed class PublicationContentItemConfiguration : IEntityTypeConfigurati
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Slug).HasMaxLength(180).IsRequired();
         builder.Property(x => x.WorkflowStatus).HasMaxLength(40).IsRequired();
+        builder.Property(x => x.Visibility).HasMaxLength(20).IsRequired().HasDefaultValue(PublicationVisibility.SignedIn);
         builder.Property(x => x.ExternalId).HasMaxLength(300);
         builder.Property(x => x.SourceName).HasMaxLength(220);
         builder.Property(x => x.SourceUrl).HasMaxLength(1000);
+        builder.Property(x => x.DetailsLinkUrl).HasMaxLength(1000);
         builder.Property(x => x.SourceDomain).HasMaxLength(220);
         builder.Property(x => x.Type).HasMaxLength(120).IsRequired();
         builder.Property(x => x.CountryCode).HasMaxLength(10).IsRequired();
@@ -23,7 +25,7 @@ public sealed class PublicationContentItemConfiguration : IEntityTypeConfigurati
         builder.Property(x => x.Description).HasMaxLength(2000).IsRequired();
         builder.Property(x => x.Meta).HasMaxLength(200).IsRequired();
         builder.Property(x => x.Topic).HasMaxLength(120).IsRequired();
-        builder.Property(x => x.PublishedDate).HasMaxLength(120).IsRequired();
+        builder.HasIndex(x => x.PublishedAtUtc);
         builder.Property(x => x.ReadingTime).HasMaxLength(120).IsRequired();
         builder.Property(x => x.AuthorLabel).HasMaxLength(160).IsRequired();
         builder.Property(x => x.DocumentLabel).HasMaxLength(160).IsRequired();

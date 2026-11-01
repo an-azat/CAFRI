@@ -17,32 +17,49 @@ public static class PublicationMetadataFormatter
         "25 min read"
     ];
 
-    public static string NormalizePublishedDate(string? publishedMonth, string? publishedDate, string? meta)
+    // Value format of <input type="datetime-local">; the admin enters UTC.
+    public const string DateTimeInputFormat = "yyyy-MM-ddTHH:mm";
+
+    private static readonly string[] LegacyDateFormats =
+    [
+        "MMMM yyyy", "MMM yyyy", "yyyy-MM", "yyyy-MM-dd", "d MMMM yyyy", "MMMM d, yyyy", "MMM d, yyyy", DateTimeInputFormat
+    ];
+
+    public static string FormatPublishedDate(DateTimeOffset? publishedAtUtc) =>
+        publishedAtUtc?.UtcDateTime.ToString("d MMMM yyyy", CultureInfo.InvariantCulture) ?? string.Empty;
+
+    // Compact form used by Intelligence cards, e.g. "Jun 15, 2026".
+    public static string FormatShortDate(DateTimeOffset? publishedAtUtc) =>
+        publishedAtUtc?.UtcDateTime.ToString("MMM d, yyyy", CultureInfo.InvariantCulture) ?? string.Empty;
+
+    public static string ToDateTimeInputValue(DateTimeOffset? publishedAtUtc) =>
+        publishedAtUtc?.UtcDateTime.ToString(DateTimeInputFormat, CultureInfo.InvariantCulture) ?? string.Empty;
+
+    // Parses admin input ("yyyy-MM-ddTHH:mm") and the free-text dates older data used
+    // ("June 2026", "2026-06-15", ...), always as UTC.
+    public static DateTimeOffset? ParsePublishedDate(string? value)
     {
-        if (!string.IsNullOrWhiteSpace(publishedMonth) &&
-            DateTime.TryParseExact(publishedMonth.Trim(), "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out var monthValue))
+        if (string.IsNullOrWhiteSpace(value))
         {
-            return monthValue.ToString("MMMM yyyy", CultureInfo.InvariantCulture);
+            return null;
         }
 
-        if (!string.IsNullOrWhiteSpace(publishedDate))
+        var trimmed = value.Trim();
+        if (DateTime.TryParseExact(trimmed, LegacyDateFormats, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out var exact))
         {
-            var trimmed = publishedDate.Trim();
-            if (DateTime.TryParseExact(trimmed, ["MMMM yyyy", "MMM yyyy", "yyyy-MM", "yyyy-MM-dd"], CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
-            {
-                return parsed.ToString("MMMM yyyy", CultureInfo.InvariantCulture);
-            }
-
-            return trimmed;
+            return new DateTimeOffset(DateTime.SpecifyKind(exact, DateTimeKind.Utc));
         }
 
-        if (!string.IsNullOrWhiteSpace(meta))
-        {
-            return meta.Split('|', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? string.Empty;
-        }
-
-        return string.Empty;
+        return DateTimeOffset.TryParse(trimmed, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var parsed)
+            ? parsed.ToUniversalTime()
+            : null;
     }
+
+    // Older rows keep the date only as the first "|" segment of Meta ("June 2026 | 12 min read").
+    public static DateTimeOffset? ParsePublishedDateFromMeta(string? meta) =>
+        string.IsNullOrWhiteSpace(meta)
+            ? null
+            : ParsePublishedDate(meta.Split('|', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).FirstOrDefault());
 
     public static string NormalizeReadingTime(string? readingTime, string? meta)
     {
@@ -59,25 +76,10 @@ public static class PublicationMetadataFormatter
         return "12 min read";
     }
 
-    public static string BuildMeta(string publishedDate, string readingTime)
+    public static string BuildMeta(DateTimeOffset? publishedAtUtc, string readingTime)
     {
-        var left = string.IsNullOrWhiteSpace(publishedDate) ? "TBD" : publishedDate.Trim();
+        var left = publishedAtUtc is null ? "TBD" : FormatPublishedDate(publishedAtUtc);
         var right = string.IsNullOrWhiteSpace(readingTime) ? "12 min read" : readingTime.Trim();
         return $"{left} | {right}";
-    }
-
-    public static string ToMonthInputValue(string? publishedDate)
-    {
-        if (string.IsNullOrWhiteSpace(publishedDate))
-        {
-            return string.Empty;
-        }
-
-        if (DateTime.TryParseExact(publishedDate.Trim(), ["MMMM yyyy", "MMM yyyy", "yyyy-MM", "yyyy-MM-dd"], CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
-        {
-            return parsed.ToString("yyyy-MM", CultureInfo.InvariantCulture);
-        }
-
-        return string.Empty;
     }
 }

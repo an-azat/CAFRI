@@ -17,6 +17,10 @@ public sealed class PublicationContentEditViewModel
 
     public IReadOnlyList<string> AvailableStatuses { get; init; } = [];
 
+    [StringLength(20)]
+    [Display(Name = "Who can see it")]
+    public string Visibility { get; init; } = CAFRI.Domain.Content.PublicationVisibility.SignedIn;
+
     [Display(Name = "Requires Editorial Review")]
     public bool RequiresReview { get; init; }
 
@@ -31,6 +35,11 @@ public sealed class PublicationContentEditViewModel
     [StringLength(1000)]
     [Display(Name = "Source URL")]
     public string? SourceUrl { get; init; }
+
+    [StringLength(1000)]
+    [Url]
+    [Display(Name = "Details Link")]
+    public string? DetailsLinkUrl { get; init; }
 
     [StringLength(220)]
     [Display(Name = "Source Domain")]
@@ -75,12 +84,9 @@ public sealed class PublicationContentEditViewModel
 
     public IReadOnlyList<string> AvailableTopics { get; init; } = [];
 
-    [StringLength(120)]
-    [Display(Name = "Published Date")]
-    public string? PublishedDate { get; init; } = string.Empty;
-
-    [Display(Name = "Published Month")]
-    public string? PublishedMonth { get; init; } = string.Empty;
+    // datetime-local value ("yyyy-MM-ddTHH:mm"), interpreted as UTC.
+    [Display(Name = "Published Date & Time (UTC)")]
+    public string? PublishedAt { get; init; } = string.Empty;
 
     [StringLength(120)]
     [Display(Name = "Reading Time")]

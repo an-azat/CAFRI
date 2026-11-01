@@ -158,7 +158,7 @@ public sealed class DbPublicationContentService : IPublicationContentService
             .AsNoTracking()
             .Include(x => x.CountryAssignments)
             .Include(x => x.CategoryAssignments)
-            .Where(x => x.WorkflowStatus == PublicationWorkflowStatuses.Published)
+            .Where(x => x.WorkflowStatus == PublicationWorkflowStatuses.Published && x.Visibility != PublicationVisibility.Hidden)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(query))
@@ -202,12 +202,12 @@ public sealed class DbPublicationContentService : IPublicationContentService
             }
         }
 
-        // "Newest" keeps the editorial order used across the site (DisplayOrder, then most recently updated).
+        // Date sorts use the publication date; undated items go last, DisplayOrder breaks ties.
         publicationsQuery = selectedSort switch
         {
-            "Oldest" => publicationsQuery.OrderByDescending(x => x.DisplayOrder).ThenBy(x => x.UpdatedAtUtc),
+            "Oldest" => publicationsQuery.OrderBy(x => x.PublishedAtUtc == null).ThenBy(x => x.PublishedAtUtc).ThenBy(x => x.DisplayOrder),
             "Title" => publicationsQuery.OrderBy(x => x.Title),
-            _ => publicationsQuery.OrderBy(x => x.DisplayOrder).ThenByDescending(x => x.UpdatedAtUtc)
+            _ => publicationsQuery.OrderBy(x => x.PublishedAtUtc == null).ThenByDescending(x => x.PublishedAtUtc).ThenBy(x => x.DisplayOrder)
         };
 
         var totalResults = await publicationsQuery.CountAsync(cancellationToken);
@@ -268,7 +268,7 @@ public sealed class DbPublicationContentService : IPublicationContentService
 
         var types = await _dbContext.PublicationContentItems
             .AsNoTracking()
-            .Where(x => x.WorkflowStatus == PublicationWorkflowStatuses.Published && x.Type != "")
+            .Where(x => x.WorkflowStatus == PublicationWorkflowStatuses.Published && x.Visibility != PublicationVisibility.Hidden && x.Type != "")
             .Select(x => x.Type)
             .Distinct()
             .OrderBy(x => x)
@@ -305,7 +305,7 @@ public sealed class DbPublicationContentService : IPublicationContentService
             .Include(x => x.InfoEntries)
             .Include(x => x.CountryAssignments)
             .Include(x => x.CategoryAssignments)
-            .FirstOrDefaultAsync(x => x.WorkflowStatus == PublicationWorkflowStatuses.Published && x.Slug == slug, cancellationToken);
+            .FirstOrDefaultAsync(x => x.WorkflowStatus == PublicationWorkflowStatuses.Published && x.Visibility != PublicationVisibility.Hidden && x.Slug == slug, cancellationToken);
 
         if (entity is null)
         {
@@ -314,7 +314,7 @@ public sealed class DbPublicationContentService : IPublicationContentService
 
         var relatedCards = await _dbContext.PublicationContentItems
             .AsNoTracking()
-            .Where(x => x.WorkflowStatus == PublicationWorkflowStatuses.Published && x.Slug != slug)
+            .Where(x => x.WorkflowStatus == PublicationWorkflowStatuses.Published && x.Visibility != PublicationVisibility.Hidden && x.Slug != slug)
             .OrderBy(x => x.DisplayOrder)
             .Take(4)
             .Select(x => new PublicationCardViewModel
@@ -335,19 +335,23 @@ public sealed class DbPublicationContentService : IPublicationContentService
             ? fallback
             : MergeWithFallback(jsonDetails, fallback, entity.DetailsJson);
 
+        PublicationDetailsViewModel details;
         if (HasStructuredDetails(entity))
         {
-            return BuildStructuredDetails(entity, detailsFallback);
+            details = BuildStructuredDetails(entity, detailsFallback);
         }
-
-        if (jsonDetails is not null)
+        else if (jsonDetails is not null)
         {
-            var merged = detailsFallback;
-            merged.HeroImageUrl = entity.HeroImageUrl ?? merged.HeroImageUrl;
-            return merged;
+            details = detailsFallback;
+            details.HeroImageUrl = entity.HeroImageUrl ?? details.HeroImageUrl;
+        }
+        else
+        {
+            details = fallback;
         }
 
-        return fallback;
+        details.Visibility = PublicationVisibility.Normalize(entity.Visibility);
+        return details;
     }
 
     private static PublicationDetailsViewModel? TryDeserializeDetails(string? detailsJson)
@@ -381,7 +385,7 @@ public sealed class DbPublicationContentService : IPublicationContentService
         PublicationDetailsViewModel fallback)
     {
         var summarySection = item.Sections
-            .Where(x => x.SectionKey == "executive-summary")
+            .Where(x => x.SectionKey == "executive-summary" && !PublicationSummaryFallback.IsLegacyTemplate(x.ParagraphsText))
             .OrderBy(x => x.DisplayOrder)
             .FirstOrDefault();
 
@@ -393,7 +397,7 @@ public sealed class DbPublicationContentService : IPublicationContentService
             Topic = string.IsNullOrWhiteSpace(item.Topic) ? fallback.Topic : item.Topic,
             CoverageLabel = item.CountryLabel,
             ShortDescription = item.Description,
-            PublishedDate = string.IsNullOrWhiteSpace(item.PublishedDate) ? fallback.PublishedDate : item.PublishedDate,
+            PublishedDate = item.PublishedAtUtc is null ? fallback.PublishedDate : PublicationMetadataFormatter.FormatPublishedDate(item.PublishedAtUtc),
             ReadingTime = string.IsNullOrWhiteSpace(item.ReadingTime) ? fallback.ReadingTime : item.ReadingTime,
             AuthorLabel = string.IsNullOrWhiteSpace(item.AuthorLabel) ? fallback.AuthorLabel : item.AuthorLabel,
             DocumentLabel = string.IsNullOrWhiteSpace(item.DocumentLabel) ? fallback.DocumentLabel : item.DocumentLabel,
@@ -401,6 +405,7 @@ public sealed class DbPublicationContentService : IPublicationContentService
             HeroImageUrl = item.HeroImageUrl ?? string.Empty,
             SourceName = string.IsNullOrWhiteSpace(item.SourceName) ? fallback.SourceName : item.SourceName,
             SourceUrl = string.IsNullOrWhiteSpace(item.SourceUrl) ? fallback.SourceUrl : item.SourceUrl,
+            DetailsLinkUrl = fallback.DetailsLinkUrl,
             CountryLabels = BuildCountryLabels(item),
             TopicLabels = BuildTopicLabels(item),
             PdfDownloadUrl = string.IsNullOrWhiteSpace(item.PdfDownloadUrl) ? fallback.PdfDownloadUrl : item.PdfDownloadUrl,
@@ -414,10 +419,12 @@ public sealed class DbPublicationContentService : IPublicationContentService
             // When the summary was authored as rich HTML (via the admin Quill editor),
             // ParagraphsText holds that HTML rather than "~~"-joined plain-text paragraphs.
             // Parsing it as plain text would dump raw markup into the guest-preview text,
-            // so fall back to the generic paragraphs instead.
-            ExecutiveSummaryParagraphs = summarySection is null || LooksLikeHtml(summarySection.ParagraphsText)
+            // so extract plain-text paragraphs from the HTML instead.
+            ExecutiveSummaryParagraphs = summarySection is null
                 ? fallback.ExecutiveSummaryParagraphs
-                : ParseJoinedItems(summarySection.ParagraphsText),
+                : LooksLikeHtml(summarySection.ParagraphsText)
+                    ? PublicationSummaryFallback.ExtractParagraphs(summarySection.ParagraphsText) is { Count: > 0 } htmlParagraphs ? htmlParagraphs : fallback.ExecutiveSummaryParagraphs
+                    : ParseJoinedItems(summarySection.ParagraphsText),
             ExecutiveHighlights = item.HighlightEntries
                 .OrderBy(x => x.DisplayOrder)
                 .Select(x => x.Text)
@@ -538,7 +545,7 @@ public sealed class DbPublicationContentService : IPublicationContentService
             Topic = string.IsNullOrWhiteSpace(details.Topic) ? fallback.Topic : details.Topic,
             CoverageLabel = string.IsNullOrWhiteSpace(details.CoverageLabel) ? fallback.CoverageLabel : details.CoverageLabel,
             ShortDescription = string.IsNullOrWhiteSpace(details.ShortDescription) ? fallback.ShortDescription : details.ShortDescription,
-            PublishedDate = string.IsNullOrWhiteSpace(details.PublishedDate) ? fallback.PublishedDate : details.PublishedDate,
+            PublishedDate = string.IsNullOrWhiteSpace(fallback.PublishedDate) ? details.PublishedDate : fallback.PublishedDate,
             ReadingTime = string.IsNullOrWhiteSpace(details.ReadingTime) ? fallback.ReadingTime : details.ReadingTime,
             AuthorLabel = string.IsNullOrWhiteSpace(details.AuthorLabel) ? fallback.AuthorLabel : details.AuthorLabel,
             DocumentLabel = string.IsNullOrWhiteSpace(details.DocumentLabel) ? fallback.DocumentLabel : details.DocumentLabel,
@@ -546,15 +553,20 @@ public sealed class DbPublicationContentService : IPublicationContentService
             HeroImageUrl = string.IsNullOrWhiteSpace(details.HeroImageUrl) ? fallback.HeroImageUrl : details.HeroImageUrl,
             SourceName = string.IsNullOrWhiteSpace(details.SourceName) ? fallback.SourceName : details.SourceName,
             SourceUrl = string.IsNullOrWhiteSpace(details.SourceUrl) ? fallback.SourceUrl : details.SourceUrl,
+            DetailsLinkUrl = fallback.DetailsLinkUrl,
             CountryLabels = details.CountryLabels.Count == 0 ? fallback.CountryLabels : details.CountryLabels,
             TopicLabels = details.TopicLabels.Count == 0 ? fallback.TopicLabels : details.TopicLabels,
             PdfDownloadUrl = string.IsNullOrWhiteSpace(details.PdfDownloadUrl) ? fallback.PdfDownloadUrl : details.PdfDownloadUrl,
-            ExecutiveSummaryHtml = string.IsNullOrWhiteSpace(details.ExecutiveSummaryHtml) ? fallback.ExecutiveSummaryHtml : SanitizeRichTextHtml(details.ExecutiveSummaryHtml),
+            ExecutiveSummaryHtml = string.IsNullOrWhiteSpace(details.ExecutiveSummaryHtml) || PublicationSummaryFallback.IsLegacyTemplate(details.ExecutiveSummaryHtml) ? fallback.ExecutiveSummaryHtml : SanitizeRichTextHtml(details.ExecutiveSummaryHtml),
             IsPremium = details.IsPremium || fallback.IsPremium,
             Actions = details.Actions.Count == 0 ? fallback.Actions : details.Actions,
             Tabs = details.Tabs.Count == 0 ? fallback.Tabs : details.Tabs,
             Kpis = details.Kpis.Count == 0 ? fallback.Kpis : details.Kpis,
-            ExecutiveSummaryParagraphs = details.ExecutiveSummaryParagraphs.Count == 0 ? fallback.ExecutiveSummaryParagraphs : details.ExecutiveSummaryParagraphs,
+            ExecutiveSummaryParagraphs = PublicationSummaryFallback.RemoveLegacyTemplate(details.ExecutiveSummaryParagraphs) is { Count: > 0 } summaryParagraphs
+                ? summaryParagraphs
+                : !PublicationSummaryFallback.IsLegacyTemplate(details.ExecutiveSummaryHtml) && PublicationSummaryFallback.ExtractParagraphs(details.ExecutiveSummaryHtml) is { Count: > 0 } htmlParagraphs
+                    ? htmlParagraphs
+                    : fallback.ExecutiveSummaryParagraphs,
             ExecutiveHighlights = details.ExecutiveHighlights.Count == 0 ? fallback.ExecutiveHighlights : details.ExecutiveHighlights,
             KeyFindings = details.KeyFindings.Count == 0 ? fallback.KeyFindings : details.KeyFindings,
             Sections = details.Sections.Count == 0 ? fallback.Sections : details.Sections,
@@ -584,7 +596,7 @@ public sealed class DbPublicationContentService : IPublicationContentService
             Topic = string.IsNullOrWhiteSpace(item.Topic) ? item.Type : item.Topic,
             CoverageLabel = item.CountryLabel,
             ShortDescription = item.Description,
-            PublishedDate = string.IsNullOrWhiteSpace(item.PublishedDate) ? item.Meta.Split('|')[0].Trim() : item.PublishedDate,
+            PublishedDate = PublicationMetadataFormatter.FormatPublishedDate(item.PublishedAtUtc),
             ReadingTime = string.IsNullOrWhiteSpace(item.ReadingTime) ? (item.Meta.Contains('|', StringComparison.Ordinal) ? item.Meta.Split('|')[1].Trim() : "12 min read") : item.ReadingTime,
             AuthorLabel = string.IsNullOrWhiteSpace(item.AuthorLabel) ? "CAFRI Research Team" : item.AuthorLabel,
             DocumentLabel = string.IsNullOrWhiteSpace(item.DocumentLabel) ? "PDF available | 1.2 MB" : item.DocumentLabel,
@@ -592,6 +604,7 @@ public sealed class DbPublicationContentService : IPublicationContentService
             HeroImageUrl = item.HeroImageUrl ?? string.Empty,
             SourceName = item.SourceName ?? string.Empty,
             SourceUrl = item.SourceUrl ?? string.Empty,
+            DetailsLinkUrl = item.DetailsLinkUrl ?? string.Empty,
             CountryLabels = BuildCountryLabels(item),
             TopicLabels = BuildTopicLabels(item),
             PdfDownloadUrl = item.PdfDownloadUrl ?? "#",
@@ -600,7 +613,7 @@ public sealed class DbPublicationContentService : IPublicationContentService
             Actions = DefaultActions.ToList(),
             Tabs = [ new() { Label = "Overview", TargetId = "overview", IsActive = true }, new() { Label = "Key Findings", TargetId = "key-findings" }, new() { Label = "Data & Charts", TargetId = "data-charts" }, new() { Label = "Documents", TargetId = "related-documents" }, new() { Label = "Related Publications", TargetId = "related-publications" } ],
             Kpis = [ new() { Label = "Coverage", Value = item.CountryLabel, Detail = "Primary focus", Tone = "accent" }, new() { Label = "Publication Type", Value = item.Type, Detail = "Research format", Tone = "neutral" }, new() { Label = "Reading Time", Value = string.IsNullOrWhiteSpace(item.ReadingTime) ? (item.Meta.Contains('|', StringComparison.Ordinal) ? item.Meta.Split('|')[1].Trim() : "12 min") : item.ReadingTime, Detail = "Estimated duration", Tone = "neutral" }, new() { Label = "Update Cycle", Value = "Monthly", Detail = "Monitoring cadence", Tone = "positive" }, new() { Label = "Access Level", Value = "Public", Detail = "Web article available", Tone = "accent" } ],
-            ExecutiveSummaryParagraphs = [ $"{item.Title} provides a structured analytical overview of current developments relevant to {item.CountryLabel}. The page is designed as an online publication rather than a simple download screen, with summary findings, embedded data blocks, and related materials presented directly on the platform.", "This fallback detail layout is now generated from database content, so the page remains usable even before a full custom detail JSON has been authored in the admin panel." ],
+            ExecutiveSummaryParagraphs = PublicationSummaryFallback.BuildParagraphs(item.Description),
             ExecutiveHighlights = [ "Core summary available directly on the page", "Structured sections ready for expanded editorial content", "Data, documents, and related materials grouped in one analytical workflow" ],
             KeyFindings = [ new() { Icon = "01", Title = "Structured publication format", Description = "The material is displayed as a navigable article page with sections, data, and supporting documents." }, new() { Icon = "02", Title = "Country and topic context", Description = $"The current report is positioned within CAFRI coverage for {item.CountryLabel} and related thematic monitoring." }, new() { Icon = "03", Title = "Admin-editable detail layer", Description = "Editors can later replace this generated fallback with a fully authored detail record from the admin area." } ],
             Sections = [ new() { Id = "regional-context", Heading = "Regional Context", Paragraphs = [$"This publication sits within CAFRI's broader analytical coverage of {item.CountryLabel} and Central Asian financial and regulatory developments.", "The article template supports incremental enrichment with report-specific findings, source references, and visual evidence without changing the overall page architecture."] }, new() { Id = "policy-reforms", Heading = "Analytical Context", Paragraphs = ["Each publication detail page is intended to hold a durable analytical narrative rather than only a downloadable document.", "That means users can access key findings, supporting data, and connected materials directly in the interface before deciding whether to download a PDF version."] } ],
@@ -613,7 +626,7 @@ public sealed class DbPublicationContentService : IPublicationContentService
             KeyTopics = [ new() { Label = item.Type, TargetId = "key-findings" }, new() { Label = item.CountryLabel, TargetId = "regional-context" } ],
             SidebarDocuments = [ new() { Title = $"{item.Title} - Full PDF", Meta = $"{item.Meta} | PDF" } ],
             RelatedIntelligence = [ new() { Title = $"{item.CountryLabel} monitoring overview", Meta = "Related intelligence material", Url = "/intelligence" } ],
-            PublicationInfo = [ new() { Label = "Publication Type", Value = item.Type }, new() { Label = "Coverage", Value = item.CountryLabel }, new() { Label = "Published", Value = string.IsNullOrWhiteSpace(item.PublishedDate) ? item.Meta.Split('|')[0].Trim() : item.PublishedDate }, new() { Label = "Author", Value = string.IsNullOrWhiteSpace(item.AuthorLabel) ? "CAFRI Research Team" : item.AuthorLabel }, new() { Label = "Access", Value = "Public" } ],
+            PublicationInfo = [ new() { Label = "Publication Type", Value = item.Type }, new() { Label = "Coverage", Value = item.CountryLabel }, new() { Label = "Published", Value = PublicationMetadataFormatter.FormatPublishedDate(item.PublishedAtUtc) }, new() { Label = "Author", Value = string.IsNullOrWhiteSpace(item.AuthorLabel) ? "CAFRI Research Team" : item.AuthorLabel }, new() { Label = "Access", Value = "Public" } ],
             RelatedPublications = relatedCards
         };
     }

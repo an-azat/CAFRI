@@ -84,7 +84,7 @@
                         <tr>
                             <td>
                                 <div class="fw-semibold">@item.Title</div>
-                                <div class="text-secondary">@item.PublishedLabel</div>
+                                <div class="text-secondary">@CAFRI.Infrastructure.Content.PublicationMetadataFormatter.FormatShortDate(item.PublishedAtUtc)</div>
                             </td>
                             <td>@item.Category</td>
                             <td>@item.CountryName</td>

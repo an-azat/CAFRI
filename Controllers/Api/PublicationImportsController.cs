@@ -105,8 +105,7 @@ public sealed class PublicationImportsController : ControllerBase
         var slugBase = PublicationImportHelpers.GenerateSlug(title);
         var slug = await EnsureUniqueSlugAsync(slugBase, cancellationToken);
 
-        var publicationDate = request.PublishedAtUtc?.UtcDateTime.ToString("MMMM yyyy", System.Globalization.CultureInfo.InvariantCulture)
-            ?? DateTime.UtcNow.ToString("MMMM yyyy", System.Globalization.CultureInfo.InvariantCulture);
+        var publishedAtUtc = (request.PublishedAtUtc ?? DateTimeOffset.UtcNow).ToUniversalTime();
         var readingTime = request.ReadingTimeMinutes.HasValue && request.ReadingTimeMinutes.Value > 0
             ? $"{request.ReadingTimeMinutes.Value} min read"
             : "8 min read";
@@ -126,9 +125,9 @@ public sealed class PublicationImportsController : ControllerBase
             CountryLabel = primaryCountry?.CountryLabel ?? "Regional",
             Title = title,
             Description = description,
-            Meta = $"{publicationDate} | {readingTime}",
+            Meta = PublicationMetadataFormatter.BuildMeta(publishedAtUtc, readingTime),
             Topic = primaryCategory?.CategoryName ?? "Uncategorized",
-            PublishedDate = publicationDate,
+            PublishedAtUtc = publishedAtUtc,
             ReadingTime = readingTime,
             AuthorLabel = string.IsNullOrWhiteSpace(request.AuthorLabel) ? sourceName : request.AuthorLabel.Trim(),
             DocumentLabel = "External source article",

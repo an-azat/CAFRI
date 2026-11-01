@@ -191,6 +191,68 @@ public sealed class ContentMediaStorageService
     public Task DeleteDocumentAsync(string? url, CancellationToken cancellationToken = default) =>
         DeleteStoredFileAsync(url, AllowedDocumentExtensions, cancellationToken);
 
+    // Opens an uploaded document (local disk or R2) so a controller can stream it after
+    // checking access. Returns null for anything that is not a stored document.
+    public async Task<StoredDocumentContent?> OpenDocumentAsync(string? url, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return null;
+        }
+
+        var extension = Path.GetExtension(url.Split('?', '#')[0]);
+        if (string.IsNullOrWhiteSpace(extension) || !AllowedDocumentExtensions.Contains(extension))
+        {
+            return null;
+        }
+
+        var contentType = ContentTypeByExtension.GetValueOrDefault(extension, "application/octet-stream");
+
+        if (UsesRemoteStorage && IsRemoteUrl(url))
+        {
+            var client = _s3Client.Value;
+            var objectKey = GetRemoteObjectKey(url);
+            if (client is null || string.IsNullOrWhiteSpace(_options.BucketName) || string.IsNullOrWhiteSpace(objectKey))
+            {
+                return null;
+            }
+
+            try
+            {
+                var response = await client.GetObjectAsync(_options.BucketName, objectKey, cancellationToken);
+                return new StoredDocumentContent(response.ResponseStream, contentType, Path.GetFileName(objectKey));
+            }
+            catch (AmazonS3Exception exception) when (exception.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+        }
+
+        if (!url.StartsWith(LocalUploadsPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        var uploadsRoot = GetMediaRootPath();
+        var relativePath = Uri.UnescapeDataString(url[LocalUploadsPrefix.Length..]).Replace('/', Path.DirectorySeparatorChar);
+        var fullPath = Path.GetFullPath(Path.Combine(uploadsRoot, relativePath));
+        if (!fullPath.StartsWith(uploadsRoot.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
+            !File.Exists(fullPath))
+        {
+            return null;
+        }
+
+        return new StoredDocumentContent(File.OpenRead(fullPath), contentType, Path.GetFileName(fullPath));
+    }
+
+    // Uploaded documents sit under "<section>/documents/"; they must only be served
+    // through the access-checked download endpoints, never as public static files.
+    public static bool IsProtectedDocumentPath(PathString path) =>
+        path.StartsWithSegments(LocalUploadsPrefix.TrimEnd('/'), StringComparison.OrdinalIgnoreCase) &&
+        path.Value!.Contains("/documents/", StringComparison.OrdinalIgnoreCase);
+
+    private const string LocalUploadsPrefix = "/uploads/content/";
+
     public string GetMediaRootPath()
     {
         if (!string.IsNullOrWhiteSpace(_options.RootPath))
@@ -458,3 +520,5 @@ public sealed class ContentMediaStorageService
         return new AmazonS3Client(_options.AccessKeyId, _options.SecretAccessKey, config);
     }
 }
+
+public sealed record StoredDocumentContent(Stream Content, string ContentType, string FileName);

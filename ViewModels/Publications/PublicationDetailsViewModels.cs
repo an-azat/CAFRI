@@ -32,6 +32,21 @@ public sealed class PublicationDetailsViewModel
 
     public string SourceUrl { get; init; } = string.Empty;
 
+    public string DetailsLinkUrl { get; init; } = string.Empty;
+
+    // Link to the external site where the publication is hosted: the explicit
+    // Details Link when set, otherwise the original Source URL.
+    public string ExternalLinkUrl =>
+        new[] { DetailsLinkUrl, SourceUrl }.FirstOrDefault(IsExternalUrl) ?? string.Empty;
+
+    public string ExternalLinkLabel =>
+        !string.IsNullOrWhiteSpace(SourceName) ? SourceName
+        : Uri.TryCreate(ExternalLinkUrl, UriKind.Absolute, out var uri) ? uri.Host.Replace("www.", string.Empty, StringComparison.OrdinalIgnoreCase)
+        : string.Empty;
+
+    private static bool IsExternalUrl(string? url) =>
+        Uri.TryCreate(url, UriKind.Absolute, out var uri) && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+
     public IReadOnlyList<string> CountryLabels { get; init; } = [];
 
     public IReadOnlyList<string> TopicLabels { get; init; } = [];
@@ -43,6 +58,10 @@ public sealed class PublicationDetailsViewModel
     public bool IsPremium { get; init; }
 
     public bool CanAccessFullContent { get; set; }
+
+    public string Visibility { get; set; } = CAFRI.Domain.Content.PublicationVisibility.SignedIn;
+
+    public bool RequiresSignIn => Visibility != CAFRI.Domain.Content.PublicationVisibility.Public;
 
     public IReadOnlyList<PublicationActionItemViewModel> Actions { get; init; } = [];
 

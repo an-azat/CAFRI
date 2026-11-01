@@ -50,6 +50,8 @@ public sealed class GateDetailRowViewModel
     public required string Label { get; init; }
 
     public required string Value { get; init; }
+
+    public string? Url { get; init; }
 }
 
 public sealed class GateRelatedItemViewModel

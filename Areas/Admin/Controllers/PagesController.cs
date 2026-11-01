@@ -192,11 +192,13 @@ public sealed class PagesController : Controller
                 .Where(x => x.IsPublished)
                 .OrderByDescending(x => x.UpdatedAtUtc)
                 .ThenBy(x => x.DisplayOrder)
+                .Select(x => new { x.Id, x.Title, x.Type, x.PublishedAtUtc })
+                .AsEnumerable()
                 .Select(x => new AdminPublicationOptionViewModel
                 {
                     Id = x.Id,
                     Title = x.Title,
-                    Meta = $"{x.Type} | {x.PublishedDate}"
+                    Meta = $"{x.Type} | {PublicationMetadataFormatter.FormatPublishedDate(x.PublishedAtUtc)}"
                 })
                 .ToList(),
             AboutTitle = model.AboutTitle,

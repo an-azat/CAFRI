@@ -107,8 +107,9 @@
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <label asp-for="PublishedMonth" class="form-label"></label>
-                        <input asp-for="PublishedMonth" type="month" class="form-control" />
+                        <label asp-for="PublishedAt" class="form-label"></label>
+                        <input asp-for="PublishedAt" type="datetime-local" class="form-control" />
+                        <span asp-validation-for="PublishedAt" class="text-danger"></span>
                     </div>
                     <div class="col-md-4">
                         <label asp-for="ReadingTime" class="form-label"></label>
@@ -136,12 +137,7 @@
                         <div class="col-md-6">
                             <label asp-for="Meta" class="form-label">Meta Summary<span class="admin-auto-badge">auto</span></label>
                             <input asp-for="Meta" class="form-control" readonly data-preview-target="Meta" data-preview-key="meta" />
-                            <small class="form-text">Built automatically from Published Date/Month and Reading Time.</small>
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="PublishedDate" class="form-label">Published Date<span class="admin-auto-badge">auto</span></label>
-                            <input asp-for="PublishedDate" class="form-control" readonly />
-                            <small class="form-text">Derived from Published Month above.</small>
+                            <small class="form-text">Built automatically from Published Date &amp; Time and Reading Time.</small>
                         </div>
                         <div class="col-md-6">
                             <label asp-for="DocumentLabel" class="form-label"></label>
@@ -160,6 +156,12 @@
                         <div class="col-md-6">
                             <label asp-for="SourceUrl" class="form-label"></label>
                             <input asp-for="SourceUrl" class="form-control" placeholder="https://example.org/original-report" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="DetailsLinkUrl" class="form-label"></label>
+                            <input asp-for="DetailsLinkUrl" class="form-control" placeholder="https://example.org/page" />
+                            <span asp-validation-for="DetailsLinkUrl" class="text-danger"></span>
+                            <small class="form-text">Link to the news site where this publication is hosted. Shown as "Source" in the Details block; falls back to Source URL when empty.</small>
                         </div>
                         <div class="col-md-6">
                             <label asp-for="SourceDomain" class="form-label">Source Domain<span class="admin-auto-badge">auto</span></label>
@@ -448,11 +450,15 @@
                                 <input asp-for="DisplayOrder" class="form-control" />
                                 <small class="form-text">Lower numbers appear first in listings.</small>
                             </div>
-                            <div class="col-6">
-                                <div class="form-check">
-                                    <input asp-for="IsPublished" class="form-check-input" />
-                                    <label asp-for="IsPublished" class="form-check-label"></label>
-                                </div>
+                            <div class="col-12">
+                                <label asp-for="Visibility" class="form-label"></label>
+                                <select asp-for="Visibility" class="form-select">
+                                    @foreach (var visibility in CAFRI.Domain.Content.PublicationVisibility.All)
+                                    {
+                                        <option value="@visibility">@CAFRI.Domain.Content.PublicationVisibility.GetLabel(visibility)</option>
+                                    }
+                                </select>
+                                <small class="form-text">"Everyone" opens the full text without sign-in; "Hidden" removes it from the public site even when Published.</small>
                             </div>
                             <div class="col-6">
                                 <div class="form-check">
@@ -505,8 +511,7 @@
 
             const countryCode = document.getElementById("CountryCode");
             const countryLabel = document.getElementById("CountryLabel");
-            const publishedMonth = document.getElementById("PublishedMonth");
-            const publishedDate = document.getElementById("PublishedDate");
+            const publishedAt = document.getElementById("PublishedAt");
             const readingTime = document.getElementById("ReadingTime");
             const meta = document.getElementById("Meta");
             const documentsRaw = document.querySelector("[data-publication-documents-raw]");
@@ -555,18 +560,19 @@
                 countryLabel.value = labels[countryCode.value] || countryLabel.value;
             };
 
+            // Mirrors PublicationMetadataFormatter.BuildMeta: "15 June 2026 | 12 min read".
             const syncMeta = () => {
-                if (!publishedMonth || !publishedDate || !readingTime || !meta) {
+                if (!publishedAt || !readingTime || !meta) {
                     return;
                 }
 
-                if (publishedMonth.value) {
-                    const [year, month] = publishedMonth.value.split("-");
-                    const date = new Date(Number(year), Number(month) - 1, 1);
-                    publishedDate.value = date.toLocaleString("en-US", { month: "long", year: "numeric" });
-                }
+                const [datePart] = (publishedAt.value || "").split("T");
+                const [year, month, day] = datePart ? datePart.split("-").map(Number) : [];
+                const dateLabel = year
+                    ? `${day} ${new Date(Date.UTC(year, month - 1, 1)).toLocaleString("en-US", { month: "long", timeZone: "UTC" })} ${year}`
+                    : "TBD";
 
-                meta.value = `${publishedDate.value || "TBD"} | ${readingTime.value || "12 min read"}`;
+                meta.value = `${dateLabel} | ${readingTime.value || "12 min read"}`;
             };
 
             const parseDocumentRows = (raw) => {
@@ -1546,7 +1552,7 @@
             };
 
             countryCode.addEventListener("change", syncCountryLabel);
-            publishedMonth?.addEventListener("change", syncMeta);
+            publishedAt?.addEventListener("change", syncMeta);
             readingTime?.addEventListener("change", syncMeta);
             syncCountryLabel();
             syncMeta();

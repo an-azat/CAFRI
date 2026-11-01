@@ -651,10 +651,8 @@ namespace CAFRI.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsTrending")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("PublishedLabel")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                    b.Property<DateTimeOffset?>("PublishedAtUtc")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Slug")
                         .IsRequired()
@@ -678,6 +676,8 @@ namespace CAFRI.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PublishedAtUtc");
 
                     b.HasIndex("Slug")
                         .IsUnique();
@@ -1093,6 +1093,10 @@ namespace CAFRI.Infrastructure.Persistence.Migrations
                     b.Property<string>("DetailsJson")
                         .HasColumnType("text");
 
+                    b.Property<string>("DetailsLinkUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("integer");
 
@@ -1132,10 +1136,8 @@ namespace CAFRI.Infrastructure.Persistence.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
-                    b.Property<string>("PublishedDate")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)");
+                    b.Property<DateTimeOffset?>("PublishedAtUtc")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ReadingTime")
                         .IsRequired()
@@ -1183,6 +1185,13 @@ namespace CAFRI.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Visibility")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("SignedIn");
+
                     b.Property<string>("WorkflowStatus")
                         .IsRequired()
                         .HasMaxLength(40)
@@ -1191,6 +1200,8 @@ namespace CAFRI.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ExternalId");
+
+                    b.HasIndex("PublishedAtUtc");
 
                     b.HasIndex("RequiresReview");
 

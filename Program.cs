@@ -72,6 +72,19 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Uploaded documents are served only through the access-checked download endpoints.
+app.Use(async (context, next) =>
+{
+    if (ContentMediaStorageService.IsProtectedDocumentPath(context.Request.Path))
+    {
+        context.Response.StatusCode = StatusCodes.Status404NotFound;
+        return;
+    }
+
+    await next();
+});
+
 app.UseStaticFiles();
 
 using (var scope = app.Services.CreateScope())

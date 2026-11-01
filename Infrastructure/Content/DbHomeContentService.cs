@@ -29,14 +29,15 @@ public sealed class DbHomeContentService : IHomeContentService
         var latestIntelligence = await _dbContext.IntelligenceContentItems
             .AsNoTracking()
             .Where(x => x.IsPublished)
-            .OrderByDescending(x => x.UpdatedAtUtc)
+            .OrderBy(x => x.PublishedAtUtc == null)
+            .ThenByDescending(x => x.PublishedAtUtc)
             .ThenBy(x => x.DisplayOrder)
             .Take(2)
             .Select(x => new HomeIntelligenceCardViewModel
             {
                 Category = x.Category,
                 CountryCode = x.CountryCode,
-                PublishedLabel = x.PublishedLabel,
+                PublishedLabel = PublicationMetadataFormatter.FormatShortDate(x.PublishedAtUtc),
                 Title = x.Title,
                 Summary = x.Description,
                 Source = x.Source,
@@ -46,7 +47,7 @@ public sealed class DbHomeContentService : IHomeContentService
 
         var featuredPublicationEntity = await _dbContext.PublicationContentItems
             .AsNoTracking()
-            .Where(x => x.IsPublished && (!page.FeaturedPublicationId.HasValue || x.Id == page.FeaturedPublicationId.Value))
+            .Where(x => x.IsPublished && x.Visibility != CAFRI.Domain.Content.PublicationVisibility.Hidden && (!page.FeaturedPublicationId.HasValue || x.Id == page.FeaturedPublicationId.Value))
             .OrderByDescending(x => x.UpdatedAtUtc)
             .ThenBy(x => x.DisplayOrder)
             .FirstOrDefaultAsync(cancellationToken);
@@ -55,7 +56,7 @@ public sealed class DbHomeContentService : IHomeContentService
         {
             featuredPublicationEntity = await _dbContext.PublicationContentItems
                 .AsNoTracking()
-                .Where(x => x.IsPublished)
+                .Where(x => x.IsPublished && x.Visibility != CAFRI.Domain.Content.PublicationVisibility.Hidden)
                 .OrderByDescending(x => x.UpdatedAtUtc)
                 .ThenBy(x => x.DisplayOrder)
                 .FirstOrDefaultAsync(cancellationToken);
@@ -110,7 +111,7 @@ public sealed class DbHomeContentService : IHomeContentService
             MetaItems =
             [
                 new() { Icon = "document", Label = item.Type },
-                new() { Icon = "calendar", Label = item.PublishedDate },
+                new() { Icon = "calendar", Label = PublicationMetadataFormatter.FormatPublishedDate(item.PublishedAtUtc) },
                 new() { Icon = "clock", Label = item.ReadingTime },
                 new() { Icon = "user", Label = item.AuthorLabel }
             ]

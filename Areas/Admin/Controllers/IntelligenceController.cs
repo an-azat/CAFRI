@@ -192,6 +192,7 @@ public sealed class IntelligenceController : Controller
             ModelState.AddModelError(nameof(model.DocumentFiles), $"One or more document files use an unsupported format. Allowed: {_mediaStorage.GetAllowedDocumentExtensionsLabel()}");
         }
 
+        ValidatePublishedAt(model);
         if (!ModelState.IsValid) return View("Edit", BuildEditViewModel(model));
         var heroImageUrl = string.IsNullOrWhiteSpace(model.HeroImageUrl)
             ? await _mediaStorage.SaveImageAsync(uploadedHeroFile, "intelligence", HttpContext.RequestAborted)
@@ -203,7 +204,7 @@ public sealed class IntelligenceController : Controller
             Category = model.Category.Trim(),
             CountryCode = model.CountryCode.Trim(),
             CountryName = model.CountryName.Trim(),
-            PublishedLabel = model.PublishedLabel.Trim(),
+            PublishedAtUtc = PublicationMetadataFormatter.ParsePublishedDate(model.PublishedAt),
             Title = model.Title.Trim(),
             Description = model.Description.Trim(),
             Source = model.Source.Trim(),
@@ -260,6 +261,7 @@ public sealed class IntelligenceController : Controller
             ModelState.AddModelError(nameof(model.DocumentFiles), $"One or more document files use an unsupported format. Allowed: {_mediaStorage.GetAllowedDocumentExtensionsLabel()}");
         }
 
+        ValidatePublishedAt(model);
         if (!ModelState.IsValid) return View(BuildEditViewModel(model));
         var entity = await _dbContext.IntelligenceContentItems.FindAsync(id);
         if (entity is null) return NotFound();
@@ -270,7 +272,7 @@ public sealed class IntelligenceController : Controller
         entity.Category = model.Category.Trim();
         entity.CountryCode = model.CountryCode.Trim();
         entity.CountryName = model.CountryName.Trim();
-        entity.PublishedLabel = model.PublishedLabel.Trim();
+        entity.PublishedAtUtc = PublicationMetadataFormatter.ParsePublishedDate(model.PublishedAt);
         entity.Title = model.Title.Trim();
         entity.Description = model.Description.Trim();
         entity.Source = model.Source.Trim();
@@ -345,7 +347,7 @@ public sealed class IntelligenceController : Controller
             Category = entity.Category,
             CountryCode = entity.CountryCode,
             CountryName = entity.CountryName,
-            PublishedLabel = entity.PublishedLabel,
+            PublishedAt = PublicationMetadataFormatter.ToDateTimeInputValue(entity.PublishedAtUtc),
             Title = entity.Title,
             Description = entity.Description,
             Source = entity.Source,
@@ -393,6 +395,14 @@ public sealed class IntelligenceController : Controller
         };
     }
 
+    private void ValidatePublishedAt(IntelligenceContentEditViewModel model)
+    {
+        if (PublicationMetadataFormatter.ParsePublishedDate(model.PublishedAt) is null)
+        {
+            ModelState.AddModelError(nameof(model.PublishedAt), "Select a valid publication date and time.");
+        }
+    }
+
     private static IntelligenceContentEditViewModel BuildEditViewModel(IntelligenceContentEditViewModel model) =>
         new()
         {
@@ -401,7 +411,7 @@ public sealed class IntelligenceController : Controller
             Category = model.Category,
             CountryCode = model.CountryCode,
             CountryName = model.CountryName,
-            PublishedLabel = model.PublishedLabel,
+            PublishedAt = model.PublishedAt,
             Title = model.Title,
             Description = model.Description,
             Source = model.Source,

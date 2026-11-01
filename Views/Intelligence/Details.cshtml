@@ -4,6 +4,8 @@
     ViewData["PageTheme"] = "theme-home";
     var showLockedPreview = Model.IsPremium && !Model.CanAccessFullContent;
     var loginUrl = Url.Action("Login", "Account", new { returnUrl = Context.Request.Path + Context.Request.QueryString }) ?? "/Account/Login";
+    var isSignedIn = User.Identity?.IsAuthenticated == true;
+    string DownloadUrl(string rawUrl) => $"/intelligence/{Uri.EscapeDataString(Model.Slug)}/download?file={Uri.EscapeDataString(CAFRI.ViewModels.Shared.DocumentLink.Url(rawUrl))}";
     var accessGate = new CAFRI.ViewModels.Shared.ContentAccessGateViewModel
     {
         Breadcrumbs =
@@ -21,10 +23,10 @@
         CoverLabel = $"CAFRI · {Model.AnalysisType}",
         CoverTitle = Model.Title,
         Preview = Model.OverviewLead,
-        GateTitle = "Full analysis is available after sign in",
-        GateDescription = "Sign in to read the full article.",
-        SignInLabel = "Sign in to read full analysis",
-        SignInUrl = loginUrl,
+        GateTitle = isSignedIn ? "Your professional access is not active" : "Full analysis is available after sign in",
+        GateDescription = isSignedIn ? "Your access has expired or was revoked. Request access to continue reading." : "Sign in to read the full article.",
+        SignInLabel = isSignedIn ? "Request professional access" : "Sign in to read full analysis",
+        SignInUrl = isSignedIn ? "/access/request" : loginUrl,
         DetailRows =
         [
             new() { Label = "Coverage", Value = Model.CountryName },
@@ -138,7 +140,7 @@ else
                             }
                             else if (!Model.CanAccessFullContent)
                             {
-                                <a class="home-v2-button home-v2-button--ghost" href="@loginUrl">Sign in to download</a>
+                                <a class="home-v2-button home-v2-button--ghost" href="@(isSignedIn ? "/access/request" : loginUrl)">@(isSignedIn ? "Request access to download" : "Sign in to download")</a>
                             }
                             else
                             {
@@ -231,7 +233,7 @@ else
                 {
                     var optionId = $"intelligence-download-{item.Title.GetHashCode()}";
                     <label class="content-download-modal__option" for="@optionId">
-                        <input id="@optionId" type="radio" name="intelligence-download-option" value="@item.DownloadUrl" @(item == Model.AvailableDownloads.First(x => x.IsDownloadable) ? "checked" : null) />
+                        <input id="@optionId" type="radio" name="intelligence-download-option" value="@DownloadUrl(item.DownloadUrl)" @(item == Model.AvailableDownloads.First(x => x.IsDownloadable) ? "checked" : null) />
                         <span class="content-download-modal__option-copy">
                             <strong>@item.Title</strong>
                             <span>@item.Subtitle</span>

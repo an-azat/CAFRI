@@ -99,7 +99,14 @@
                     <div class="access-gate__side-title">Details</div>
                     @foreach (var row in Model.DetailRows)
                     {
-                        <div class="access-gate__side-row"><span>@row.Label</span><span>@row.Value</span></div>
+                        @if (!string.IsNullOrWhiteSpace(row.Url))
+                        {
+                            <div class="access-gate__side-row"><span>@row.Label</span><a href="@row.Url" target="_blank" rel="noopener noreferrer">@row.Value</a></div>
+                        }
+                        else
+                        {
+                            <div class="access-gate__side-row"><span>@row.Label</span><span>@row.Value</span></div>
+                        }
                     }
                 </div>
             }

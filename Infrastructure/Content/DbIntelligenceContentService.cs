@@ -133,15 +133,16 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
 
             if (cutoff is not null)
             {
-                query = query.Where(x => x.UpdatedAtUtc >= cutoff.Value);
+                query = query.Where(x => x.PublishedAtUtc >= cutoff.Value);
             }
         }
 
         query = selectedSort switch
         {
-            "Oldest" => query.OrderByDescending(x => x.DisplayOrder).ThenBy(x => x.Title),
+            // Date sorts use the publication date; undated items go last, DisplayOrder breaks ties.
+            "Oldest" => query.OrderBy(x => x.PublishedAtUtc == null).ThenBy(x => x.PublishedAtUtc).ThenBy(x => x.DisplayOrder),
             "Country" => query.OrderBy(x => x.CountryName).ThenBy(x => x.DisplayOrder).ThenBy(x => x.Title),
-            _ => query.OrderBy(x => x.DisplayOrder).ThenBy(x => x.Title)
+            _ => query.OrderBy(x => x.PublishedAtUtc == null).ThenByDescending(x => x.PublishedAtUtc).ThenBy(x => x.DisplayOrder)
         };
 
         var totalResults = await query.CountAsync(cancellationToken);
@@ -157,7 +158,7 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
                 Category = x.Category,
                 CountryCode = x.CountryCode,
                 CountryName = x.CountryName,
-                PublishedLabel = x.PublishedLabel,
+                PublishedLabel = PublicationMetadataFormatter.FormatShortDate(x.PublishedAtUtc),
                 Title = x.Title,
                 Description = x.Description,
                 Source = x.Source,
@@ -204,19 +205,20 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
         const int itemsPerCountry = 2;
         const int trendingItemCount = 4;
 
-        // "Latest" follows the same editorial order as the archive's default "Newest" sort.
+        // "Latest" follows the same order as the archive's default "Newest" sort.
         var items = await _dbContext.IntelligenceContentItems
             .AsNoTracking()
             .Where(x => x.IsPublished)
-            .OrderBy(x => x.DisplayOrder)
-            .ThenBy(x => x.Title)
+            .OrderBy(x => x.PublishedAtUtc == null)
+            .ThenByDescending(x => x.PublishedAtUtc)
+            .ThenBy(x => x.DisplayOrder)
             .Select(x => new IntelligenceItemCardViewModel
             {
                 Slug = x.Slug,
                 Category = x.Category,
                 CountryCode = x.CountryCode,
                 CountryName = x.CountryName,
-                PublishedLabel = x.PublishedLabel,
+                PublishedLabel = PublicationMetadataFormatter.FormatShortDate(x.PublishedAtUtc),
                 Title = x.Title,
                 Description = x.Description,
                 Source = x.Source,
@@ -340,7 +342,7 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
                 Category = x.Category,
                 CountryCode = x.CountryCode,
                 CountryName = x.CountryName,
-                PublishedLabel = x.PublishedLabel,
+                PublishedLabel = PublicationMetadataFormatter.FormatShortDate(x.PublishedAtUtc),
                 Title = x.Title,
                 Description = x.Description,
                 Source = x.Source
@@ -413,7 +415,7 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
             ShortDescription = item.Description,
             HeroImageClassName = GetHeroImageClassName(item.CountryCode),
             HeroImageUrl = item.HeroImageUrl ?? string.Empty,
-            PublishedDate = item.PublishedLabel,
+            PublishedDate = PublicationMetadataFormatter.FormatShortDate(item.PublishedAtUtc),
             ReadingTime = "8 min read",
             AnalysisType = "CAFRI Intelligence Note",
             OverviewLead = overviewLead,
@@ -532,7 +534,7 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
             ShortDescription = item.Description,
             HeroImageClassName = GetHeroImageClassName(item.CountryCode),
             HeroImageUrl = item.HeroImageUrl ?? string.Empty,
-            PublishedDate = item.PublishedLabel,
+            PublishedDate = PublicationMetadataFormatter.FormatShortDate(item.PublishedAtUtc),
             ReadingTime = "8 min read",
             AnalysisType = "CAFRI Intelligence Note",
             OverviewLead = $"{item.Title} is currently available as a structured intelligence note within the CAFRI platform.",
@@ -544,10 +546,10 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
             Tabs = [ new() { Label = "Overview", IsActive = true }, new() { Label = "Key Changes" }, new() { Label = "Impact Analysis" }, new() { Label = "Timeline" }, new() { Label = "Regulatory Text" }, new() { Label = "Data & Charts" }, new() { Label = "Related Materials" } ],
             KeyChanges = [ new() { Number = 1, Title = "Database-backed record", Description = "This intelligence item is now served from the CMS tables instead of controller hardcode." }, new() { Number = 2, Title = "Admin editable", Description = "Editors can update title, summary, source metadata, and full detail JSON through the admin area." }, new() { Number = 3, Title = "Expandable detail model", Description = "The page supports progressive enrichment without changing routing or controller logic." } ],
             ImpactAnalysis = [ new() { Title = "Editors", Description = "Content can now be maintained through the admin panel.", ImpactLabel = "Impact: Positive", ImpactTone = "impact-positive" }, new() { Title = "Platform", Description = "The public layer now reads this item from the database at runtime.", ImpactLabel = "Impact: High", ImpactTone = "impact-high" }, new() { Title = "Users", Description = "Users get a stable detail page even when a custom deep-dive has not been authored yet.", ImpactLabel = "Impact: Medium", ImpactTone = "impact-medium" } ],
-            TimelineItems = [ new() { DateLabel = item.PublishedLabel, Description = "Intelligence item published", Stage = "past" }, new() { DateLabel = "Current", Description = "Content monitored in CAFRI", Stage = "current" }, new() { DateLabel = "Next update", Description = "Full detail can be expanded from the admin editor", Stage = "future" } ],
-            OfficialDocument = new IntelligenceOfficialDocumentViewModel { Title = "Official document or source reference", Subtitle = item.Source, Meta = $"{item.PublishedLabel} | Source-based item" },
+            TimelineItems = [ new() { DateLabel = PublicationMetadataFormatter.FormatShortDate(item.PublishedAtUtc), Description = "Intelligence item published", Stage = "past" }, new() { DateLabel = "Current", Description = "Content monitored in CAFRI", Stage = "current" }, new() { DateLabel = "Next update", Description = "Full detail can be expanded from the admin editor", Stage = "future" } ],
+            OfficialDocument = new IntelligenceOfficialDocumentViewModel { Title = "Official document or source reference", Subtitle = item.Source, Meta = $"{PublicationMetadataFormatter.FormatShortDate(item.PublishedAtUtc)} | Source-based item" },
             AvailableDownloads = [],
-            DocumentInformation = [ new() { Label = "Category", Value = item.Category }, new() { Label = "Country", Value = item.CountryName }, new() { Label = "Published", Value = item.PublishedLabel }, new() { Label = "Source", Value = item.Source }, new() { Label = "Status", Value = "Monitoring" } ],
+            DocumentInformation = [ new() { Label = "Category", Value = item.Category }, new() { Label = "Country", Value = item.CountryName }, new() { Label = "Published", Value = PublicationMetadataFormatter.FormatShortDate(item.PublishedAtUtc) }, new() { Label = "Source", Value = item.Source }, new() { Label = "Status", Value = "Monitoring" } ],
             KeyHighlights = [ "Database-backed content source in place", "Fallback detail view available for unpublished deep dives", "Ready for progressive enrichment by editors" ],
             RelatedOfficialSources = [ new() { Title = item.Source, Subtitle = "Primary source reference" } ],
             RelatedIntelligence = [ new() { Title = "More intelligence items", Subtitle = "Browse the full catalog", Url = "/intelligence/archive" } ],
