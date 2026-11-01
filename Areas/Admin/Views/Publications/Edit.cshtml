@@ -401,13 +401,22 @@
                 </div>
 
                 <aside class="admin-publication-aside">
-                    <section class="admin-preview-card">
-                        <div class="admin-panel__eyebrow">Live Preview</div>
-                        <div class="admin-preview-card__badge-row">
-                            <span class="admin-preview-card__badge" data-preview="type" data-preview-fallback="Type">Type</span>
+                    <section class="admin-publication-form__card">
+                        <div class="admin-form-segment__header">
+                            <div class="admin-panel__eyebrow">Page Address</div>
+                            <h2 class="admin-form-segment__title">URL Slug</h2>
                         </div>
-                        <h3 class="admin-preview-card__title" data-preview="title" data-preview-fallback="Untitled publication">Untitled publication</h3>
-                        <p class="admin-preview-card__body" data-preview="description" data-preview-fallback="No description yet.">No description yet.</p>
+                        <label asp-for="Slug" class="form-label">Slug</label>
+                        <input asp-for="Slug" class="form-control" placeholder="generated from the title" maxlength="180" data-slug-input data-slug-locked="@(Model.Id is not null && !string.IsNullOrWhiteSpace(Model.Slug) ? "true" : "false")" />
+                        <span asp-validation-for="Slug" class="text-danger"></span>
+                        <div class="form-text">
+                            /publications/<strong data-slug-preview>@(string.IsNullOrWhiteSpace(Model.Slug) ? "…" : Model.Slug)</strong>
+                        </div>
+                        <small class="form-text d-block">Generated from the title (Latin letters, max 25 characters). Changing it later breaks existing links.</small>
+                        @if (Model.Id is not null)
+                        {
+                            <button type="button" class="admin-chip mt-2" data-slug-regenerate>Regenerate from title</button>
+                        }
                     </section>
 
                     <section class="admin-publication-form__card">
@@ -430,11 +439,6 @@
                             <h2 class="admin-form-segment__title">Publishing</h2>
                         </div>
                         <div class="row g-3">
-                            <div class="col-12">
-                                <label asp-for="Slug" class="form-label">Slug<span class="admin-required-mark">*</span></label>
-                                <input asp-for="Slug" class="form-control" placeholder="e.g. kazakhstan-banking-review-2026" data-preview-target="Slug" data-preview-key="slug" />
-                                <small class="form-text">Used in the public URL. Lowercase, hyphen-separated, must be unique.</small>
-                            </div>
                             <div class="col-12">
                                 <label asp-for="WorkflowStatus" class="form-label">Status<span class="admin-required-mark">*</span></label>
                                 <select asp-for="WorkflowStatus" class="form-select">
@@ -1556,6 +1560,61 @@
             readingTime?.addEventListener("change", syncMeta);
             syncCountryLabel();
             syncMeta();
+
+            // URL slug: follows the title until the editor types their own. Mirrors
+            // SlugGenerator.Slugify on the server (transliteration, 25-character limit).
+            const slugTransliteration = {
+                а: "a", б: "b", в: "v", г: "g", д: "d", е: "e", ё: "e", ж: "zh", з: "z", и: "i", й: "y",
+                к: "k", л: "l", м: "m", н: "n", о: "o", п: "p", р: "r", с: "s", т: "t", у: "u", ф: "f",
+                х: "h", ц: "ts", ч: "ch", ш: "sh", щ: "sch", ъ: "", ы: "y", ь: "", э: "e", ю: "yu", я: "ya",
+                ә: "a", ғ: "g", қ: "q", ң: "n", ө: "o", ұ: "u", ү: "u", һ: "h", і: "i"
+            };
+            const slugify = (text, maxLength) => {
+                let slug = "";
+                for (const character of (text || "").trim().toLowerCase().normalize("NFD")) {
+                    if (/\p{Mn}/u.test(character)) continue;
+                    if (character in slugTransliteration) slug += slugTransliteration[character];
+                    else if (/[a-z0-9]/.test(character)) slug += character;
+                    else if (slug && !slug.endsWith("-")) slug += "-";
+                }
+                slug = slug.replace(/^-+|-+$/g, "");
+                if (slug.length <= maxLength) return slug;
+                let cut = slug.slice(0, maxLength);
+                const lastHyphen = cut.lastIndexOf("-");
+                if (slug[maxLength] !== "-" && lastHyphen >= Math.floor(maxLength / 2)) cut = cut.slice(0, lastHyphen);
+                return cut.replace(/^-+|-+$/g, "");
+            };
+
+            const titleInput = document.getElementById("Title");
+            const slugInput = document.querySelector("[data-slug-input]");
+            const slugPreview = document.querySelector("[data-slug-preview]");
+            const slugRegenerate = document.querySelector("[data-slug-regenerate]");
+            let slugFollowsTitle = slugInput?.dataset.slugLocked !== "true" && !slugInput?.value;
+
+            const showSlug = () => {
+                if (slugPreview && slugInput) slugPreview.textContent = slugInput.value || "…";
+            };
+            const syncSlugFromTitle = () => {
+                if (!slugInput || !slugFollowsTitle) return;
+                slugInput.value = slugify(titleInput?.value, 25);
+                showSlug();
+            };
+
+            titleInput?.addEventListener("input", syncSlugFromTitle);
+            slugInput?.addEventListener("input", () => {
+                // Typing a slug stops auto-generation; clearing it switches it back on.
+                slugFollowsTitle = slugInput.value.trim() === "";
+                showSlug();
+            });
+            slugInput?.addEventListener("blur", () => {
+                if (slugInput.value) slugInput.value = slugify(slugInput.value, 180);
+                showSlug();
+            });
+            slugRegenerate?.addEventListener("click", () => {
+                slugFollowsTitle = true;
+                syncSlugFromTitle();
+            });
+            syncSlugFromTitle();
             initExecutiveSummaryEditor();
             initDocumentsEditor();
             initRelatedEditor();

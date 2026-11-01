@@ -303,7 +303,7 @@ public sealed class IntelligenceController : Controller
         _dbContext.IntelligenceContentItems.Remove(entity);
         await _dbContext.SaveChangesAsync();
         await DeleteUnusedMediaAsync(deletedHeroImageUrl, null);
-        return RedirectToAction(nameof(Index));
+        return this.RedirectToAdminList();
     }
 
     private async Task DeleteUnusedMediaAsync(string? previousUrl, string? currentUrl)

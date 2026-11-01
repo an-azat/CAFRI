@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "About";
     ViewData["PageTheme"] = "theme-home";
+    ViewData["Description"] = "About CAFRI, the Central Asia Financial & Regulatory Intelligence Initiative: what it covers, its sources, methodology and founder.";
 }
 
 <div class="page-about">
@@ -20,8 +21,10 @@
             </div>
         </div>
 
-        <div class="about-hero-media" aria-label="About CAFRI hero image">
-            <img src="~/uploads/img/HeroImgAbout.png" alt="CAFRI about hero" />
+        <div class="about-hero-media">
+            @* Above the fold, so it is fetched eagerly with high priority rather than lazy-loaded. *@
+            <img src="~/uploads/img/HeroImgAbout.webp" asp-append-version="true" width="1536" height="1024" fetchpriority="high" decoding="async"
+                 alt="Map of Central Asia with financial charts, coins and a city skyline" />
         </div>
     </section>
 

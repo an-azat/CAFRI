@@ -251,6 +251,23 @@ public sealed class PublicationsController : Controller
         _dbContext.PublicationCategoryAssignments.AddRange(categories);
     }
 
+    private bool IsSlugTaken(string slug, Guid? currentId) =>
+        _dbContext.PublicationContentItems
+            .AsNoTracking()
+            .Any(x => x.Slug == slug && (!currentId.HasValue || x.Id != currentId.Value));
+
+    // The typed slug (normalized), or one generated from the title and made unique.
+    private string ResolveSlug(PublicationContentEditViewModel model, Guid? currentId)
+    {
+        if (!string.IsNullOrWhiteSpace(model.Slug))
+        {
+            return SlugGenerator.Slugify(model.Slug, SlugGenerator.ManualMaxLength);
+        }
+
+        var generated = SlugGenerator.Slugify(model.Title, SlugGenerator.GeneratedMaxLength);
+        return SlugGenerator.MakeUnique(generated, SlugGenerator.GeneratedMaxLength, slug => IsSlugTaken(slug, currentId));
+    }
+
     private void ValidatePublicationModel(PublicationContentEditViewModel model, Guid? currentId = null)
     {
         if (!PublicationWorkflowStatuses.IsValid(model.WorkflowStatus))
@@ -294,14 +311,23 @@ public sealed class PublicationsController : Controller
             ModelState.AddModelError(nameof(model.SourcePublishedAtUtc), "Enter a valid source publication date.");
         }
 
-        var normalizedSlug = model.Slug.Trim();
-        var slugExists = _dbContext.PublicationContentItems
-            .AsNoTracking()
-            .Any(x => x.Slug == normalizedSlug && (!currentId.HasValue || x.Id != currentId.Value));
-
-        if (slugExists)
+        // An empty slug is generated from the title on save; a typed one must be valid and free.
+        if (!string.IsNullOrWhiteSpace(model.Slug))
         {
-            ModelState.AddModelError(nameof(model.Slug), "A publication with this slug already exists.");
+            var normalizedSlug = SlugGenerator.Slugify(model.Slug, SlugGenerator.ManualMaxLength);
+            if (normalizedSlug.Length == 0)
+            {
+                ModelState.AddModelError(nameof(model.Slug), "The slug must contain Latin letters or digits.");
+            }
+            else if (IsSlugTaken(normalizedSlug, currentId))
+            {
+                ModelState.AddModelError(nameof(model.Slug), "A publication with this slug already exists.");
+            }
+        }
+        else if (string.IsNullOrWhiteSpace(SlugGenerator.Slugify(model.Title, SlugGenerator.GeneratedMaxLength)) &&
+                 !string.IsNullOrWhiteSpace(model.Title))
+        {
+            ModelState.AddModelError(nameof(model.Slug), "Enter a slug: it cannot be generated from this title.");
         }
 
         var heroFile = ResolveSingleFile(model.HeroImageFile, Request.Form.Files.GetFile(nameof(model.HeroImageFile)));
@@ -498,7 +524,7 @@ public sealed class PublicationsController : Controller
         var entity = new PublicationContentItem
         {
             Id = Guid.NewGuid(),
-            Slug = model.Slug.Trim(),
+            Slug = ResolveSlug(model, null),
             WorkflowStatus = PublicationWorkflowStatuses.Normalize(model.WorkflowStatus),
             Visibility = PublicationVisibility.Normalize(model.Visibility),
             RequiresReview = model.RequiresReview,
@@ -592,7 +618,8 @@ public sealed class PublicationsController : Controller
         galleryItems.AddRange(savedGalleryImages);
         var uploadedDocumentFiles = ResolveFiles(model.DocumentFiles, Request.Form.Files.GetFiles(nameof(model.DocumentFiles)));
 
-        entity.Slug = model.Slug.Trim();
+        // Clearing the slug of an existing publication keeps its current URL.
+        entity.Slug = string.IsNullOrWhiteSpace(model.Slug) ? entity.Slug : ResolveSlug(model, id);
         entity.WorkflowStatus = PublicationWorkflowStatuses.Normalize(model.WorkflowStatus);
         entity.Visibility = PublicationVisibility.Normalize(model.Visibility);
         entity.RequiresReview = model.RequiresReview;
@@ -653,7 +680,7 @@ public sealed class PublicationsController : Controller
         _dbContext.PublicationContentItems.Remove(entity);
         await _dbContext.SaveChangesAsync();
         await DeleteUnusedMediaAsync(deletedUrls);
-        return RedirectToAction(nameof(Index));
+        return this.RedirectToAdminList();
     }
 
     [HttpPost]
@@ -671,7 +698,7 @@ public sealed class PublicationsController : Controller
         entity.UpdatedAtUtc = DateTimeOffset.UtcNow;
         await _dbContext.SaveChangesAsync();
 
-        return RedirectToAction(nameof(Index));
+        return this.RedirectToAdminList();
     }
 
     private static IEnumerable<string> GetPublicationMediaUrls(PublicationContentItem entity)

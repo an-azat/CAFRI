@@ -7,9 +7,10 @@ public sealed class PublicationContentEditViewModel
 {
     public Guid? Id { get; init; }
 
-    [Required, StringLength(180)]
+    // Optional: when empty, the server generates it from the title (max 25 characters).
+    [StringLength(180)]
     [Display(Name = "URL Slug")]
-    public string Slug { get; init; } = string.Empty;
+    public string? Slug { get; init; } = string.Empty;
 
     [Required, StringLength(40)]
     [Display(Name = "Status")]

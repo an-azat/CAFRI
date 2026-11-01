@@ -12,8 +12,6 @@ public sealed class AboutPageViewModel
 
     public IReadOnlyList<AboutFeatureItemViewModel> HeroFeatures { get; init; } = [];
 
-    public required AboutSectionCardViewModel MissionCard { get; init; }
-
     public IReadOnlyList<AboutSectionCardViewModel> CoverageAreas { get; init; } = [];
 
     public IReadOnlyList<string> GeographicCountries { get; init; } = [];

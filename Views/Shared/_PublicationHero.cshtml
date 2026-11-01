@@ -20,7 +20,11 @@
             <span>@Model.PublishedDate</span>
             <span>@Model.ReadingTime</span>
             <span>@Model.AuthorLabel</span>
-            <span>@Model.DocumentLabel</span>
+            @* The document label ("PDF available | 1.2 MB") only makes sense when a file is attached. *@
+            @if (Model.Documents.Any(x => x.IsDownloadable))
+            {
+                <span>@Model.DocumentLabel</span>
+            }
         </div>
 
         @{

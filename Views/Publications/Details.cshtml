@@ -220,12 +220,19 @@ else
 
                 <section class="article-section" id="related-documents">
                     <h2>Related Documents</h2>
-                    <div class="document-list">
-                        @foreach (var item in Model.Documents)
-                        {
-                            <partial name="_PublicationDocumentCard" model="new CAFRI.ViewModels.Publications.PublicationDocumentCardViewModel { Title = item.Title, Type = item.Type, Meta = item.Meta, DownloadUrl = item.IsDownloadable ? DownloadUrl(item.DownloadUrl) : item.DownloadUrl }" />
-                        }
-                    </div>
+                    @if (Model.Documents.Any(x => x.IsDownloadable))
+                    {
+                        <div class="document-list">
+                            @foreach (var item in Model.Documents.Where(x => x.IsDownloadable))
+                            {
+                                <partial name="_PublicationDocumentCard" model="new CAFRI.ViewModels.Publications.PublicationDocumentCardViewModel { Title = item.Title, Type = item.Type, Meta = item.Meta, DownloadUrl = DownloadUrl(item.DownloadUrl) }" />
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="document-list__empty">No documents are attached to this publication.</p>
+                    }
                 </section>
             </main>
 

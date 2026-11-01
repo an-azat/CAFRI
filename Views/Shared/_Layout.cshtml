@@ -1,6 +1,9 @@
 @{
     var pageTitle = ViewData["Title"] as string ?? "CAFRI";
     var pageTheme = ViewData["PageTheme"] as string ?? "theme-dark";
+    // Search-result snippet; pages can override it with ViewData["Description"].
+    var pageDescription = ViewData["Description"] as string
+        ?? "CAFRI provides structured intelligence on financial regulation, banking, trade, sanctions and macroeconomic trends across Central Asia.";
     // Only the home page has a full-bleed hero that sits under the fixed header;
     // every other page (theme-home included) needs the standard top clearance.
     var isHomePage = string.Equals(ViewContext.RouteData.Values["controller"]?.ToString(), "Home", StringComparison.OrdinalIgnoreCase)
@@ -12,6 +15,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@pageTitle - CAFRI</title>
+    <meta name="description" content="@pageDescription" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/CAFRI.styles.css" asp-append-version="true" />

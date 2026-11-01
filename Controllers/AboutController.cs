@@ -20,12 +20,6 @@ public sealed class AboutController : Controller
                 new() { Icon = "reliable", Title = "Reliable", Description = "Based on verified official sources and structured methodology." },
                 new() { Icon = "timely", Title = "Timely", Description = "Continuous monitoring of regulatory, financial, and economic updates." }
             ],
-            MissionCard = new AboutSectionCardViewModel
-            {
-                Icon = "mission",
-                Title = "Our Mission",
-                Description = "To become a trusted source of financial and regulatory intelligence on Central Asia - supporting transparency, informed decision-making, and sustainable economic development in the region."
-            },
             CoverageAreas =
             [
                 new() { Icon = "institution", Title = "Financial Regulation", Description = "Central bank decisions, supervisory rules, licensing requirements, reporting obligations, and regulatory reforms." },

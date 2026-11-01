@@ -108,7 +108,7 @@ public sealed class CountriesController : Controller
             UpdatedAtUtc = DateTimeOffset.UtcNow
         });
         await _dbContext.SaveChangesAsync();
-        return RedirectToAction(nameof(Index));
+        return this.RedirectToAdminList();
     }
 
     [HttpGet]
@@ -180,7 +180,7 @@ public sealed class CountriesController : Controller
 
         await _dbContext.SaveChangesAsync();
         await DeleteUnusedMediaAsync(previousUrls.Except(currentUrls, StringComparer.OrdinalIgnoreCase));
-        return RedirectToAction(nameof(Index));
+        return this.RedirectToAdminList();
     }
 
     private static string BuildGalleryText(string? raw) =>
@@ -218,7 +218,7 @@ public sealed class CountriesController : Controller
         _dbContext.CountryContents.Remove(entity);
         await _dbContext.SaveChangesAsync();
         await DeleteUnusedMediaAsync(deletedUrls);
-        return RedirectToAction(nameof(Index));
+        return this.RedirectToAdminList();
     }
 
     private async Task DeleteUnusedMediaAsync(IEnumerable<string> urls)

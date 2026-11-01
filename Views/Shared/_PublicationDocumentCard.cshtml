@@ -1,7 +1,10 @@
 @model CAFRI.ViewModels.Publications.PublicationDocumentCardViewModel
 
 <article class="document-card">
-    <div class="document-card__icon">PDF</div>
+    @{
+        var extension = System.IO.Path.GetExtension(Model.DownloadUrl.Split('#')[0]).TrimStart('.').ToUpperInvariant();
+    }
+    <div class="document-card__icon">@(extension.Length is > 0 and <= 4 ? extension : "FILE")</div>
     <div class="document-card__content">
         <h3>@Model.Title</h3>
         <p>@Model.Type</p>
