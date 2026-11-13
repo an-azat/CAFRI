@@ -37,15 +37,18 @@
                     <div class="country-metrics__value">@Model.Population</div>
                 </div>
             </div>
-            <div class="country-metrics__item">
-                <span class="country-metrics__icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24"><path d="M12 4 4 8v1.5h16V8L12 4Zm-6 7h1.5v5H6v-5Zm5.25 0h1.5v5h-1.5v-5Zm5.25 0H18v5h-1.5v-5ZM4 18h16v1.5H4V18Z" /></svg>
-                </span>
-                <div>
-                    <div class="country-metrics__label">Bank Assets</div>
-                    <div class="country-metrics__value">@Model.BankAssets</div>
+            @if (!string.IsNullOrWhiteSpace(Model.BankAssets))
+            {
+                <div class="country-metrics__item">
+                    <span class="country-metrics__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M12 4 4 8v1.5h16V8L12 4Zm-6 7h1.5v5H6v-5Zm5.25 0h1.5v5h-1.5v-5Zm5.25 0H18v5h-1.5v-5ZM4 18h16v1.5H4V18Z" /></svg>
+                    </span>
+                    <div>
+                        <div class="country-metrics__label">Bank Assets</div>
+                        <div class="country-metrics__value">@Model.BankAssets</div>
+                    </div>
                 </div>
-            </div>
+            }
         </div>
 
         <a class="country-card__link" href="@Model.Url">View Profile <span>&rarr;</span></a>

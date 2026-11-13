@@ -1,96 +1,61 @@
 namespace CAFRI.ViewModels.Countries;
 
+using CAFRI.Domain.Content;
 using CAFRI.ViewModels.Shared;
 
 public sealed class CountryProfilePageViewModel
 {
     public required CountryOverviewCardViewModel Country { get; init; }
 
+    // Header: official name (or the short name), region, flag and lead paragraph.
+    public required string Title { get; init; }
+
+    public string Region { get; init; } = string.Empty;
+
+    public string FlagImageUrl { get; init; } = string.Empty;
+
     public required string HeroDescription { get; init; }
 
-    public required string Currency { get; init; }
+    // "UPDATED · 04 NOV 2026" label in the header.
+    public string UpdatedLabel { get; init; } = string.Empty;
 
-    public required string RiskRating { get; init; }
+    // Population, GDP, currency and capital, each with its reference period or detail line.
+    public IReadOnlyList<CountryHeroFactViewModel> HeroFacts { get; init; } = [];
 
-    public required string RiskOutlook { get; init; }
+    public string DataSource { get; init; } = string.Empty;
 
-    public required string DoingBusinessRank { get; init; }
+    // First gallery photo, used as the header background.
+    public string HeroBackgroundUrl { get; init; } = string.Empty;
 
-    public required string DoingBusinessSource { get; init; }
+    public IReadOnlyList<ContentImageItemViewModel> HeroGallery { get; init; } = [];
 
-    public required string OverviewText { get; init; }
+    public IReadOnlyList<string> AboutParagraphs { get; init; } = [];
 
-    public IReadOnlyList<ContentImageItemViewModel> HeroGallery { get; set; } = [];
+    public IReadOnlyList<CountryHeroFactViewModel> AboutFacts { get; init; } = [];
 
-    public IReadOnlyList<CountryMetricViewModel> HeroIndicators { get; init; } = [];
+    // Editorial sections: macro signals, public finances, analysis, priorities, news, methodology.
+    public CountryProfileContent Profile { get; init; } = new();
 
-    public IReadOnlyList<CountryKeyIndicatorRowViewModel> KeyIndicators { get; init; } = [];
+    // Economic snapshot cards: the editor's KPIs, or the latest CountryIndicators values.
+    public IReadOnlyList<CountryProfileKpi> SnapshotKpis { get; init; } = [];
 
-    public IReadOnlyList<CountryTabViewModel> Tabs { get; init; } = [];
+    // Real GDP growth by year: the editor's series, or the "Real GDP Growth" indicator rows.
+    public IReadOnlyList<CountryProfileGdpPoint> GdpHistory { get; init; } = [];
 
-    public IReadOnlyList<CountryHighlightViewModel> Highlights { get; init; } = [];
+    // The editor's data sources, or the official sources registered in the Sources section.
+    public IReadOnlyList<CountryProfileSource> DataSources { get; init; } = [];
 
-    public IReadOnlyList<CountrySnapshotCardViewModel> MacroSummaryCards { get; init; } = [];
-
-    public IReadOnlyList<CountryMacroIndicatorRowViewModel> MacroIndicatorRows { get; init; } = [];
-
-    public required CountryChartSeriesViewModel GdpGrowthChart { get; init; }
-
-    public required CountryChartSeriesViewModel InflationChart { get; init; }
-
-    public IReadOnlyList<CountrySnapshotCardViewModel> FinancialSectorSnapshot { get; init; } = [];
-
-    public required CountryChartSeriesViewModel BankingAssetsChart { get; init; }
-
-    public IReadOnlyList<CountryTopBankViewModel> TopBanks { get; init; } = [];
-
+    // CAFRI's own coverage of the country: published Intelligence and Publications.
     public IReadOnlyList<CountrySidebarLinkItemViewModel> LatestUpdates { get; init; } = [];
 
     public IReadOnlyList<CountrySidebarLinkItemViewModel> RelatedPublications { get; init; } = [];
+}
 
-    public IReadOnlyList<CountryInstitutionViewModel> KeyInstitutions { get; init; } = [];
+public sealed class CountryHeroFactViewModel
+{
+    public required string Label { get; init; }
 
-    public IReadOnlyList<CountryExploreLinkViewModel> ExploreLinks { get; init; } = [];
+    public required string Value { get; init; }
 
-    // Classifies the free-text credit-rating letter grade (S&amp;P/Fitch-style: AAA..D) into a
-    // CSS tone so the badge color reflects how strong the rating actually is, instead of a
-    // single hardcoded "positive" color for every country regardless of rating.
-    public string RiskRatingTone
-    {
-        get
-        {
-            var grade = RiskRating.TrimStart().ToUpperInvariant();
-            if (grade.StartsWith("AAA", StringComparison.Ordinal) ||
-                grade.StartsWith("AA", StringComparison.Ordinal) ||
-                (grade.StartsWith("A", StringComparison.Ordinal) && !grade.StartsWith("AB", StringComparison.Ordinal)))
-            {
-                return "positive";
-            }
-
-            if (grade.StartsWith("BBB", StringComparison.Ordinal))
-            {
-                return "positive";
-            }
-
-            if (grade.StartsWith("BB", StringComparison.Ordinal))
-            {
-                return "neutral";
-            }
-
-            if (grade.StartsWith("B", StringComparison.Ordinal))
-            {
-                return "caution";
-            }
-
-            if (grade.StartsWith("CCC", StringComparison.Ordinal) ||
-                grade.StartsWith("CC", StringComparison.Ordinal) ||
-                grade.StartsWith("C", StringComparison.Ordinal) ||
-                grade.StartsWith("D", StringComparison.Ordinal))
-            {
-                return "negative";
-            }
-
-            return "neutral";
-        }
-    }
+    public string Note { get; init; } = string.Empty;
 }

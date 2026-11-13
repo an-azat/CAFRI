@@ -17,7 +17,9 @@
         </div>
     </button>
 
-    <div class="photo-gallery__thumbs">
+    <div class="photo-gallery__strip">
+    <button class="photo-gallery__nav" type="button" data-gallery-scroll="-1" aria-label="Previous photos" hidden>&#8249;</button>
+    <div class="photo-gallery__thumbs" data-gallery-thumbs>
         @foreach (var item in galleryItems.Count != 0 ? galleryItems : Model)
         {
             <button class="photo-gallery__thumb" type="button" data-gallery-select data-gallery-image="@item.ImageUrl" data-gallery-class="@item.VisualClassName" data-gallery-caption="@item.Caption" data-gallery-title="@item.Title">
@@ -32,6 +34,8 @@
                 <span>@item.Title</span>
             </button>
         }
+    </div>
+    <button class="photo-gallery__nav" type="button" data-gallery-scroll="1" aria-label="Next photos" hidden>&#8250;</button>
     </div>
 
     <div class="photo-gallery__lightbox" hidden data-gallery-lightbox>

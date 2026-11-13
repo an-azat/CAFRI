@@ -6,6 +6,12 @@
       "runtimeExecutable": "dotnet",
       "runtimeArgs": ["run", "--urls", "http://localhost:5261"],
       "port": 5261
+    },
+    {
+      "name": "cafri-web-release",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "-c", "Release", "--no-build", "--urls", "http://localhost:5262"],
+      "port": 5262
     }
   ]
 }

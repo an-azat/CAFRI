@@ -3,12 +3,14 @@
 @{
     ViewData["Title"] = Model.Country.Name;
     ViewData["PageTheme"] = "theme-home";
+    ViewData["Description"] = Model.HeroDescription;
 
     var countryQuery = Uri.EscapeDataString(Model.Country.Name);
     var latestUpdatesCard = new CountrySidebarCardViewModel
     {
         Title = "Latest Updates",
         Items = Model.LatestUpdates,
+        EmptyText = $"No intelligence updates for {Model.Country.Name} yet.",
         LinkLabel = "View all updates",
         LinkUrl = $"/intelligence/archive?country={countryQuery}"
     };
@@ -16,9 +18,13 @@
     {
         Title = "Related Publications",
         Items = Model.RelatedPublications,
+        EmptyText = $"No publications on {Model.Country.Name} yet.",
         LinkLabel = "View all publications",
         LinkUrl = $"/publications?country={countryQuery}"
     };
+    var profile = Model.Profile;
+    var hasAnalysis = !string.IsNullOrWhiteSpace(profile.AnalysisLead) || profile.AnalysisPoints.Count > 0;
+    var hasMonitoring = profile.Priorities.Count > 0;
 }
 
 <div class="page-country-profile">
@@ -31,153 +37,370 @@
     </nav>
 
     <partial name="_CountryProfileHero" model="Model" />
-    <partial name="_CountryTabs" model="Model.Tabs" />
 
-    <div class="country-profile-layout">
-        <main class="country-main-content">
-            <section class="country-overview-card">
-                <h2>Overview</h2>
-                <p>@Model.OverviewText</p>
-
-                <div class="country-highlights-grid">
-                    @foreach (var item in Model.Highlights)
-                    {
-                        <article class="country-highlight-item">
-                            <div class="country-highlight-item__icon" aria-hidden="true">
-                                @switch (item.Icon)
-                                {
-                                    case "shield":
-                                        <svg viewBox="0 0 24 24"><path d="M12 3.5 5.5 6v5.46c0 4.03 2.78 7.8 6.5 8.96 3.72-1.16 6.5-4.93 6.5-8.96V6L12 3.5Zm0 1.61 5 1.92v4.43c0 3.22-2.17 6.25-5 7.28-2.83-1.03-5-4.06-5-7.28V7.03l5-1.92Z" /></svg>
-                                        break;
-                                    case "trade":
-                                        <svg viewBox="0 0 24 24"><path d="M5 7h8v1.5H7.56l9.97 9.97-1.06 1.06L6.5 9.56V15H5V7Zm14 2h-1.5v5.44L7.53 4.47 8.59 3.4 18.5 13.32V9H20v8h-8v-1.5h5.44L7.47 5.53 8.53 4.47 18.5 14.44V9Z" /></svg>
-                                        break;
-                                    case "bank":
-                                        <svg viewBox="0 0 24 24"><path d="M12 4 4 8v1.5h16V8L12 4Zm-6 7h1.5v5H6v-5Zm5.25 0h1.5v5h-1.5v-5Zm5.25 0H18v5h-1.5v-5ZM4 18h16v1.5H4V18Z" /></svg>
-                                        break;
-                                    default:
-                                        <svg viewBox="0 0 24 24"><path d="M5 18h14v1.5H5V18Zm1-2.25H7.5V10H6v5.75Zm5.25 0h1.5V6.5h-1.5v9.25Zm5.25 0H18v-7h-1.5v7Z" /></svg>
-                                        break;
-                                }
-                            </div>
-                            <h3>@item.Title</h3>
-                            <p>@item.Description</p>
-                        </article>
-                    }
-                </div>
-            </section>
-
-            <section class="country-metric-grid">
-                @foreach (var item in Model.MacroSummaryCards)
+    <section class="cp-section">
+        <div class="cp-section__head">
+            <h2>About the country</h2>
+            <p>Geography, people and economic structure</p>
+        </div>
+        <div class="cp-about @(Model.AboutFacts.Count == 0 ? "cp-about--text-only" : null)">
+            <div class="cp-about__text">
+                @foreach (var paragraph in Model.AboutParagraphs)
                 {
-                    <partial name="_MetricCard" model="item" />
+                    <p>@paragraph</p>
                 }
-            </section>
-
-            <section class="macro-overview">
-                <article class="table-card">
-                    <h2>Macroeconomic Overview</h2>
-                    <div class="table-card__scroll">
-                        <table class="country-data-table">
-                            <thead>
-                                <tr>
-                                    <th>Indicator</th>
-                                    <th>2023</th>
-                                    <th>2024</th>
-                                    <th>2025*</th>
-                                    <th>2026*</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var row in Model.MacroIndicatorRows)
-                                {
-                                    <tr>
-                                        <td>@row.Indicator</td>
-                                        <td>@row.Value2023</td>
-                                        <td>@row.Value2024</td>
-                                        <td>@row.Value2025</td>
-                                        <td>@row.Value2026</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="table-card__footnote">* Forecast by CAFRI Research Team</div>
-                </article>
-
-                <partial name="_ChartCard" model="Model.GdpGrowthChart" />
-                <partial name="_ChartCard" model="Model.InflationChart" />
-            </section>
-
-            <section class="financial-sector-snapshot">
-                <h2>Financial Sector Snapshot (2025)</h2>
-                <div class="financial-sector-snapshot__grid">
-                    @foreach (var item in Model.FinancialSectorSnapshot)
+            </div>
+            @if (Model.AboutFacts.Count > 0)
+            {
+                <dl class="cp-about__facts">
+                    @foreach (var fact in Model.AboutFacts)
                     {
-                        <article class="financial-sector-card">
-                            <div class="financial-sector-card__label">@item.Label</div>
-                            <div class="financial-sector-card__value">@item.Value</div>
-                            <div class="financial-sector-card__description">@item.Description</div>
-                        </article>
+                        <div>
+                            <dt>@fact.Label</dt>
+                            <dd>@fact.Value</dd>
+                        </div>
                     }
+                </dl>
+            }
+        </div>
+    </section>
+
+    @if (Model.HeroGallery.Count > 0)
+    {
+        <section class="cp-section cp-card cp-gallery" data-cp-gallery>
+            <h2 class="cp-card__title">Country gallery</h2>
+            <div class="cp-card__sub">Landscapes and places across @Model.Title</div>
+            @if (Model.HeroGallery.Count > 1)
+            {
+                <div class="cp-gallery__controls">
+                    <span class="cp-gallery__hint">Scroll horizontally to explore</span>
+                    <div class="cp-gallery__arrows">
+                        <button type="button" data-cp-gallery-prev aria-label="Previous photos">&lsaquo;</button>
+                        <button type="button" data-cp-gallery-next aria-label="Next photos">&rsaquo;</button>
+                    </div>
                 </div>
-            </section>
+            }
+            <div class="cp-gallery__track" data-cp-gallery-track tabindex="0" aria-label="@Model.Country.Name photo gallery">
+                @foreach (var image in Model.HeroGallery)
+                {
+                    var caption = string.Join(" · ", new[] { image.Title, image.Caption }.Where(x => !string.IsNullOrWhiteSpace(x)));
+                    <figure class="cp-gallery__item">
+                        <img src="@image.ImageUrl" alt="@(string.IsNullOrWhiteSpace(image.Alt) ? caption : image.Alt)" loading="lazy" />
+                        @if (caption.Length > 0)
+                        {
+                            <figcaption>@caption</figcaption>
+                        }
+                    </figure>
+                }
+            </div>
+            @if (!string.IsNullOrWhiteSpace(profile.GalleryCredit))
+            {
+                <div class="cp-gallery__credit">@profile.GalleryCredit</div>
+            }
+        </section>
+    }
 
-            <section class="country-banking-grid">
-                <partial name="_ChartCard" model="Model.BankingAssetsChart" />
-
-                <article class="table-card top-banks-table">
-                    <h2>Top Banks by Assets (May 2026)</h2>
-                    <div class="table-card__scroll">
-                        <table class="country-data-table">
-                            <thead>
-                                <tr>
-                                    <th>Bank</th>
-                                    <th>Assets (USD B)</th>
-                                    <th>Market Share</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var bank in Model.TopBanks)
+    @if (Model.SnapshotKpis.Count > 0)
+    {
+        <section class="cp-section">
+            <div class="cp-section__head cp-section__head--split">
+                <div>
+                    <h2>Economic snapshot</h2>
+                    <p>Latest available official and institutional observations</p>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(profile.SnapshotCutoff))
+                {
+                    <span class="cp-asof">Data cut-off: @profile.SnapshotCutoff</span>
+                }
+            </div>
+            <div class="cp-snapshot">
+                @foreach (var kpi in Model.SnapshotKpis)
+                {
+                    <div class="cp-snapshot__card">
+                        <div class="cp-snapshot__label">@kpi.Label</div>
+                        <div class="cp-snapshot__value">@kpi.Value</div>
+                        @if (!string.IsNullOrWhiteSpace(kpi.Change) || !string.IsNullOrWhiteSpace(kpi.Period))
+                        {
+                            <div class="cp-snapshot__foot">
+                                @if (!string.IsNullOrWhiteSpace(kpi.Change))
                                 {
-                                    <tr>
-                                        <td>@bank.Name</td>
-                                        <td>@bank.Assets</td>
-                                        <td>@bank.MarketShare</td>
-                                    </tr>
+                                    <span class="cp-delta cp-delta--@ToneClass(kpi.ChangeTone)">@kpi.Change</span>
+                                }
+                                @kpi.Period
+                            </div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(kpi.Source))
+                        {
+                            <div class="cp-snapshot__source">@kpi.Source</div>
+                        }
+                    </div>
+                }
+            </div>
+        </section>
+    }
+
+    @if (Model.GdpHistory.Count > 0 || profile.Signals.Count > 0)
+    {
+        <section class="cp-section">
+            <div class="cp-section__head cp-section__head--split">
+                <div>
+                    <h2>Macroeconomic performance</h2>
+                    <p>@(string.IsNullOrWhiteSpace(profile.MacroSubtitle) ? "Growth trend and current macro signals" : profile.MacroSubtitle)</p>
+                </div>
+                <span class="cp-tag">Latest data</span>
+            </div>
+            <div class="cp-two @(Model.GdpHistory.Count == 0 || profile.Signals.Count == 0 ? "cp-two--single" : null)">
+                @if (Model.GdpHistory.Count > 0)
+                {
+                    <article class="cp-card">
+                        <h3 class="cp-card__title">Real GDP growth</h3>
+                        <div class="cp-card__sub">@(string.IsNullOrWhiteSpace(profile.GdpSubtitle) ? "Annual change, %" : profile.GdpSubtitle)</div>
+                        <partial name="_CountryGdpChart" model="Model.GdpHistory" />
+                        @if (!string.IsNullOrWhiteSpace(profile.GdpNote) || !string.IsNullOrWhiteSpace(profile.GdpSourceUrl))
+                        {
+                            <p class="cp-note">
+                                @profile.GdpNote
+                                @if (!string.IsNullOrWhiteSpace(profile.GdpSourceUrl))
+                                {
+                                    <a href="@profile.GdpSourceUrl" target="_blank" rel="noopener noreferrer">Source &#8599;</a>
+                                }
+                            </p>
+                        }
+                    </article>
+                }
+                @if (profile.Signals.Count > 0)
+                {
+                    <article class="cp-card">
+                        <h3 class="cp-card__title">Current macro signals</h3>
+                        <div class="cp-card__sub">Interpretation of latest published observations</div>
+                        <div class="cp-signals">
+                            @foreach (var signal in profile.Signals)
+                            {
+                                <div class="cp-signal">
+                                    <i class="cp-signal__dot @(signal.Tone == "positive" ? "cp-signal__dot--positive" : null)" aria-hidden="true"></i>
+                                    <div>
+                                        <strong>@signal.Title</strong>
+                                        <span>@signal.Text</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </article>
+                }
+            </div>
+        </section>
+    }
+
+    @if (profile.FiscalRows.Count > 0 || !string.IsNullOrWhiteSpace(profile.DebtValue))
+    {
+        <section class="cp-section">
+            <div class="cp-section__head">
+                <h2>Public finances</h2>
+                <p>Fiscal position and sovereign debt indicators</p>
+            </div>
+            <div class="cp-two @(profile.FiscalRows.Count == 0 || string.IsNullOrWhiteSpace(profile.DebtValue) ? "cp-two--single" : null)">
+                @if (profile.FiscalRows.Count > 0)
+                {
+                    <article class="cp-card">
+                        <h3 class="cp-card__title">Fiscal position</h3>
+                        @if (!string.IsNullOrWhiteSpace(profile.FiscalSubtitle))
+                        {
+                            <div class="cp-card__sub">@profile.FiscalSubtitle</div>
+                        }
+                        <table class="cp-table">
+                            <tbody>
+                                @foreach (var row in profile.FiscalRows)
+                                {
+                                    <tr><td>@row.Label</td><td>@row.Period</td><td class="cp-table__value">@row.Value</td></tr>
                                 }
                             </tbody>
                         </table>
-                    </div>
-                </article>
-            </section>
-        </main>
+                        @if (!string.IsNullOrWhiteSpace(profile.FiscalNote))
+                        {
+                            <p class="cp-note">@profile.FiscalNote</p>
+                        }
+                    </article>
+                }
+                @if (!string.IsNullOrWhiteSpace(profile.DebtValue))
+                {
+                    var debtPercent = ParsePercent(profile.DebtValue);
+                    <article class="cp-card">
+                        <h3 class="cp-card__title">Sovereign debt</h3>
+                        <div class="cp-card__sub">Public debt as a share of GDP</div>
+                        <div class="cp-debt">
+                            <strong>@profile.DebtValue</strong>
+                            <span>@profile.DebtPeriod</span>
+                        </div>
+                        @if (debtPercent is not null)
+                        {
+                            <div class="cp-debt__bar" role="presentation"><span style="width:@(Math.Clamp(debtPercent.Value, 0, 100).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture))%"></span></div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(profile.DebtNote))
+                        {
+                            <p class="cp-note">@profile.DebtNote</p>
+                        }
+                    </article>
+                }
+            </div>
+        </section>
+    }
 
-        <aside class="country-sidebar">
+    @if (hasAnalysis || hasMonitoring)
+    {
+        <section class="cp-section">
+            <div class="cp-section__head cp-section__head--split">
+                <div>
+                    <h2>Country analysis &amp; monitoring priorities</h2>
+                    <p>CAFRI editorial assessment based on the latest available official data</p>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(profile.AnalysisUpdated))
+                {
+                    <span class="cp-asof">Analysis updated: @profile.AnalysisUpdated</span>
+                }
+            </div>
+            <div class="cp-analysis @(!hasAnalysis || !hasMonitoring ? "cp-two--single" : null)">
+                @if (hasAnalysis)
+                {
+                    <article class="cp-card">
+                        <div class="cp-kicker">Country analysis</div>
+                        <h3 class="cp-card__heading">@(string.IsNullOrWhiteSpace(profile.AnalysisHeading) ? "Macroeconomic assessment" : profile.AnalysisHeading)</h3>
+                        @if (!string.IsNullOrWhiteSpace(profile.AnalysisLead))
+                        {
+                            <p class="cp-analysis__lead">@profile.AnalysisLead</p>
+                        }
+                        @for (var i = 0; i < profile.AnalysisPoints.Count; i++)
+                        {
+                            <div class="cp-analysis__point">
+                                <span class="cp-analysis__index">@((i + 1).ToString("00"))</span>
+                                <div>
+                                    <strong>@profile.AnalysisPoints[i].Title</strong>
+                                    <p>@profile.AnalysisPoints[i].Text</p>
+                                </div>
+                            </div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(profile.AnalysisFootnote))
+                        {
+                            <div class="cp-card__foot">@profile.AnalysisFootnote</div>
+                        }
+                    </article>
+                }
+                @if (hasMonitoring)
+                {
+                    <aside class="cp-card">
+                        <div class="cp-kicker">Monitoring priorities</div>
+                        <h3 class="cp-card__heading">@(string.IsNullOrWhiteSpace(profile.MonitoringHeading) ? "Key areas to watch" : profile.MonitoringHeading)</h3>
+                        @if (!string.IsNullOrWhiteSpace(profile.MonitoringIntro))
+                        {
+                            <p class="cp-card__sub">@profile.MonitoringIntro</p>
+                        }
+                        @foreach (var priority in profile.Priorities)
+                        {
+                            <div class="cp-priority">
+                                <div>
+                                    <strong>@priority.Title</strong>
+                                    <span>@priority.Description</span>
+                                </div>
+                                <em class="cp-priority__level cp-priority__level--@priority.Level.ToLowerInvariant()">@priority.Level</em>
+                            </div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(profile.MonitoringFootnote))
+                        {
+                            <div class="cp-card__foot">@profile.MonitoringFootnote</div>
+                        }
+                    </aside>
+                }
+            </div>
+        </section>
+    }
+
+    @if (profile.News.Count > 0)
+    {
+        <section class="cp-section" id="intelligence">
+            <div class="cp-section__head">
+                <h2>Latest country intelligence</h2>
+                <p>Selected institutional updates relevant to @Model.Title</p>
+            </div>
+            <div class="cp-news">
+                @foreach (var item in profile.News)
+                {
+                    <article class="cp-news__item">
+                        @if (!string.IsNullOrWhiteSpace(item.TypeDate))
+                        {
+                            <div class="cp-news__type">@item.TypeDate</div>
+                        }
+                        <h3>@item.Headline</h3>
+                        @if (!string.IsNullOrWhiteSpace(item.Summary))
+                        {
+                            <p>@item.Summary</p>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(item.Url))
+                        {
+                            <a href="@item.Url" target="_blank" rel="noopener noreferrer">Read source &#8599;</a>
+                        }
+                    </article>
+                }
+            </div>
+        </section>
+    }
+
+    <section class="cp-section">
+        <div class="cp-section__head">
+            <h2>CAFRI coverage</h2>
+            <p>Intelligence updates and publications on @Model.Country.Name</p>
+        </div>
+        <div class="cp-two">
             <partial name="_SidebarCard" model="latestUpdatesCard" />
             <partial name="_SidebarCard" model="relatedPublicationsCard" />
+        </div>
+    </section>
 
-            <section class="sidebar-card">
-                <h2 class="sidebar-card__title">Key Institutions</h2>
-                <div class="sidebar-card__items">
-                    @foreach (var item in Model.KeyInstitutions)
-                    {
-                        <article class="sidebar-card__item sidebar-card__item--institution">
-                            <h3>@item.Name</h3>
-                            <p>@item.Role</p>
-                        </article>
-                    }
-                </div>
-            </section>
-        </aside>
-    </div>
+    @if (Model.DataSources.Count > 0)
+    {
+        <section class="cp-section">
+            <div class="cp-section__head">
+                <h2>Data sources</h2>
+                <p>Primary sources used for this profile</p>
+            </div>
+            <div class="cp-sources">
+                @foreach (var source in Model.DataSources)
+                {
+                    <div class="cp-source">
+                        <strong>@source.Institution</strong>
+                        @if (!string.IsNullOrWhiteSpace(source.Description))
+                        {
+                            <span>@source.Description</span>
+                        }
+                        @if (Uri.TryCreate(source.Url, UriKind.Absolute, out var sourceUri))
+                        {
+                            <a href="@source.Url" target="_blank" rel="noopener noreferrer">@sourceUri.Host.Replace("www.", string.Empty) &#8599;</a>
+                        }
+                    </div>
+                }
+            </div>
+        </section>
+    }
 
-    <partial name="_ExploreCountryLinks" model="Model" />
+    @if (!string.IsNullOrWhiteSpace(profile.Methodology))
+    {
+        <div class="cp-disclaimer"><strong>Data methodology:</strong> @profile.Methodology</div>
+    }
 </div>
 
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-    <script src="~/js/country-tabs.js" asp-append-version="true"></script>
-    <script src="~/js/country-charts.js" asp-append-version="true"></script>
-    <script src="~/js/country-hero-gallery.js" asp-append-version="true"></script>
+    <script src="~/js/country-gallery.js" asp-append-version="true"></script>
+}
+
+@functions {
+    private static string ToneClass(string? tone) => tone switch
+    {
+        "positive" => "positive",
+        "negative" => "negative",
+        _ => "neutral"
+    };
+
+    // "40.5%" -> 40.5, used for the debt bar; anything else draws no bar.
+    private static double? ParsePercent(string value) =>
+        double.TryParse(value.Trim().TrimEnd('%').Trim(), System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : null;
 }

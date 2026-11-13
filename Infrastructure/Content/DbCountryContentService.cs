@@ -1,4 +1,3 @@
-using System.Text.Json;
 using CAFRI.Application.Abstractions.Services;
 using CAFRI.ViewModels.Shared;
 using CAFRI.Infrastructure.Persistence;
@@ -10,11 +9,6 @@ namespace CAFRI.Infrastructure.Content;
 
 public sealed class DbCountryContentService : ICountryContentService
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
     private readonly AppDbContext _dbContext;
 
     public DbCountryContentService(AppDbContext dbContext)
@@ -24,15 +18,6 @@ public sealed class DbCountryContentService : ICountryContentService
 
     public async Task<CountriesPageViewModel> GetIndexPageAsync(CancellationToken cancellationToken = default)
     {
-        var publishedIndicatorCount = await _dbContext.CountryIndicators.AsNoTracking().CountAsync(x => x.IsPublished, cancellationToken);
-        var indicatorCategories = await _dbContext.CountryIndicators
-            .AsNoTracking()
-            .Where(x => x.IsPublished)
-            .Select(x => x.Category)
-            .Distinct()
-            .OrderBy(x => x)
-            .ToListAsync(cancellationToken);
-
         var countryRows = await _dbContext.CountryContents
             .AsNoTracking()
             .Where(x => x.IsPublished)
@@ -109,30 +94,10 @@ public sealed class DbCountryContentService : ICountryContentService
 
         return new CountriesPageViewModel
         {
-            Description = "Country intelligence profiles covering financial regulation, banking sector, macroeconomic indicators, trade, sanctions exposure, and institutional developments across Central Asia and adjacent economies.",
-            StatsCards =
-            [
-                new() { Icon = "institution", Value = countries.Count.ToString(), Title = "Countries", Description = "Comprehensive coverage across the region" },
-                new() { Icon = "chart", Value = publishedIndicatorCount.ToString(), Title = "Indicators Tracked", Description = "Financial, regulatory, and macroeconomic data" }
-            ],
+            Description = "Country intelligence profiles covering financial regulation, banking sector, macroeconomic indicators, trade, sanctions exposure, and institutional developments across Central Asia.",
             Countries = countries,
             GdpGrowthYears = gdpGrowthYears,
-            SelectedGdpGrowthYear = selectedGdpGrowthYear,
-            CompareFeatures = indicatorCategories.Select(category => new CountryCompareFeatureViewModel
-            {
-                Icon = category.Contains("bank", StringComparison.OrdinalIgnoreCase) ? "bank" :
-                    category.Contains("sanction", StringComparison.OrdinalIgnoreCase) ? "check" :
-                    category.Contains("trade", StringComparison.OrdinalIgnoreCase) ? "trade" :
-                    category.Contains("regulation", StringComparison.OrdinalIgnoreCase) ? "shield" :
-                    "chart",
-                Title = category,
-                Description = $"{category} indicators and supporting country intelligence"
-            }).DefaultIfEmpty(new CountryCompareFeatureViewModel
-            {
-                Icon = "chart",
-                Title = "Macroeconomic Overview",
-                Description = "GDP, inflation, trade, FX reserves"
-            }).ToList()
+            SelectedGdpGrowthYear = selectedGdpGrowthYear
         };
     }
 
@@ -142,101 +107,228 @@ public sealed class DbCountryContentService : ICountryContentService
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.IsPublished && x.Slug == slug, cancellationToken);
 
-        if (entity is null)
-        {
-            return null;
-        }
-
-        CountryProfilePageViewModel? details;
-        try
-        {
-            details = JsonSerializer.Deserialize<CountryProfilePageViewModel>(entity.DetailsJson, JsonOptions);
-        }
-        catch (JsonException)
-        {
-            return BuildFallbackDetails(entity);
-        }
-
-        if (details is null)
-        {
-            return BuildFallbackDetails(entity);
-        }
-
-        details.HeroGallery = ContentImageTextSerializer.Parse(entity.HeroGalleryJson);
-
-        return details;
+        return entity is null ? null : await BuildProfileAsync(entity, cancellationToken);
     }
 
-    // Mirrors the BuildFallbackDetails pattern used by DbIntelligenceContentService and
-    // DbPublicationContentService: if DetailsJson is missing or fails to deserialize, degrade
-    // to a minimal-but-valid profile built from the base CountryContent row instead of 404ing
-    // the whole page.
-    private static CountryProfilePageViewModel BuildFallbackDetails(Domain.Content.CountryContent entity)
+    // The profile is built only from data the admin manages: the country fields, the
+    // CountryIndicators table, published Intelligence and Publications for the country, and the
+    // official sources registered for it.
+    private async Task<CountryProfilePageViewModel> BuildProfileAsync(
+        Domain.Content.CountryContent entity,
+        CancellationToken cancellationToken)
     {
+        var code = entity.Code;
         var heroGallery = ContentImageTextSerializer.Parse(entity.HeroGalleryJson);
 
-        var country = new CountryOverviewCardViewModel
-        {
-            Code = entity.Code,
-            Name = entity.Name,
-            Capital = entity.Capital,
-            Summary = entity.Summary,
-            Gdp = entity.Gdp,
-            Population = entity.Population,
-            BankAssets = entity.BankAssets,
-            Slug = entity.Slug,
-            HeroClassName = entity.HeroClassName,
-            HeroImageUrl = heroGallery
-                .Select(item => item.ImageUrl)
-                .FirstOrDefault(url => !string.IsNullOrWhiteSpace(url)) ?? string.Empty,
-            IndicatorLabel = "Indicator",
-            IndicatorValue = "No data",
-            Indicators = [],
-            Metrics =
-            [
-                new() { Icon = "chart", Label = "GDP (2025)", Value = entity.Gdp },
-                new() { Icon = "people", Label = "Population", Value = entity.Population },
-                new() { Icon = "bank", Label = "Bank Assets", Value = entity.BankAssets }
-            ]
-        };
+        var indicators = await _dbContext.CountryIndicators
+            .AsNoTracking()
+            .Where(x => x.IsPublished && x.CountryCode == code)
+            .OrderBy(x => x.DisplayOrder)
+            .ToListAsync(cancellationToken);
+        var indicatorGroups = indicators
+            .GroupBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
-        var emptyChart = new CountryChartSeriesViewModel { Title = string.Empty, ValueSuffix = string.Empty };
+        var profile = CountryProfileContentSerializer.Parse(entity.ProfileJson);
+
+        // Economic snapshot: the four standard cards always come first. Each is filled from the
+        // editor's KPI with a matching label, else from the latest matching indicator, else it
+        // shows "No data yet". Any other editor KPIs follow.
+        var latestIndicators = indicatorGroups
+            .Select(group => group.OrderByDescending(x => x.YearLabel, StringComparer.Ordinal).First())
+            .ToList();
+        var snapshotKpis = new List<Domain.Content.CountryProfileKpi>();
+        var usedKpis = new HashSet<Domain.Content.CountryProfileKpi>();
+        foreach (var standard in Domain.Content.CountryProfileStandards.SnapshotIndicators)
+        {
+            var curated = profile.Kpis.FirstOrDefault(x => !usedKpis.Contains(x) && standard.Matches(x.Label));
+            if (curated is not null)
+            {
+                usedKpis.Add(curated);
+                snapshotKpis.Add(curated);
+                continue;
+            }
+
+            var indicator = latestIndicators.FirstOrDefault(x => standard.Matches(x.Name));
+            snapshotKpis.Add(indicator is null
+                ? new Domain.Content.CountryProfileKpi { Label = standard.Label, Value = "—", Period = "No data yet" }
+                : new Domain.Content.CountryProfileKpi
+                {
+                    Label = standard.Label,
+                    Value = FormatIndicatorValue(indicator.LatestValue, indicator.Unit),
+                    Period = indicator.YearLabel,
+                    Source = indicator.SourceName
+                });
+        }
+
+        snapshotKpis.AddRange(profile.Kpis.Where(x => !usedKpis.Contains(x)));
+
+        // GDP history: the editor's series (with actual/estimate/forecast), or the yearly
+        // "Real GDP Growth" indicator rows.
+        var gdpHistory = profile.GdpHistory.Count > 0
+            ? profile.GdpHistory
+            : indicators
+                .Where(x => string.Equals(x.Name, "Real GDP Growth", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(x.YearLabel))
+                .Select(x => new Domain.Content.CountryProfileGdpPoint
+                {
+                    Year = x.YearLabel,
+                    Value = decimal.TryParse(x.LatestValue, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var value) ? value : null,
+                    Source = x.SourceName
+                })
+                .Where(x => x.Value.HasValue)
+                .OrderBy(x => x.Year, StringComparer.Ordinal)
+                .ToList();
+
+        var latestUpdates = (await _dbContext.IntelligenceContentItems
+                .AsNoTracking()
+                .Where(x => x.IsPublished && x.CountryCode == code)
+                .OrderBy(x => x.PublishedAtUtc == null)
+                .ThenByDescending(x => x.PublishedAtUtc)
+                .Take(3)
+                .Select(x => new { x.Title, x.Slug, x.Category, x.PublishedAtUtc })
+                .ToListAsync(cancellationToken))
+            .Select(x => new CountrySidebarLinkItemViewModel
+            {
+                Title = x.Title,
+                Meta = JoinMeta(x.Category, PublicationMetadataFormatter.FormatShortDate(x.PublishedAtUtc)),
+                Url = $"/intelligence/{x.Slug}"
+            })
+            .ToList();
+
+        var relatedPublications = (await _dbContext.PublicationContentItems
+                .AsNoTracking()
+                .Where(x => x.WorkflowStatus == Domain.Content.PublicationWorkflowStatuses.Published &&
+                            x.Visibility != Domain.Content.PublicationVisibility.Hidden &&
+                            (x.CountryCode == code || x.CountryAssignments.Any(item => item.CountryCode == code)))
+                .OrderBy(x => x.PublishedAtUtc == null)
+                .ThenByDescending(x => x.PublishedAtUtc)
+                .Take(3)
+                .Select(x => new { x.Title, x.Slug, x.Type, x.PublishedAtUtc })
+                .ToListAsync(cancellationToken))
+            .Select(x => new CountrySidebarLinkItemViewModel
+            {
+                Title = x.Title,
+                Meta = JoinMeta(System.Globalization.CultureInfo.InvariantCulture.TextInfo.ToTitleCase(x.Type.ToLowerInvariant()), PublicationMetadataFormatter.FormatShortDate(x.PublishedAtUtc)),
+                Url = $"/publications/{x.Slug}"
+            })
+            .ToList();
+
+        // Data sources: the editor's list; otherwise the official sources registered for the
+        // country plus every source cited by the snapshot cards and the GDP chart, looked up in
+        // the Sources section (all countries and regional ones) for their description and link.
+        var dataSources = profile.Sources;
+        if (dataSources.Count == 0)
+        {
+            var registeredSources = await _dbContext.ContentSources
+                .AsNoTracking()
+                .Where(x => x.IsPublished)
+                .OrderBy(x => x.DisplayOrder)
+                .ThenBy(x => x.Name)
+                .Select(x => new { x.Name, x.Summary, x.Url, x.CountryCode })
+                .ToListAsync(cancellationToken);
+
+            var citedNames = snapshotKpis.Select(x => x.Source)
+                .Concat(gdpHistory.Select(x => x.Source))
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            dataSources = registeredSources
+                .Where(x => string.Equals(x.CountryCode, code, StringComparison.OrdinalIgnoreCase))
+                .Select(x => new Domain.Content.CountryProfileSource { Institution = x.Name, Description = x.Summary, Url = x.Url })
+                .Concat(citedNames.Select(name =>
+                {
+                    var registered = registeredSources.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
+                    return new Domain.Content.CountryProfileSource { Institution = name, Description = registered?.Summary ?? string.Empty, Url = registered?.Url ?? string.Empty };
+                }))
+                .DistinctBy(x => x.Institution, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
 
         return new CountryProfilePageViewModel
         {
-            Country = country,
-            HeroDescription = string.IsNullOrWhiteSpace(entity.Summary)
-                ? $"A detailed profile for {entity.Name} is being prepared."
-                : entity.Summary,
-            Currency = "Data unavailable",
-            RiskRating = "N/A",
-            RiskOutlook = "Data unavailable",
-            DoingBusinessRank = "N/A",
-            DoingBusinessSource = "Data unavailable",
-            OverviewText = string.IsNullOrWhiteSpace(entity.Summary)
-                ? $"A detailed profile for {entity.Name} is being prepared. Please check back soon for full financial, regulatory, and macroeconomic coverage."
-                : entity.Summary,
-            HeroGallery = heroGallery,
-            HeroIndicators =
-            [
-                new() { Icon = "capital", Label = "Capital", Value = entity.Capital },
-                new() { Icon = "population", Label = "Population (2025)", Value = entity.Population },
-                new() { Icon = "currency", Label = "GDP (2025)", Value = entity.Gdp }
-            ],
-            KeyIndicators = [],
-            Tabs = [new() { Label = "Overview", IsActive = true }],
-            Highlights = [],
-            MacroSummaryCards = [],
-            MacroIndicatorRows = [],
-            GdpGrowthChart = emptyChart,
-            InflationChart = emptyChart,
-            FinancialSectorSnapshot = [],
-            BankingAssetsChart = emptyChart,
-            TopBanks = [],
-            LatestUpdates = [],
-            RelatedPublications = [],
-            KeyInstitutions = [],
-            ExploreLinks = []
+            Country = new CountryOverviewCardViewModel
+            {
+                Code = entity.Code,
+                Name = entity.Name,
+                Capital = entity.Capital,
+                Summary = entity.Summary,
+                Gdp = entity.Gdp,
+                Population = entity.Population,
+                BankAssets = entity.BankAssets,
+                Slug = entity.Slug,
+                HeroClassName = entity.HeroClassName,
+                HeroImageUrl = heroGallery
+                    .Select(item => item.ImageUrl)
+                    .FirstOrDefault(url => !string.IsNullOrWhiteSpace(url)) ?? string.Empty,
+                IndicatorLabel = "Indicator",
+                IndicatorValue = "No data"
+            },
+            Title = string.IsNullOrWhiteSpace(entity.OfficialName) ? entity.Name : entity.OfficialName,
+            Region = entity.Region,
+            FlagImageUrl = string.IsNullOrWhiteSpace(entity.FlagImageUrl) ? CountryFlags.IconUrl(entity.Code) : entity.FlagImageUrl,
+            HeroDescription = string.IsNullOrWhiteSpace(entity.ProfileLead) ? entity.Summary : entity.ProfileLead,
+            UpdatedLabel = entity.UpdatedAtUtc.UtcDateTime.ToString("dd MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant(),
+            HeroFacts = BuildHeroFacts(entity),
+            DataSource = entity.DataSource,
+            HeroBackgroundUrl = heroGallery
+                .Select(item => item.ImageUrl)
+                .FirstOrDefault(url => !string.IsNullOrWhiteSpace(url)) ?? string.Empty,
+            HeroGallery = heroGallery.Where(item => !string.IsNullOrWhiteSpace(item.ImageUrl)).ToList(),
+            AboutParagraphs = SplitParagraphs(string.IsNullOrWhiteSpace(entity.AboutText) ? entity.Summary : entity.AboutText),
+            AboutFacts = new CountryHeroFactViewModel[]
+                {
+                    new() { Label = "Region", Value = entity.Region },
+                    new() { Label = "Area", Value = entity.Area },
+                    new() { Label = "Neighbouring countries", Value = entity.NeighbouringCountries },
+                    new() { Label = "Official languages", Value = entity.OfficialLanguages }
+                }
+                .Where(item => !string.IsNullOrWhiteSpace(item.Value))
+                .ToList(),
+            Profile = profile,
+            SnapshotKpis = snapshotKpis,
+            GdpHistory = gdpHistory,
+            DataSources = dataSources,
+            LatestUpdates = latestUpdates,
+            RelatedPublications = relatedPublications
         };
     }
+
+    // Headline facts in the profile header; a fact without a value is left out.
+    private static List<CountryHeroFactViewModel> BuildHeroFacts(Domain.Content.CountryContent entity)
+    {
+        // "Kyrgyz som (KGS)" is shown as "Kyrgyz som" with "KGS" on the detail line.
+        var currency = entity.Currency.Trim();
+        var currencyCode = string.Empty;
+        var codeStart = currency.LastIndexOf('(');
+        if (codeStart > 0 && currency.EndsWith(')'))
+        {
+            currencyCode = currency[(codeStart + 1)..^1].Trim();
+            currency = currency[..codeStart].Trim();
+        }
+
+        return new CountryHeroFactViewModel[]
+            {
+                new() { Label = "Population", Value = entity.Population, Note = entity.PopulationPeriod },
+                new() { Label = "GDP · Nominal", Value = entity.Gdp, Note = entity.GdpPeriod },
+                new() { Label = "Currency", Value = currency, Note = currencyCode },
+                new() { Label = "Capital", Value = entity.Capital, Note = string.IsNullOrWhiteSpace(entity.OfficialLanguages) ? string.Empty : $"Official languages: {entity.OfficialLanguages}" }
+            }
+            .Where(item => !string.IsNullOrWhiteSpace(item.Value))
+            .ToList();
+    }
+
+    private static List<string> SplitParagraphs(string? text) =>
+        (text ?? string.Empty)
+            .Replace("\r\n", "\n")
+            .Split("\n\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();
+
+    private static string FormatIndicatorValue(string value, string unit) =>
+        string.IsNullOrWhiteSpace(unit) ? value
+        : unit == "%" ? $"{value}%"
+        : $"{value} {unit}";
+
+    private static string JoinMeta(params string[] parts) =>
+        string.Join(" · ", parts.Where(part => !string.IsNullOrWhiteSpace(part)));
 }

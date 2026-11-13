@@ -103,4 +103,30 @@
       document.body.classList.remove("is-modal-open");
     }
   });
+
+  // Thumbnail strip: prev/next buttons appear only when the strip overflows.
+  const thumbs = gallery.querySelector("[data-gallery-thumbs]");
+  const navButtons = Array.from(gallery.querySelectorAll("[data-gallery-scroll]"));
+  if (thumbs instanceof HTMLElement && navButtons.length > 0) {
+    const updateNav = () => {
+      const maxScroll = thumbs.scrollWidth - thumbs.clientWidth;
+      const overflows = maxScroll > 1;
+      navButtons.forEach((button) => {
+        button.hidden = !overflows;
+        const direction = Number(button.getAttribute("data-gallery-scroll"));
+        button.disabled = direction < 0 ? thumbs.scrollLeft <= 1 : thumbs.scrollLeft >= maxScroll - 1;
+      });
+    };
+
+    navButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const direction = Number(button.getAttribute("data-gallery-scroll"));
+        thumbs.scrollBy({ left: direction * thumbs.clientWidth * 0.8, behavior: "smooth" });
+      });
+    });
+
+    thumbs.addEventListener("scroll", updateNav, { passive: true });
+    window.addEventListener("resize", updateNav);
+    updateNav();
+  }
 })();

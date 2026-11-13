@@ -1,0 +1,82 @@
+@using System.Globalization
+@model IReadOnlyList<CAFRI.Domain.Content.CountryProfileGdpPoint>
+@{
+    // Server-rendered bar chart of annual real GDP growth. Contractions use the warm colour, the
+    // latest actual year is highlighted, and estimates/forecasts get a lighter dashed bar.
+    var points = Model.Where(x => x.Value.HasValue).ToList();
+    const double left = 46, right = 640, top = 34, bottom = 196;
+    var values = points.Select(x => (double)x.Value!.Value).ToList();
+    var maxValue = Math.Max(values.DefaultIfEmpty(0).Max(), 0);
+    var minValue = Math.Min(values.DefaultIfEmpty(0).Min(), 0);
+    var span = maxValue - minValue;
+    if (span <= 0) { span = 1; }
+    double Y(double value) => top + (maxValue - value) / span * (bottom - top);
+    var zeroY = Y(0);
+    var slot = (right - left) / Math.Max(points.Count, 1);
+    var barWidth = Math.Min(48, slot * 0.55);
+    var lastActualIndex = points.FindLastIndex(x => string.Equals(x.DataType, "Actual", StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(x.DataType));
+    string F(double value) => value.ToString("0.#", CultureInfo.InvariantCulture);
+    string Pct(decimal value) => (value < 0 ? "−" : string.Empty) + Math.Abs(value).ToString("0.0", CultureInfo.InvariantCulture) + "%";
+    var ariaLabel = "Annual real GDP growth: " + string.Join("; ", points.Select(x => $"{x.Year} {Pct(x.Value!.Value)}"));
+    var hasProjections = points.Any(x => !string.IsNullOrWhiteSpace(x.DataType) && !string.Equals(x.DataType, "Actual", StringComparison.OrdinalIgnoreCase));
+}
+
+<div class="cp-gdp">
+    <svg class="cp-gdp__chart" viewBox="0 0 660 248" role="img" aria-label="@ariaLabel">
+        <line x1="@F(left)" y1="@F(zeroY)" x2="@F(right)" y2="@F(zeroY)" stroke="#aeb9c7" stroke-width="1.2" />
+        <text x="@F(left - 8)" y="@F(zeroY + 3)" text-anchor="end" font-size="10" fill="#8794a4">0</text>
+        <text x="@F(left - 8)" y="@F(top + 3)" text-anchor="end" font-size="10" fill="#8794a4">@F(maxValue)%</text>
+        @if (minValue < 0)
+        {
+            @:<text x="@F(left - 8)" y="@F(bottom + 3)" text-anchor="end" font-size="10" fill="#8794a4">−@F(Math.Abs(minValue))%</text>
+        }
+        @for (var i = 0; i < points.Count; i++)
+        {
+            var point = points[i];
+            var value = (double)point.Value!.Value;
+            var x = left + slot * i + (slot - barWidth) / 2;
+            var barTop = value >= 0 ? Y(value) : zeroY;
+            var barHeight = Math.Max(Math.Abs(Y(value) - zeroY), 1);
+            var isProjection = !string.IsNullOrWhiteSpace(point.DataType) && !string.Equals(point.DataType, "Actual", StringComparison.OrdinalIgnoreCase);
+            var fill = value < 0 ? "#d49b63" : i == lastActualIndex ? "#245bdb" : isProjection ? "#dbe5f8" : "#9bb5e9";
+            var centre = x + barWidth / 2;
+            <rect x="@F(x)" y="@F(barTop)" width="@F(barWidth)" height="@F(barHeight)" rx="3" fill="@fill"
+                  stroke="@(isProjection ? "#7f9bd6" : "none")" stroke-dasharray="@(isProjection ? "4 3" : null)" />
+            @:<text x="@F(centre)" y="@F(value >= 0 ? barTop - 7 : barTop + barHeight + 14)" text-anchor="middle" font-size="11" font-weight="700" fill="#40536a">@Pct(point.Value!.Value)</text>
+            @:<text x="@F(centre)" y="240" text-anchor="middle" font-size="11" fill="#718096">@point.Year@(isProjection ? "*" : null)</text>
+        }
+    </svg>
+
+    <div class="cp-gdp__legend">
+        <span><i class="cp-swatch"></i> Annual growth</span>
+        @if (lastActualIndex >= 0)
+        {
+            <span><i class="cp-swatch cp-swatch--latest"></i> Latest full-year observation</span>
+        }
+        @if (points.Any(x => x.Value < 0))
+        {
+            <span><i class="cp-swatch cp-swatch--contraction"></i> Contraction</span>
+        }
+        @if (hasProjections)
+        {
+            <span><i class="cp-swatch cp-swatch--projection"></i> * Estimate / forecast</span>
+        }
+    </div>
+
+    <table class="cp-table cp-gdp__table">
+        <thead>
+            <tr><th>Year</th><th>Real GDP growth</th><th>Data</th><th>Observation</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var point in points)
+            {
+                <tr>
+                    <td>@point.Year</td>
+                    <td>@Pct(point.Value!.Value)</td>
+                    <td>@(string.IsNullOrWhiteSpace(point.DataType) ? "Actual" : point.DataType)</td>
+                    <td>@point.Observation</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

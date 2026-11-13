@@ -3,10 +3,23 @@
 <section class="sidebar-card">
     <h2 class="sidebar-card__title">@Model.Title</h2>
     <div class="sidebar-card__items">
+        @if (Model.Items.Count == 0 && !string.IsNullOrWhiteSpace(Model.EmptyText))
+        {
+            <p class="sidebar-card__empty">@Model.EmptyText</p>
+        }
         @foreach (var item in Model.Items)
         {
             <article class="sidebar-card__item">
-                <h3>@item.Title</h3>
+                <h3>
+                    @if (!string.IsNullOrWhiteSpace(item.Url))
+                    {
+                        <a href="@item.Url">@item.Title</a>
+                    }
+                    else
+                    {
+                        @item.Title
+                    }
+                </h3>
                 <p>@item.Meta</p>
             </article>
         }

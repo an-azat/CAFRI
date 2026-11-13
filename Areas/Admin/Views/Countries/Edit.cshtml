@@ -1,159 +1,526 @@
 @model CAFRI.Areas.Admin.ViewModels.Content.CountryContentEditViewModel
-@using System.Linq
-
+@using System.Globalization
+@using CAFRI.Infrastructure.Content
+@*
+    Country profile editor, laid out after documentation/template/cafri_country_admin_editor_country_header.html.
+    Repeating rows (tables, priorities, analysis points) are added and removed by admin-country-editor.js;
+    a removed row is only cleared and hidden so list indexes stay contiguous, and blank rows are
+    dropped on save. Gallery tiles are serialized into the hidden HeroGalleryText field.
+*@
 @{
-    var savedHeroGallery = (Model.HeroGalleryText ?? string.Empty)
-        .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-        .Select(line => line.Split('|', StringSplitOptions.TrimEntries))
-        .Where(parts => parts.Length != 0 && !string.IsNullOrWhiteSpace(parts[0]))
-        .Select(parts => new
-        {
-            ImageUrl = parts[0],
-            Alt = parts.Length > 1 ? parts[1] : string.Empty,
-            Title = parts.Length > 2 ? parts[2] : string.Empty,
-            Caption = parts.Length > 3 ? string.Join(" | ", parts.Skip(3)) : string.Empty
-        })
-        .ToList();
+    var isNew = Model.Id is null;
+    ViewData["Title"] = isNew ? "Create Country" : "Edit Country";
+    ViewData["AdminNav"] = "countries";
+    var profile = Model.Profile;
+    var title = string.IsNullOrWhiteSpace(Model.OfficialName) ? Model.Name : Model.OfficialName;
+    var flagUrl = string.IsNullOrWhiteSpace(Model.FlagImageUrl) ? CAFRI.ViewModels.Countries.CountryFlags.IconUrl(Model.Code) : Model.FlagImageUrl;
+    var galleryItems = ContentImageTextSerializer.Parse(Model.HeroGalleryText);
+    var regions = new[] { "Central Asia", "South Caucasus", "Eastern Europe", "South Asia", "East Asia", "Middle East" }.ToList();
+    if (!string.IsNullOrWhiteSpace(Model.Region) && !regions.Contains(Model.Region))
+    {
+        regions.Insert(0, Model.Region);
+    }
+    string FormatDate(DateTimeOffset? value) => value?.UtcDateTime.ToString("dd MMM yyyy", CultureInfo.InvariantCulture) ?? "—";
+    var currencyCode = (Model.Currency ?? string.Empty) is var currency && currency.LastIndexOf('(') is var start and > 0 && currency.EndsWith(')')
+        ? currency[(start + 1)..^1]
+        : Model.Currency;
+    var changeTones = new[] { "neutral", "positive", "negative" };
+    var dataTypes = new[] { "Actual", "Estimate", "Forecast" };
+    var signalTones = new[] { "watch", "positive" };
+    var levels = new[] { "High", "Medium", "Low" };
 }
 
-<section class="admin-page">
-    <div class="admin-page__hero">
-        <div class="admin-eyebrow">Country Editor</div>
-        <h1 class="admin-page__title">@((Model.Id is null) ? "Create Country Profile" : "Edit Country Profile")</h1>
-        <p class="admin-page__lead">
-            Edit core country metadata, public summary metrics and the structured detail content that drives the detailed country page.
-        </p>
-    </div>
+@section Head {
+    <link rel="stylesheet" href="~/css/admin-country-editor.css" asp-append-version="true" />
+}
 
-    <div class="admin-editor">
-        <section class="admin-editor-card">
-            <form method="post" enctype="multipart/form-data" data-live-preview-form>
-                @Html.AntiForgeryToken()
-                @Html.ValidationSummary(false, "", new { @class = "validation-summary-errors" })
+<div class="cpe">
+    <div class="cpe-crumb">Admin / Country profiles / <strong>@(isNew ? "New country" : title)</strong></div>
 
-                <div class="row g-3">
-                    <div class="col-md-2">
-                        <label asp-for="Code" class="form-label"></label>
-                        <input asp-for="Code" class="form-control" data-preview-target="Code" data-preview-key="code" />
+    <form method="post" enctype="multipart/form-data" data-live-preview-form data-country-editor>
+        @Html.AntiForgeryToken()
+
+        <div class="cpe-pagehead">
+            <div>
+                <div class="cpe-eyebrow">Country profile management</div>
+                <h1>@(isNew ? "Create country profile" : "Edit country profile")</h1>
+                <p>Manage the public country page, indicators, historical data and media gallery.</p>
+            </div>
+            <div class="cpe-actions">
+                @if (!isNew && !string.IsNullOrWhiteSpace(Model.Slug))
+                {
+                    <a class="cpe-btn" href="/countries/@Model.Slug" target="_blank" rel="noopener">Preview page ↗</a>
+                }
+                <button type="submit" class="cpe-btn" name="SubmitAction" value="save">@(Model.IsPublished ? "Save changes" : "Save draft")</button>
+                <button type="submit" class="cpe-btn cpe-btn--primary" name="SubmitAction" value="publish">Publish changes</button>
+            </div>
+        </div>
+
+        <div class="cpe-statusline">
+            <span class="cpe-pill @(Model.IsPublished ? "cpe-pill--live" : null)">@(Model.IsPublished ? "PUBLISHED" : "DRAFT")</span>
+            <strong>@(Model.IsPublished ? "Visible on the public website" : "Not visible on the public website")</strong>
+            @if (!isNew)
+            {
+                <span>Last updated: @FormatDate(Model.UpdatedAtUtc)</span>
+            }
+            <span class="cpe-statusline__right">Editing as <strong>@(User.Identity?.Name ?? "Administrator")</strong></span>
+        </div>
+
+        @Html.ValidationSummary(false, "", new { @class = "validation-summary-errors cpe-errors" })
+
+        <div class="cpe-contentgrid">
+            <div class="cpe-formcol">
+
+                @* 1. Country information *@
+                <section class="cpe-panel">
+                    <div class="cpe-panelhead">
+                        <div><h2>1. Country information</h2><p>Core identity and introductory information shown at the top of the public page.</p></div>
+                        <span class="cpe-tag">Required</span>
                     </div>
-                    <div class="col-md-5">
-                        <label asp-for="Name" class="form-label"></label>
-                        <input asp-for="Name" class="form-control" data-preview-target="Name" data-preview-key="name" />
-                    </div>
-                    <div class="col-md-5">
-                        <label asp-for="Slug" class="form-label"></label>
-                        <input asp-for="Slug" class="form-control" data-preview-target="Slug" data-preview-key="slug" />
-                    </div>
-                    <div class="col-md-4">
-                        <label asp-for="Capital" class="form-label"></label>
-                        <input asp-for="Capital" class="form-control" data-preview-target="Capital" data-preview-key="capital" />
-                    </div>
-                    <div class="col-md-4">
-                        <label asp-for="Gdp" class="form-label"></label>
-                        <input asp-for="Gdp" class="form-control" data-preview-target="Gdp" data-preview-key="gdp" />
-                    </div>
-                    <div class="col-md-4">
-                        <label asp-for="Population" class="form-label"></label>
-                        <input asp-for="Population" class="form-control" data-preview-target="Population" data-preview-key="population" />
-                    </div>
-                    <div class="col-md-4">
-                        <label asp-for="BankAssets" class="form-label"></label>
-                        <input asp-for="BankAssets" class="form-control" data-preview-target="BankAssets" data-preview-key="bankAssets" />
-                    </div>
-                    <div class="col-md-4">
-                        <label asp-for="HeroClassName" class="form-label"></label>
-                        <input asp-for="HeroClassName" class="form-control" />
-                    </div>
-                    <div class="col-12">
-                        <label asp-for="HeroGalleryFiles" class="form-label">Hero Gallery Photos</label>
-                        <input asp-for="HeroGalleryFiles" type="file" class="form-control" multiple accept="image/*" />
-                        <div class="form-text">Upload one or more photos. New images will be saved to storage and added to the country hero gallery.</div>
-                    </div>
-                    <div class="col-12">
-                        <label asp-for="HeroGalleryText" class="form-label">Hero Gallery Items</label>
-                        <div class="admin-media-gallery-editor" data-media-gallery-editor>
-                            <textarea asp-for="HeroGalleryText" class="form-control font-monospace d-none" rows="6" data-media-gallery-raw></textarea>
-                            <div class="admin-media-gallery-editor__list" data-media-gallery-list></div>
-                            <button type="button" class="admin-chip admin-media-gallery-editor__add" data-media-gallery-add>Add Gallery Item</button>
-                        </div>
-                        <div class="form-text">Manage gallery items visually. Data is still stored in the compatible `ImageUrl | Alt | Title | Caption` format.</div>
-                    </div>
-                    @if (savedHeroGallery.Count != 0)
-                    {
-                        <div class="col-12">
-                            <section class="admin-saved-media">
-                                <div class="admin-panel__eyebrow">Currently Saved Hero Photos</div>
-                                <div class="admin-saved-media__gallery">
-                                    @foreach (var item in savedHeroGallery)
+                    <div class="cpe-panelbody">
+                        <div class="cpe-grid2">
+                            <div class="cpe-field"><label asp-for="Name">Country name (English)</label><input asp-for="Name" data-preview-target="Name" data-preview-key="name" /></div>
+                            <div class="cpe-field"><label asp-for="OfficialName">Official name (page title)</label><input asp-for="OfficialName" placeholder="Kyrgyz Republic" data-preview-target="OfficialName" data-preview-key="officialName" /></div>
+                            <div class="cpe-field"><label asp-for="Slug">Country slug</label><input asp-for="Slug" placeholder="kyrgyzstan" data-preview-target="Slug" data-preview-key="slug" /><span class="cpe-hint">Public URL: /countries/<span data-preview="slug" data-preview-fallback="…">@Model.Slug</span></span></div>
+                            <div class="cpe-field"><label asp-for="Code">Country code</label><input asp-for="Code" placeholder="KG" /></div>
+                            <div class="cpe-field">
+                                <label asp-for="Region">Region</label>
+                                <select asp-for="Region" data-preview-target="Region" data-preview-key="region">
+                                    @foreach (var region in regions)
                                     {
-                                        <article class="admin-saved-media__gallery-item">
-                                            <img src="@item.ImageUrl" alt="@(string.IsNullOrWhiteSpace(item.Alt) ? Model.Name : item.Alt)" />
-                                            <div class="admin-saved-media__gallery-copy">
-                                                <strong>@(string.IsNullOrWhiteSpace(item.Title) ? "Hero image" : item.Title)</strong>
-                                                @if (!string.IsNullOrWhiteSpace(item.Caption))
-                                                {
-                                                    <p>@item.Caption</p>
-                                                }
-                                                <span>@item.ImageUrl</span>
-                                            </div>
-                                        </article>
+                                        <option value="@region">@region</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="cpe-field"><label asp-for="Capital">Capital</label><input asp-for="Capital" data-preview-target="Capital" data-preview-key="capital" /></div>
+                            <div class="cpe-field"><label asp-for="Currency">Currency</label><input asp-for="Currency" placeholder="Kyrgyz som (KGS)" data-preview-target="Currency" data-preview-key="currency" /><span class="cpe-hint">ISO code in brackets is shown under the name.</span></div>
+                            <div class="cpe-field"><label asp-for="OfficialLanguages">Official languages</label><input asp-for="OfficialLanguages" placeholder="Kyrgyz · Russian" /></div>
+                            <div class="cpe-field"><label asp-for="Population">Population</label><input asp-for="Population" placeholder="e.g. 7.3 million" data-preview-target="Population" data-preview-key="population" /><span class="cpe-hint">Add reference date and source below.</span></div>
+                            <div class="cpe-field"><label asp-for="Gdp">GDP (nominal)</label><input asp-for="Gdp" placeholder="e.g. USD 17.5 billion" data-preview-target="Gdp" data-preview-key="gdp" /><span class="cpe-hint">Use nominal GDP, not GDP growth.</span></div>
+                            <div class="cpe-field"><label asp-for="PopulationPeriod">Population reference period</label><input asp-for="PopulationPeriod" placeholder="e.g. 1 Jan 2026" /></div>
+                            <div class="cpe-field"><label asp-for="GdpPeriod">GDP reference period</label><input asp-for="GdpPeriod" placeholder="e.g. 2025, current prices" /></div>
+                            <div class="cpe-field"><label asp-for="DataSource">Country data source</label><input asp-for="DataSource" placeholder="National Statistical Committee / World Bank" /></div>
+                            <div class="cpe-field"><label asp-for="BankAssets">Bank assets (countries list card)</label><input asp-for="BankAssets" placeholder="$10.4B" /></div>
+                            <div class="cpe-field"><label asp-for="Area">Area</label><input asp-for="Area" placeholder="199,951 km²" /></div>
+                            <div class="cpe-field"><label asp-for="NeighbouringCountries">Neighbouring countries</label><input asp-for="NeighbouringCountries" placeholder="4" /></div>
+                        </div>
+                        <div class="cpe-hint cpe-mt">Population and nominal GDP appear in the country facts strip. Keep the observation period and source alongside each value.</div>
+
+                        <div class="cpe-field cpe-mt-lg">
+                            <label asp-for="ProfileLead">Header introduction</label>
+                            <textarea asp-for="ProfileLead" rows="2" data-preview-target="ProfileLead" data-preview-key="lead"></textarea>
+                            <span class="cpe-hint">One or two sentences under the country name in the page header.</span>
+                        </div>
+                        <div class="cpe-field cpe-mt-lg">
+                            <label asp-for="AboutText">Short country description</label>
+                            <textarea asp-for="AboutText" rows="5"></textarea>
+                            <span class="cpe-hint">Displayed in the “About the country” section. Separate paragraphs with an empty line. Recommended length: 450–650 characters.</span>
+                        </div>
+                        <div class="cpe-field cpe-mt-lg">
+                            <label asp-for="Summary">Card summary (countries list)</label>
+                            <textarea asp-for="Summary" rows="2"></textarea>
+                        </div>
+
+                        <div class="cpe-field cpe-mt-lg">
+                            <label>Country flag</label>
+                            <div class="cpe-flagrow">
+                                <img class="cpe-flagpreview" src="@flagUrl" alt="Flag preview" data-flag-preview />
+                                <div class="cpe-upload">
+                                    Upload a flag image (SVG, PNG or JPG)<br />
+                                    <input asp-for="FlagImageFile" type="file" accept="image/*" data-flag-file />
+                                </div>
+                            </div>
+                            <div class="cpe-field cpe-mt-sm">
+                                <label asp-for="FlagImageUrl">Or image URL</label>
+                                <input asp-for="FlagImageUrl" data-flag-url />
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                @* 2. Country gallery *@
+                <section class="cpe-panel" data-gallery-editor>
+                    <div class="cpe-panelhead">
+                        <div><h2>2. Country gallery</h2><p>Images displayed in the horizontal scroll gallery on the public page. The first image is also the header background.</p></div>
+                        <button type="button" class="cpe-btn" data-gallery-add>+ Add image</button>
+                    </div>
+                    <div class="cpe-panelbody">
+                        <div class="cpe-repeat-head"><span data-gallery-count>@galleryItems.Count images</span><span>Recommended: 1200 × 800 px · JPG / WebP</span></div>
+                        <textarea asp-for="HeroGalleryText" class="d-none" data-gallery-raw></textarea>
+                        <div class="cpe-gallery" data-gallery-list>
+                            @foreach (var item in galleryItems)
+                            {
+                                <div class="cpe-photo" data-gallery-item data-alt="@item.Alt" data-caption="@item.Caption">
+                                    <button type="button" class="cpe-photo__remove" data-gallery-remove aria-label="Remove image">×</button>
+                                    <img src="@item.ImageUrl" alt="" />
+                                    <div class="cpe-photo__fields">
+                                        <input value="@item.ImageUrl" aria-label="Image URL" placeholder="Image URL" data-gallery-url />
+                                        <input value="@item.Title" aria-label="Image caption" placeholder="Image caption" data-gallery-title />
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div class="cpe-upload cpe-mt">
+                            Upload photos to managed media storage<br />
+                            <input asp-for="HeroGalleryFiles" type="file" multiple accept="image/*" />
+                        </div>
+                        <div class="cpe-field cpe-mt">
+                            <label asp-for="Profile.GalleryCredit">Image credits</label>
+                            <input asp-for="Profile.GalleryCredit" placeholder="Images: Wikimedia Commons — authors and licences" />
+                        </div>
+                        <div class="cpe-hint cpe-mt-sm">Add an image URL and caption, or upload files. Uploaded files are stored in managed media storage.</div>
+                    </div>
+                </section>
+
+                @* 3. Economic indicators *@
+                <section class="cpe-panel">
+                    <div class="cpe-panelhead">
+                        <div><h2>3. Economic indicators</h2><p>Latest values used in the Economic Snapshot cards.</p></div>
+                        @if (!string.IsNullOrWhiteSpace(Model.Code))
+                        {
+                            <a class="cpe-btn" asp-area="Admin" asp-controller="Indicators" asp-action="Index" asp-route-country="@Model.Code">Manage indicators</a>
+                        }
+                    </div>
+                    <div class="cpe-panelbody">
+                        <div class="cpe-field cpe-field--inline"><label asp-for="Profile.SnapshotCutoff">Data cut-off</label><input asp-for="Profile.SnapshotCutoff" placeholder="2 November 2026" /></div>
+                        <div class="cpe-tablewrap">
+                            <table class="cpe-table">
+                                <thead><tr><th>Indicator</th><th>Value</th><th>Change</th><th>Tone</th><th>Period</th><th>Source</th><th></th></tr></thead>
+                                <tbody data-repeat id="kpi-rows">
+                                    @for (var i = 0; i < profile.Kpis.Count; i++)
+                                    {
+                                        <tr data-repeat-item>
+                                            <td><input asp-for="Profile.Kpis[i].Label" placeholder="Indicator" /></td>
+                                            <td><input asp-for="Profile.Kpis[i].Value" placeholder="10.8%" /></td>
+                                            <td><input asp-for="Profile.Kpis[i].Change" placeholder="↓ 1.4 pp" /></td>
+                                            <td>
+                                                <select asp-for="Profile.Kpis[i].ChangeTone">
+                                                    @foreach (var tone in changeTones)
+                                                    {
+                                                        <option value="@tone">@tone</option>
+                                                    }
+                                                </select>
+                                            </td>
+                                            <td><input asp-for="Profile.Kpis[i].Period" placeholder="Oct 2026" /></td>
+                                            <td><input asp-for="Profile.Kpis[i].Source" class="cpe-source" placeholder="NBKR" /></td>
+                                            <td><button type="button" class="cpe-delete" data-repeat-remove aria-label="Remove row">×</button></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="cpe-table-actions"><button type="button" class="cpe-btn" data-repeat-add="kpi-rows">+ Add indicator</button></div>
+                        <div class="cpe-hint cpe-mt-sm">The page always shows Real GDP growth, Annual inflation, Policy rate and Public debt; an empty one takes the latest value from the Indicators section. Each value should have a reference period, unit and source. Avoid mixing annual and year-to-date observations.</div>
+                    </div>
+                </section>
+
+                @* 4. GDP growth history *@
+                <section class="cpe-panel">
+                    <div class="cpe-panelhead">
+                        <div><h2>4. GDP growth history</h2><p>Annual real GDP growth chart on the public country page.</p></div>
+                        <button type="button" class="cpe-btn" data-repeat-add="gdp-rows" data-repeat-year>+ Add year</button>
+                    </div>
+                    <div class="cpe-panelbody">
+                        <div class="cpe-tablewrap">
+                            <table class="cpe-table">
+                                <thead><tr><th>Year</th><th>Growth (%)</th><th>Data type</th><th>Observation</th><th>Source</th><th></th></tr></thead>
+                                <tbody data-repeat id="gdp-rows">
+                                    @for (var i = 0; i < profile.GdpHistory.Count; i++)
+                                    {
+                                        <tr data-repeat-item>
+                                            <td><input asp-for="Profile.GdpHistory[i].Year" class="cpe-year" placeholder="2025" data-year /></td>
+                                            <td><input asp-for="Profile.GdpHistory[i].Value" type="number" step="0.1" placeholder="0.0" /></td>
+                                            <td>
+                                                <select asp-for="Profile.GdpHistory[i].DataType">
+                                                    @foreach (var type in dataTypes)
+                                                    {
+                                                        <option value="@type">@type</option>
+                                                    }
+                                                </select>
+                                            </td>
+                                            <td><input asp-for="Profile.GdpHistory[i].Observation" placeholder="Expansion" /></td>
+                                            <td><input asp-for="Profile.GdpHistory[i].Source" class="cpe-source" placeholder="World Bank WDI" /></td>
+                                            <td><button type="button" class="cpe-delete" data-repeat-remove aria-label="Remove year">×</button></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="cpe-grid2 cpe-mt">
+                            <div class="cpe-field"><label asp-for="Profile.MacroSubtitle">Section subtitle</label><input asp-for="Profile.MacroSubtitle" placeholder="Growth remains strong; domestic demand and investment are key drivers" /></div>
+                            <div class="cpe-field"><label asp-for="Profile.GdpSubtitle">Chart subtitle</label><input asp-for="Profile.GdpSubtitle" placeholder="Annual change, % · 2020–2025 · World Bank WDI" /></div>
+                            <div class="cpe-field"><label asp-for="Profile.GdpNote">Chart note</label><textarea asp-for="Profile.GdpNote" rows="2"></textarea></div>
+                            <div class="cpe-field"><label asp-for="Profile.GdpSourceUrl">Chart source URL</label><input asp-for="Profile.GdpSourceUrl" placeholder="https://databank.worldbank.org/…" /></div>
+                        </div>
+                        <div class="cpe-hint cpe-mt-sm">The chart should distinguish actual, estimated and forecast values. The public page can display at least five complete years.</div>
+                    </div>
+                </section>
+
+                @* 5. Macro signals & public finances *@
+                <section class="cpe-panel">
+                    <div class="cpe-panelhead">
+                        <div><h2>5. Macro signals &amp; public finances</h2><p>Interpretation next to the GDP chart, and the fiscal position and sovereign debt cards.</p></div>
+                        <button type="button" class="cpe-btn" data-repeat-add="signal-rows">+ Add signal</button>
+                    </div>
+                    <div class="cpe-panelbody">
+                        <div class="cpe-tablewrap">
+                            <table class="cpe-table">
+                                <thead><tr><th>Signal</th><th>Text</th><th>Tone</th><th></th></tr></thead>
+                                <tbody data-repeat id="signal-rows">
+                                    @for (var i = 0; i < profile.Signals.Count; i++)
+                                    {
+                                        <tr data-repeat-item>
+                                            <td><input asp-for="Profile.Signals[i].Title" placeholder="Disinflation in October" /></td>
+                                            <td><input asp-for="Profile.Signals[i].Text" class="cpe-wide" /></td>
+                                            <td>
+                                                <select asp-for="Profile.Signals[i].Tone">
+                                                    @foreach (var tone in signalTones)
+                                                    {
+                                                        <option value="@tone">@tone</option>
+                                                    }
+                                                </select>
+                                            </td>
+                                            <td><button type="button" class="cpe-delete" data-repeat-remove aria-label="Remove signal">×</button></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="cpe-subhead cpe-mt-lg">Fiscal position</div>
+                        <div class="cpe-field cpe-field--inline"><label asp-for="Profile.FiscalSubtitle">Subtitle</label><input asp-for="Profile.FiscalSubtitle" placeholder="General government, first half of 2026" /></div>
+                        <div class="cpe-tablewrap">
+                            <table class="cpe-table">
+                                <thead><tr><th>Item</th><th>Period / status</th><th>Value</th><th></th></tr></thead>
+                                <tbody data-repeat id="fiscal-rows">
+                                    @for (var i = 0; i < profile.FiscalRows.Count; i++)
+                                    {
+                                        <tr data-repeat-item>
+                                            <td><input asp-for="Profile.FiscalRows[i].Label" placeholder="Budget balance" /></td>
+                                            <td><input asp-for="Profile.FiscalRows[i].Period" placeholder="H1 2026" /></td>
+                                            <td><input asp-for="Profile.FiscalRows[i].Value" placeholder="+6.6% of GDP" /></td>
+                                            <td><button type="button" class="cpe-delete" data-repeat-remove aria-label="Remove row">×</button></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="cpe-table-actions"><button type="button" class="cpe-btn" data-repeat-add="fiscal-rows">+ Add row</button></div>
+                        <div class="cpe-field"><label asp-for="Profile.FiscalNote">Fiscal note</label><input asp-for="Profile.FiscalNote" /></div>
+
+                        <div class="cpe-subhead cpe-mt-lg">Sovereign debt</div>
+                        <div class="cpe-grid3">
+                            <div class="cpe-field"><label asp-for="Profile.DebtValue">Public debt (% of GDP)</label><input asp-for="Profile.DebtValue" placeholder="40.5%" /></div>
+                            <div class="cpe-field"><label asp-for="Profile.DebtPeriod">Reference period</label><input asp-for="Profile.DebtPeriod" placeholder="end-June 2026" /></div>
+                            <div class="cpe-field"><label asp-for="Profile.DebtNote">Note</label><input asp-for="Profile.DebtNote" /></div>
+                        </div>
+                    </div>
+                </section>
+
+                @* 6. Country analysis & monitoring priorities *@
+                <section class="cpe-panel">
+                    <div class="cpe-panelhead">
+                        <div><h2>6. Country analysis &amp; monitoring priorities</h2><p>Manage the two-column editorial block shown on the public country page.</p></div>
+                        <span class="cpe-tag">Editorial</span>
+                    </div>
+                    <div class="cpe-panelbody">
+                        <div class="cpe-grid2 cpe-grid2--top">
+                            <div class="cpe-stack">
+                                <div class="cpe-kicker">Country analysis</div>
+                                <div class="cpe-field"><label asp-for="Profile.AnalysisHeading">Section heading</label><input asp-for="Profile.AnalysisHeading" placeholder="Macroeconomic assessment" /></div>
+                                <div class="cpe-field"><label asp-for="Profile.AnalysisLead">Lead summary</label><textarea asp-for="Profile.AnalysisLead" rows="3"></textarea></div>
+                                <div class="cpe-stack" data-repeat id="analysis-points">
+                                    @for (var i = 0; i < profile.AnalysisPoints.Count; i++)
+                                    {
+                                        <div class="cpe-stack" data-repeat-item>
+                                            <div class="cpe-field"><label asp-for="Profile.AnalysisPoints[i].Title">Analysis point <span data-repeat-number>@((i + 1).ToString("00"))</span> — title</label><input asp-for="Profile.AnalysisPoints[i].Title" /></div>
+                                            <div class="cpe-field"><label asp-for="Profile.AnalysisPoints[i].Text">Analysis point <span data-repeat-number>@((i + 1).ToString("00"))</span> — text</label><textarea asp-for="Profile.AnalysisPoints[i].Text" rows="3"></textarea></div>
+                                            <button type="button" class="cpe-delete cpe-delete--text" data-repeat-remove>Remove point ×</button>
+                                        </div>
                                     }
                                 </div>
-                            </section>
+                                <button type="button" class="cpe-btn" data-repeat-add="analysis-points">+ Add analysis point</button>
+                                <div class="cpe-field"><label asp-for="Profile.AnalysisFootnote">Analysis methodology / disclaimer</label><textarea asp-for="Profile.AnalysisFootnote" rows="3"></textarea></div>
+                            </div>
+                            <div class="cpe-stack">
+                                <div class="cpe-kicker">Monitoring priorities</div>
+                                <div class="cpe-field"><label asp-for="Profile.MonitoringHeading">Section heading</label><input asp-for="Profile.MonitoringHeading" placeholder="Key areas to watch" /></div>
+                                <div class="cpe-field"><label asp-for="Profile.MonitoringIntro">Introductory text</label><textarea asp-for="Profile.MonitoringIntro" rows="2"></textarea></div>
+                                <div class="cpe-stack cpe-stack--tight" data-repeat id="priority-items">
+                                    @for (var i = 0; i < profile.Priorities.Count; i++)
+                                    {
+                                        <div class="cpe-priority" data-repeat-item>
+                                            <div class="cpe-grid2">
+                                                <div class="cpe-field"><label asp-for="Profile.Priorities[i].Title">Priority <span data-repeat-number>@(i + 1)</span> — title</label><input asp-for="Profile.Priorities[i].Title" /></div>
+                                                <div class="cpe-field">
+                                                    <label asp-for="Profile.Priorities[i].Level">Priority level</label>
+                                                    <select asp-for="Profile.Priorities[i].Level">
+                                                        @foreach (var level in levels)
+                                                        {
+                                                            <option value="@level">@level</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="cpe-field cpe-mt-sm"><label asp-for="Profile.Priorities[i].Description">Description</label><input asp-for="Profile.Priorities[i].Description" /></div>
+                                            <button type="button" class="cpe-delete cpe-delete--text" data-repeat-remove>Remove priority ×</button>
+                                        </div>
+                                    }
+                                </div>
+                                <button type="button" class="cpe-btn" data-repeat-add="priority-items">+ Add monitoring priority</button>
+                                <div class="cpe-field"><label asp-for="Profile.MonitoringFootnote">Monitoring footer</label><input asp-for="Profile.MonitoringFootnote" /></div>
+                            </div>
                         </div>
+                        <div class="cpe-grid2 cpe-mt-lg">
+                            <div class="cpe-field"><label asp-for="Profile.AnalysisUpdated">Analysis updated date</label><input asp-for="Profile.AnalysisUpdated" placeholder="02 Nov 2026" /></div>
+                        </div>
+                        <div class="cpe-hint cpe-mt-sm">These fields populate the public two-column section: Country Analysis on the left and Monitoring Priorities on the right. Priority labels are CAFRI editorial assessments, not official risk ratings.</div>
+                    </div>
+                </section>
+
+                @* 7. Latest country intelligence *@
+                <section class="cpe-panel">
+                    <div class="cpe-panelhead">
+                        <div><h2>7. Latest country intelligence</h2><p>News and institutional updates displayed below the analysis block on the public page.</p></div>
+                        <button type="button" class="cpe-btn" data-repeat-add="news-rows">+ Add item</button>
+                    </div>
+                    <div class="cpe-panelbody">
+                        <div class="cpe-tablewrap">
+                            <table class="cpe-table">
+                                <thead><tr><th>Type / date</th><th>Headline</th><th>Summary</th><th>Source URL</th><th></th></tr></thead>
+                                <tbody data-repeat id="news-rows">
+                                    @for (var i = 0; i < profile.News.Count; i++)
+                                    {
+                                        <tr data-repeat-item>
+                                            <td><input asp-for="Profile.News[i].TypeDate" placeholder="Type · date" /></td>
+                                            <td><input asp-for="Profile.News[i].Headline" placeholder="Headline" /></td>
+                                            <td><input asp-for="Profile.News[i].Summary" placeholder="Short summary" /></td>
+                                            <td><input asp-for="Profile.News[i].Url" placeholder="https://" /></td>
+                                            <td><button type="button" class="cpe-delete" data-repeat-remove aria-label="Remove item">×</button></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="cpe-hint cpe-mt-sm">Use verified source URLs. The public page displays these as selected country-specific intelligence items. CAFRI's own Intelligence and publications for the country are listed automatically.</div>
+                    </div>
+                </section>
+
+                @* 8. Data sources *@
+                <section class="cpe-panel">
+                    <div class="cpe-panelhead">
+                        <div><h2>8. Data sources</h2><p>Sources and references displayed on the public profile.</p></div>
+                        <button type="button" class="cpe-btn" data-repeat-add="source-rows">+ Add source</button>
+                    </div>
+                    <div class="cpe-panelbody">
+                        <div class="cpe-tablewrap">
+                            <table class="cpe-table">
+                                <thead><tr><th>Institution</th><th>Dataset / publication</th><th>URL</th><th></th></tr></thead>
+                                <tbody data-repeat id="source-rows">
+                                    @for (var i = 0; i < profile.Sources.Count; i++)
+                                    {
+                                        <tr data-repeat-item>
+                                            <td><input asp-for="Profile.Sources[i].Institution" placeholder="Institution" /></td>
+                                            <td><input asp-for="Profile.Sources[i].Description" placeholder="Dataset / publication" /></td>
+                                            <td><input asp-for="Profile.Sources[i].Url" placeholder="https://" /></td>
+                                            <td><button type="button" class="cpe-delete" data-repeat-remove aria-label="Remove source">×</button></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="cpe-field cpe-mt">
+                            <label asp-for="Profile.Methodology">Data methodology note</label>
+                            <textarea asp-for="Profile.Methodology" rows="3"></textarea>
+                        </div>
+                        <div class="cpe-hint cpe-mt-sm">If no source is listed, the page shows the country's sources from the Sources section plus every source named on the snapshot cards and the GDP chart.</div>
+                    </div>
+                </section>
+
+                <div class="cpe-bottom-actions">
+                    <span>@(Model.IsPublished ? "This profile is live: saved changes appear on the website immediately." : "This profile is a draft: it stays hidden until you publish it.")</span>
+                    <div class="cpe-actions">
+                        <button type="submit" class="cpe-btn" name="SubmitAction" value="save">@(Model.IsPublished ? "Save changes" : "Save draft")</button>
+                        <button type="submit" class="cpe-btn cpe-btn--primary" name="SubmitAction" value="publish">Publish changes</button>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="cpe-sidepanel">
+                <div class="cpe-sidebox">
+                    <h3>Public page preview</h3>
+                    <div class="cpe-identity">
+                        <div class="cpe-identity__top">
+                            <img src="@flagUrl" alt="" data-flag-preview />
+                            <div>
+                                <div class="cpe-identity__region" data-preview="region" data-preview-fallback="Region">@Model.Region</div>
+                                <h4 data-preview="officialName" data-preview-fallback="@(string.IsNullOrWhiteSpace(Model.Name) ? "Country name" : Model.Name)">@title</h4>
+                                <span class="cpe-identity__capital">Capital · <span data-preview="capital" data-preview-fallback="—">@Model.Capital</span></span>
+                            </div>
+                        </div>
+                        <p class="cpe-identity__description" data-preview="lead" data-preview-fallback="A concise country introduction appears here, followed by a compact facts strip.">@Model.ProfileLead</p>
+                        <div class="cpe-identity__facts">
+                            <div><span>POPULATION</span><strong data-preview="population" data-preview-fallback="—">@Model.Population</strong></div>
+                            <div><span>GDP</span><strong data-preview="gdp" data-preview-fallback="—">@Model.Gdp</strong></div>
+                            <div><span>CURRENCY</span><strong>@currencyCode</strong></div>
+                        </div>
+                    </div>
+                    <p class="cpe-sidebox__note">Country identity header with population, GDP and currency as quick facts.</p>
+                    @if (!isNew && !string.IsNullOrWhiteSpace(Model.Slug))
+                    {
+                        <a class="cpe-preview-link" href="/countries/@Model.Slug" target="_blank" rel="noopener">Open public page ↗</a>
                     }
-                    <div class="col-md-2">
-                        <label asp-for="DisplayOrder" class="form-label"></label>
-                        <input asp-for="DisplayOrder" class="form-control" />
+                </div>
+
+                <div class="cpe-sidebox">
+                    <h3>Publishing settings</h3>
+                    <label class="cpe-checkrow"><input asp-for="IsPublished" /> Visible on public website</label>
+                    <div class="cpe-field cpe-mt">
+                        <label asp-for="DisplayOrder">Display order</label>
+                        <input asp-for="DisplayOrder" />
+                        <span class="cpe-hint">Lower numbers come first in the countries list and on the map.</span>
                     </div>
-                    <div class="col-md-2 d-flex align-items-end">
-                        <div class="form-check">
-                            <input asp-for="IsPublished" class="form-check-input" />
-                            <label asp-for="IsPublished" class="form-check-label"></label>
+                    <div class="cpe-field cpe-mt">
+                        <label asp-for="HeroClassName">Card background class</label>
+                        <input asp-for="HeroClassName" placeholder="country-card-image--kyrgyzstan" />
+                        <span class="cpe-hint">Used when the country has no photo.</span>
+                    </div>
+                </div>
+
+                <div class="cpe-sidebox">
+                    <h3>History</h3>
+                    <div class="cpe-activity">
+                        @if (isNew)
+                        {
+                            <span>Not saved yet.</span>
+                        }
+                        else
+                        {
+                            <strong>@FormatDate(Model.UpdatedAtUtc)</strong><span> · Last updated</span><br />
+                            <strong>@FormatDate(Model.CreatedAtUtc)</strong><span> · Profile created</span>
+                        }
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Code))
+                {
+                    <div class="cpe-sidebox">
+                        <h3>Linked data</h3>
+                        <div class="cpe-activity">
+                            <strong>@Model.Indicators.Count</strong> indicators ·
+                            <a asp-area="Admin" asp-controller="Indicators" asp-action="Index" asp-route-country="@Model.Code" class="cpe-preview-link">Manage</a><br />
+                            <strong>@Model.Sources.Count</strong> registered sources ·
+                            <a asp-area="Admin" asp-controller="Sources" asp-action="Index" asp-route-country="@Model.Code" class="cpe-preview-link">Manage</a>
                         </div>
                     </div>
-                    <div class="col-12">
-                        <label asp-for="Summary" class="form-label"></label>
-                        <textarea asp-for="Summary" class="form-control" rows="4" data-preview-target="Summary" data-preview-key="summary"></textarea>
-                    </div>
-                    <div class="col-12">
-                        <label asp-for="DetailsJson" class="form-label"></label>
-                        <textarea asp-for="DetailsJson" class="form-control font-monospace" rows="20"></textarea>
-                        <div class="form-text">`DetailsJson` powers detailed sections, statistics and the full country profile layout.</div>
-                    </div>
-                </div>
+                }
 
-                <div class="admin-editor-actions">
-                    <button type="submit" class="admin-primary-button">Save Country</button>
-                    <a asp-area="Admin" asp-controller="Countries" asp-action="Index" class="admin-chip">Back to List</a>
-                </div>
-            </form>
-        </section>
-
-        <aside class="admin-editor-preview">
-            <section class="admin-preview-card">
-                <div class="admin-panel__eyebrow">Live Preview</div>
-                <div class="admin-preview-card__badge-row">
-                    <span class="admin-preview-card__badge" data-preview="code" data-preview-fallback="Code">@Model.Code</span>
-                    <span class="admin-preview-card__badge" data-preview="capital" data-preview-fallback="Capital">@Model.Capital</span>
-                </div>
-                <h2 class="admin-preview-card__title" data-preview="name" data-preview-fallback="Country name">@Model.Name</h2>
-                <p class="admin-preview-card__body" data-preview="summary" data-preview-fallback="Country summary preview.">@Model.Summary</p>
-            </section>
-
-            <section class="admin-preview-card">
-                <div class="admin-panel__eyebrow">Key Metrics</div>
-                <ul class="admin-preview-list">
-                    <li>GDP: <span data-preview="gdp" data-preview-fallback="not-set">@Model.Gdp</span></li>
-                    <li>Population: <span data-preview="population" data-preview-fallback="not-set">@Model.Population</span></li>
-                    <li>Bank Assets: <span data-preview="bankAssets" data-preview-fallback="not-set">@Model.BankAssets</span></li>
-                    <li>Slug: <span data-preview="slug" data-preview-fallback="not-set">@Model.Slug</span></li>
-                </ul>
-            </section>
-        </aside>
-    </div>
-</section>
+                <div class="cpe-notice"><strong>Data quality reminder</strong><br />Every indicator should include a period, unit, source URL and data status (actual, estimate or forecast). Keep source observations separate from editorial analysis.</div>
+            </aside>
+        </div>
+    </form>
+</div>
 
 @section Scripts {
-    <script src="~/js/admin-media-editors.js" asp-append-version="true"></script>
+    <script src="~/js/admin-country-editor.js" asp-append-version="true"></script>
 }
