@@ -15,6 +15,9 @@ namespace CAFRI.Areas.Admin.Controllers;
 [Authorize(Roles = SystemRoles.Admin)]
 public sealed class IntelligenceController : Controller
 {
+    private const string EffectiveDateLabel = "Effective Date";
+    private const string AppliesToLabel = "Applies To";
+
     private readonly AppDbContext _dbContext;
     private readonly ContentMediaStorageService _mediaStorage;
 
@@ -435,7 +438,9 @@ public sealed class IntelligenceController : Controller
             RelatedIntelligenceText = model.RelatedIntelligenceText,
             MonitoringStatusText = model.MonitoringStatusText,
             DisplayOrder = model.DisplayOrder,
-            IsPublished = model.IsPublished
+            IsPublished = model.IsPublished,
+            IsTrending = model.IsTrending,
+            TrendingOrder = model.TrendingOrder
         };
 
     private IntelligenceDetailsViewModel? DeserializeDetails(string? detailsJson)
@@ -559,15 +564,24 @@ public sealed class IntelligenceController : Controller
             };
         }));
 
-        var documentInfoRows = IntelligenceStructuredDetailParsers.ParsePipeRows(model.DocumentInformationText, 2).ToList();
-        if (!string.IsNullOrWhiteSpace(model.EffectiveDate))
+        // Effective Date and Applies To have their own form fields, but the edit form also
+        // round-trips them inside DocumentInformationText. The dedicated fields win: drop
+        // any copies from the text first, otherwise every save appends another duplicate.
+        var hasEffectiveDate = !string.IsNullOrWhiteSpace(model.EffectiveDate);
+        var hasAppliesTo = !string.IsNullOrWhiteSpace(model.AppliesTo);
+        var documentInfoRows = IntelligenceStructuredDetailParsers.ParsePipeRows(model.DocumentInformationText, 2)
+            .Where(parts =>
+                !(hasEffectiveDate && string.Equals(parts[0], EffectiveDateLabel, StringComparison.OrdinalIgnoreCase)) &&
+                !(hasAppliesTo && string.Equals(parts[0], AppliesToLabel, StringComparison.OrdinalIgnoreCase)))
+            .ToList();
+        if (hasEffectiveDate)
         {
-            documentInfoRows.Insert(0, ["Effective Date", model.EffectiveDate.Trim()]);
+            documentInfoRows.Insert(0, [EffectiveDateLabel, model.EffectiveDate!.Trim()]);
         }
 
-        if (!string.IsNullOrWhiteSpace(model.AppliesTo))
+        if (hasAppliesTo)
         {
-            documentInfoRows.Insert(documentInfoRows.Count, ["Applies To", model.AppliesTo.Trim()]);
+            documentInfoRows.Add([AppliesToLabel, model.AppliesTo!.Trim()]);
         }
 
         _dbContext.IntelligenceDocumentInfoEntries.AddRange(documentInfoRows.Select((parts, index) => new IntelligenceDocumentInfoEntry

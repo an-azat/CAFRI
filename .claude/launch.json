@@ -12,6 +12,12 @@
       "runtimeExecutable": "dotnet",
       "runtimeArgs": ["run", "-c", "Release", "--no-build", "--urls", "http://localhost:5262"],
       "port": 5262
+    },
+    {
+      "name": "cafri-web-verify",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "-p:BaseOutputPath=bin-verify/", "--urls", "http://localhost:5263"],
+      "port": 5263
     }
   ]
 }

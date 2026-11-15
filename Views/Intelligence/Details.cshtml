@@ -86,11 +86,19 @@ else
                     <h2>Executive Assessment</h2>
                     <div class="article-assessment">
                         <p>@Model.OverviewLead</p>
-                        <p>@Model.OverviewBody</p>
+                        @if (!string.IsNullOrWhiteSpace(Model.OverviewBody))
+                        {
+                            <p>@Model.OverviewBody</p>
+                        }
                     </div>
-                    <partial name="_InfoBox" model="Model" />
+                    @if (!string.IsNullOrWhiteSpace(Model.EffectiveDate) || !string.IsNullOrWhiteSpace(Model.AppliesTo))
+                    {
+                        <partial name="_InfoBox" model="Model" />
+                    }
                 </section>
 
+                @if (Model.KeyChanges.Count != 0)
+                {
                 <section id="key-changes" class="article-section">
                     <h2>Key Changes</h2>
                     <div class="key-changes-grid">
@@ -100,7 +108,10 @@ else
                         }
                     </div>
                 </section>
+                }
 
+                @if (Model.ImpactAnalysis.Count != 0)
+                {
                 <section id="impact-analysis" class="article-section">
                     <h2>Impact Analysis</h2>
                     <div class="impact-analysis-grid">
@@ -110,23 +121,20 @@ else
                         }
                     </div>
                 </section>
+                }
 
+                @if (Model.TimelineItems.Count != 0)
+                {
                 <section id="timeline" class="article-section">
                     <h2>Timeline</h2>
                     <partial name="_Timeline" model="Model.TimelineItems" />
                 </section>
+                }
 
+                @if (!string.IsNullOrWhiteSpace(Model.OfficialDocument.Title))
+                {
                 <section id="regulatory-text" class="article-section">
                     <h2>Regulatory Text &amp; Official Document</h2>
-                    @if (string.IsNullOrWhiteSpace(Model.OfficialDocument.Title))
-                    {
-                        <div class="article-empty-block">
-                            <h3>Official document is not available yet</h3>
-                            <p>The document reference can be added later through the CAFRI admin content layer.</p>
-                        </div>
-                    }
-                    else
-                    {
                         <article class="document-download-card">
                             <div class="document-download-card__icon">DOC</div>
                             <div class="document-download-card__content">
@@ -147,28 +155,13 @@ else
                                 <button type="button" class="home-v2-button home-v2-button--primary" data-download-trigger="true" data-content-action="download" data-content-title="@Model.Title">Download Files</button>
                             }
                         </article>
-                    }
                 </section>
+                }
 
-                <section id="data-charts" class="article-section">
-                    <h2>Data &amp; Charts</h2>
-                    <div class="article-empty-block">
-                        <h3>Data visualization is not available for this item yet</h3>
-                        <p>Chart modules can be added when a material requires macroeconomic, banking, or market trend visualization.</p>
-                    </div>
-                </section>
-
+                @if (Model.RelatedOfficialSources.Count != 0 || Model.RelatedIntelligence.Count != 0)
+                {
                 <section id="related-materials" class="article-section">
                     <h2>Related Materials</h2>
-                    @if (Model.RelatedOfficialSources.Count == 0 && Model.RelatedIntelligence.Count == 0)
-                    {
-                        <div class="article-empty-block">
-                            <h3>No related intelligence items available</h3>
-                            <p>Related materials will appear here as editors connect this analysis to official sources and other CAFRI coverage.</p>
-                        </div>
-                    }
-                    else
-                    {
                         <div class="article-related-grid">
                             @foreach (var item in Model.RelatedOfficialSources)
                             {
@@ -202,8 +195,8 @@ else
                                 </article>
                             }
                         </div>
-                    }
                 </section>
+                }
             </main>
 
             <partial name="_ArticleSidebar" model="Model" />

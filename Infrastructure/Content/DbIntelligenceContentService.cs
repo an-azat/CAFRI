@@ -385,7 +385,7 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
             .Skip(1)
             .Select(x => x.Body)
             .FirstOrDefault(x => !string.IsNullOrWhiteSpace(x))
-            ?? "Additional structured analysis can be expanded through the CAFRI admin content layer.";
+            ?? string.Empty;
 
         var officialDocument = item.OfficialDocuments
             .OrderBy(x => x.DisplayOrder)
@@ -397,13 +397,7 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
                 DownloadUrl = DocumentLink.Url(x.DownloadUrl)
             })
             .FirstOrDefault()
-            ?? new IntelligenceOfficialDocumentViewModel
-            {
-                Title = "Official document is not available yet",
-                Subtitle = "Document metadata can be added through the admin content layer",
-                Meta = "Source-based intelligence item",
-                DownloadUrl = "#"
-            };
+            ?? new IntelligenceOfficialDocumentViewModel { Title = string.Empty, Subtitle = string.Empty, Meta = string.Empty };
 
         return new IntelligenceDetailsViewModel
         {
@@ -420,8 +414,8 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
             AnalysisType = "CAFRI Intelligence Note",
             OverviewLead = overviewLead,
             OverviewBody = overviewBody,
-            EffectiveDate = item.DocumentInfoEntries.OrderBy(x => x.DisplayOrder).FirstOrDefault(x => x.Label == "Effective Date")?.Value ?? "Monitoring",
-            AppliesTo = item.DocumentInfoEntries.OrderBy(x => x.DisplayOrder).FirstOrDefault(x => x.Label == "Applies To")?.Value ?? "Relevant stakeholders",
+            EffectiveDate = item.DocumentInfoEntries.OrderBy(x => x.DisplayOrder).FirstOrDefault(x => x.Label == "Effective Date")?.Value ?? string.Empty,
+            AppliesTo = item.DocumentInfoEntries.OrderBy(x => x.DisplayOrder).FirstOrDefault(x => x.Label == "Applies To")?.Value ?? string.Empty,
             IsPremium = true,
             Actions =
             [
@@ -479,8 +473,10 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
                     DownloadUrl = DocumentLink.Url(x.DownloadUrl)
                 })
                 .ToList(),
+            // Drop repeated label/value pairs left behind by the old save bug.
             DocumentInformation = item.DocumentInfoEntries
                 .OrderBy(x => x.DisplayOrder)
+                .DistinctBy(x => (x.Label.Trim().ToLowerInvariant(), x.Value.Trim()))
                 .Select(x => new IntelligenceDocumentInfoRowViewModel
                 {
                     Label = x.Label,
@@ -537,20 +533,22 @@ public sealed class DbIntelligenceContentService : IIntelligenceContentService
             PublishedDate = PublicationMetadataFormatter.FormatShortDate(item.PublishedAtUtc),
             ReadingTime = "8 min read",
             AnalysisType = "CAFRI Intelligence Note",
-            OverviewLead = $"{item.Title} is currently available as a structured intelligence note within the CAFRI platform.",
-            OverviewBody = "This fallback detail page preserves the analytical layout and gives the project a consistent database-driven path while richer material is still being added through the admin area.",
-            EffectiveDate = "Monitoring",
-            AppliesTo = "Relevant public and private sector stakeholders",
+            // No detailed content was authored for this item: show only what the record
+            // actually holds. Empty blocks are hidden by the view.
+            OverviewLead = item.Description,
+            OverviewBody = string.Empty,
+            EffectiveDate = string.Empty,
+            AppliesTo = string.Empty,
             IsPremium = true,
             Actions = [ new() { Label = "Save", Icon = "save" }, new() { Label = "Cite", Icon = "cite" }, new() { Label = "Share", Icon = "share" }, new() { Label = "Print", Icon = "print" } ],
             Tabs = [ new() { Label = "Overview", IsActive = true }, new() { Label = "Key Changes" }, new() { Label = "Impact Analysis" }, new() { Label = "Timeline" }, new() { Label = "Regulatory Text" }, new() { Label = "Data & Charts" }, new() { Label = "Related Materials" } ],
-            KeyChanges = [ new() { Number = 1, Title = "Database-backed record", Description = "This intelligence item is now served from the CMS tables instead of controller hardcode." }, new() { Number = 2, Title = "Admin editable", Description = "Editors can update title, summary, source metadata, and full detail JSON through the admin area." }, new() { Number = 3, Title = "Expandable detail model", Description = "The page supports progressive enrichment without changing routing or controller logic." } ],
-            ImpactAnalysis = [ new() { Title = "Editors", Description = "Content can now be maintained through the admin panel.", ImpactLabel = "Impact: Positive", ImpactTone = "impact-positive" }, new() { Title = "Platform", Description = "The public layer now reads this item from the database at runtime.", ImpactLabel = "Impact: High", ImpactTone = "impact-high" }, new() { Title = "Users", Description = "Users get a stable detail page even when a custom deep-dive has not been authored yet.", ImpactLabel = "Impact: Medium", ImpactTone = "impact-medium" } ],
-            TimelineItems = [ new() { DateLabel = PublicationMetadataFormatter.FormatShortDate(item.PublishedAtUtc), Description = "Intelligence item published", Stage = "past" }, new() { DateLabel = "Current", Description = "Content monitored in CAFRI", Stage = "current" }, new() { DateLabel = "Next update", Description = "Full detail can be expanded from the admin editor", Stage = "future" } ],
-            OfficialDocument = new IntelligenceOfficialDocumentViewModel { Title = "Official document or source reference", Subtitle = item.Source, Meta = $"{PublicationMetadataFormatter.FormatShortDate(item.PublishedAtUtc)} | Source-based item" },
+            KeyChanges = [],
+            ImpactAnalysis = [],
+            TimelineItems = [],
+            OfficialDocument = new IntelligenceOfficialDocumentViewModel { Title = string.Empty, Subtitle = string.Empty, Meta = string.Empty },
             AvailableDownloads = [],
             DocumentInformation = [ new() { Label = "Category", Value = item.Category }, new() { Label = "Country", Value = item.CountryName }, new() { Label = "Published", Value = PublicationMetadataFormatter.FormatShortDate(item.PublishedAtUtc) }, new() { Label = "Source", Value = item.Source }, new() { Label = "Status", Value = "Monitoring" } ],
-            KeyHighlights = [ "Database-backed content source in place", "Fallback detail view available for unpublished deep dives", "Ready for progressive enrichment by editors" ],
+            KeyHighlights = [],
             RelatedOfficialSources = [ new() { Title = item.Source, Subtitle = "Primary source reference" } ],
             RelatedIntelligence = [ new() { Title = "More intelligence items", Subtitle = "Browse the full catalog", Url = "/intelligence/archive" } ],
             MonitoringStatus = [ new() { Label = "Status", Value = "Monitoring", IsStatus = true }, new() { Label = "Source", Value = item.Source }, new() { Label = "Coverage", Value = item.CountryName } ]

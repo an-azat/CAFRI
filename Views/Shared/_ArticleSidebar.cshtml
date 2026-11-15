@@ -1,6 +1,8 @@
 @model CAFRI.ViewModels.Intelligence.IntelligenceDetailsViewModel
 
 <div class="article-sidebar">
+    @if (Model.DocumentInformation.Count != 0)
+    {
     <section class="sidebar-card document-information">
         <h2>Document Information</h2>
         <dl class="article-sidebar__definition-list">
@@ -11,7 +13,10 @@
             }
         </dl>
     </section>
+    }
 
+    @if (Model.KeyHighlights.Count != 0)
+    {
     <section class="sidebar-card key-highlights">
         <h2>Key Highlights</h2>
         <ul class="article-sidebar__check-list">
@@ -21,6 +26,7 @@
             }
         </ul>
     </section>
+    }
 
     <section class="sidebar-card related-sources">
         <h2>Related Official Sources</h2>
@@ -86,6 +92,8 @@
         </div>
     </section>
 
+    @if (Model.MonitoringStatus.Count != 0)
+    {
     <section class="sidebar-card monitoring-status">
         <h2>Monitoring Status</h2>
         <div class="article-sidebar__status-list">
@@ -98,6 +106,7 @@
             }
         </div>
     </section>
+    }
 
     <section class="sidebar-card stay-updated-card">
         <h2>Stay Updated</h2>
